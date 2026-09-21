@@ -46,6 +46,7 @@ Il tipo **N** è la validazione indipendente: uno strumento terzo, maturo, deve 
 ### Schema di prova canonico: «biblioteca»
 Usato in tutti gli step (script in `it-tests/fixtures/`, creato dallo Step 3):
 `autori(id PK AI, cognome, nome, nazionalita)` · `libri(id PK AI, titolo, isbn UNIQUE, anno, prezzo DECIMAL, id_editore)` · `editori(id PK AI, nome, citta)` · `libri_autori(id_libro, id_autore, PK composta)` · `soci(id PK AI, tessera UNIQUE, cognome, nome, email, nato_il DATE)` · `prestiti(id PK AI, id_libro, id_socio, data_prestito, data_reso NULL)`; FK: `libri→editori`, `libri_autori→libri/autori` (CASCADE), `prestiti→libri/soci` (RESTRICT). Dati: ≈ 50 autori, 200 libri, 100 soci, 500 prestiti, con accenti, apostrofi, emoji, NULL.
+**Casi reali già presenti sul PC di sviluppo** (cancellabili, ma utili: si usano in copia): `bibliotecasoft` su MariaDB (5 tabelle, **2 viste**, 7 FK) e `scuola` su MySQL (4 tabelle, 3 FK, tabella ponte). Si affiancano allo schema canonico negli spike S2c/S6 e negli step 7, 8, 10, 11: sono database scritti da altri, quindi mettono alla prova il client su ciò che non ha creato lui.
 Variante **`biblioteca_myisam`**: stesse tabelle in MyISAM, **senza alcuna FK** (serve a Step 6 e 11). Variante **`grande`**: una tabella da 1 milione di righe generata.
 
 ## Metodo di esecuzione (vale per ogni step)

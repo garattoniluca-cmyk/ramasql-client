@@ -50,6 +50,16 @@ Criteri pesati sul caso reale: riuso di SQLeo (decisivo), semplicità d'installa
 
 **Perché non C++:** costo e rischio massimi, beneficio nullo per questo pubblico.
 
+### 3.1 «Ma Workbench è in C++: perché allora Java?» (domanda dell'utente, 2026-09-21)
+
+Perché i due riferimenti hanno ruoli diversi: da **SQLeo si prende codice** (≈11.600 righe di editor visivo, riusabili solo restando in Java Swing), da **Workbench si prende comportamento** (com'è fatta una schermata, in che ordine si fanno le cose), e un comportamento si copia guardandolo, in qualunque linguaggio. Il linguaggio va scelto sul codice che si riusa.
+
+Partire dal codice di Workbench non è un'alternativa reale: non è «un programma C++» ma un nucleo C++ con tre interfacce distinte (su Windows uno strato C#/.NET via C++/CLI, su Linux GTK, su macOS Cocoa), un sistema di oggetti interno (GRT) e molto Python; è enorme e difficile da compilare fuori da Oracle; è un client per MySQL, con incompatibilità note verso MariaDB; e soprattutto **non ha un editor visivo di query**, cioè manca proprio della funzione che distingue questo prodotto. In C++ si riscriverebbe l'editor visivo *e* tutto il resto, senza riusare nulla.
+
+**In fondo sono tutte chiamate SQL** (osservazione dell'utente): verso il database ogni client fa la stessa cosa — apre una connessione e invia testo SQL — e il server non sa in che linguaggio è scritto chi lo chiama. La parte «database» è quindi equivalente in Java, C# o C++, e non c'è alcuna prestazione nativa da sfruttare (il tempo si spende sul server e in rete). **Tutta la differenza tra i linguaggi sta nell'interfaccia**, ed è lì che Java parte con la parte più costosa già scritta. È anche ciò che rende sensati il principio «SQL sempre mostrato» (se il client è solo SQL, mostrarlo è mostrare tutto) e la validazione incrociata con Navicat (strumenti diversi, stessi metadati sullo stesso server).
+
+La scelta si riaprirebbe solo rinunciando a SQLeo; in quel caso il candidato sarebbe C#, non C++.
+
 ## 4. Scelte interne allo stack Java
 
 | Tema | Scelta | Alternative scartate |
@@ -102,7 +112,7 @@ MariaDB **10.6 → 11.x/12.x** (LTS correnti) e MySQL **8.0 / 8.4 LTS** (9.x «b
 |---|---|---|---|
 | D-01 | **Nome del prodotto** e identificativi (`groupId`, cartella d'installazione) | «RamaSQL Client», `it.ramasql` | Step 0 |
 | D-02 | **Licenza GPL-3.0-or-later e sorgenti pubblici**: è una conseguenza obbligata dell'ereditare SQLeo; va solo confermato che è accettabile (per uso in aula lo è senz'altro) | accettare | Step 0 |
-| D-03 | **Server per sviluppo e test**: serve un MariaDB **e** un MySQL raggiungibili, con un utente che possa creare/distruggere cataloghi `ramasql_test_*`. Docker in locale? un server MariaDB già disponibile all'utente + un MySQL 8.4 da qualche parte? | Docker Desktop in locale con due container; in alternativa server indicati dall'utente | Step 1 |
+| ~~D-03~~ *(chiusa il 2026-09-21: MariaDB 11.5.2 su localhost:3306 e MySQL 8.0.40 su localhost:3307, entrambi servizi Windows sul PC di sviluppo; resta da creare l'utente `ramasql_test`; il PC dell'aula per S3 resta da procurare)* | **Server per sviluppo e test**: serve un MariaDB **e** un MySQL raggiungibili, con un utente che possa creare/distruggere cataloghi `ramasql_test_*`. Docker in locale? un server MariaDB già disponibile all'utente + un MySQL 8.4 da qualche parte? | Docker Desktop in locale con due container; in alternativa server indicati dall'utente | Step 1 |
 | ~~D-04~~ | Repository git | **Chiusa il 2026-09-21:** GitHub, repository **pubblico** da subito, su indicazione dell'utente | — |
 | D-05 | Firma del codice dell'installer (certificato OV ≈ 200–400 €/anno, o Azure Trusted Signing ≈ 10 €/mese) contro gli avvisi SmartScreen | partire senza; decidere dopo la prova in aula (S3) | Step 13 |
 | D-06 | Routine, trigger, eventi: in v1 **sola lettura** nell'albero (si vede il `SHOW CREATE`), modifica solo via editor SQL | sì | Step 3 |

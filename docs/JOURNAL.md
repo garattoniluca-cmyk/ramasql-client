@@ -1,5 +1,18 @@
 # JOURNAL.md — Diario cronologico (più recente in alto)
 
+## 2026-09-21 — Ambiente database di sviluppo pronto (chiude D-03)
+Sul PC di sviluppo c'erano già due server, con l'accesso `root` perso: **MariaDB 11.5.2** (`C:\Program Files\MariaDB 11.5`, porta 3306, servizio Windows `MariaDB`) e **MySQL 8.0.40** (`C:\mysql`, installazione da ZIP, porta 3307, senza servizio). Su richiesta dell'utente (database solo di sviluppo, nessun dato critico):
+- reimpostata la password di `root@localhost`, `@127.0.0.1`, `@::1` su entrambi con la procedura ufficiale `--init-file` (script locale `ripristina-root.local.ps1`, escluso da git); dati non toccati;
+- MySQL registrato come servizio Windows `MySQL80` ad avvio automatico (prima andava avviato a mano: causa dell'errore 2002/10061 in Navicat);
+- credenziali e parametri in `docs/local DBs.txt`, **escluso da git** (il repository è pubblico);
+- l'utente ha collegato entrambi i server a **Navicat** (connessioni `MariaDBLocal` e `MySQLlocal`): l'ambiente per i test di tipo N è pronto.
+
+Cataloghi dell'utente presenti: `bibliotecasoft`, `ciccio`, `new_schema` (MariaDB); `scuola` (MySQL). **Precisazione dell'utente: sono tutti cancellabili, ma utili per i nostri test locali** → si usano come casi reali; per non consumarli, i test automatici lavorano su **copie** nei cataloghi `ramasql_test_*`. Inventario (sola lettura): `bibliotecasoft` = 5 tabelle InnoDB (`amministratori`, `generi`, `libri` ≈413 righe, `prestiti`, `utenti`) + **2 viste** (`v_prestiti_dettaglio`, `v_statistiche_libri`) + 7 FK; `scuola` = 4 tabelle InnoDB (`alunni`, `classi`, `corsi`, `corsi_classi`) + 3 FK, con tabella ponte N:M; `ciccio` = 1 tabella; `new_schema` vuoto. Usi previsti: le due viste reali per lo spike S2c e lo Step 8 (riapertura grafica di viste scritte altrove); `bibliotecasoft` e `scuola` per retroingegneria ER (Step 11), query visive su FK reali (Step 7), round-trip del dump tra MariaDB e MySQL (Step 10). Entrambi i server usano `mysql_native_password` per root. Solo TCP/IP, SSL non necessario in locale.
+
+Da fare / segnalato all'utente: su entrambi i server esiste un `root@%` (raggiungibile dalla rete) con la vecchia password persa — consigliato `DROP USER` prima di portare il PC in aula; creare l'utente `ramasql_test` con privilegi solo su `ramasql_test_%` per i test d'integrazione.
+
+Lezione per gli script PowerShell 5.1 del progetto (servirà per `build-installer.ps1`): con `$ErrorActionPreference='Stop'` un avviso su stderr di un eseguibile nativo, se rediretto con `2>&1`, diventa errore fatale; e `Start-Process -Wait` attende anche i processi figli.
+
 ## 2026-09-21 — Step A: analisi, scelta dello stack, fattibilità, design, piano con test
 Richiesta dell'utente: client Windows (o Java) per MariaDB/MySQL basato su SQLeo per ereditarne l'editor visivo di query; semplice, da usare in aula con studenti; Workbench come riferimento funzionale per tutto il resto. Consegne richieste: (1) scelta dell'architettura (Java, C++, C#), (2) fattibilità tecnologica e documento di design, (3) piano a step con verifiche fino all'installer. Organizzazione dei file MD come in `gestionaleFormazione`.
 
