@@ -1,5 +1,30 @@
 # JOURNAL.md — Diario cronologico (più recente in alto)
 
+## 2026-09-21 — Step 0: fondamenta ✅
+Autorizzato dall'utente («sì a tutte e tre»): nome RamaSQL Client, licenza GPL-3, installazione JDK, utente di test.
+
+Fatto:
+- **JDK 25** Temurin 25.0.4.1 installato con winget (`JAVA_HOME` di sistema impostata dall'installer).
+- **Utente `ramasql_test`** su MariaDB e MySQL: tutti i privilegi sui soli database `ramasql_test_*`, sola lettura su `bibliotecasoft` / `scuola`. Verificato: crea e distrugge `ramasql_test_prova`, **non** può creare un catalogo fuori prefisso (negato dal server). Credenziali in `docs/local DBs.txt`.
+- **Progetto Maven** a 5 moduli (`core`, `model`, `sqleo-qb`, `app`, `it-tests`), Java 25, FlatLaf 3.7.2, JUnit 6.1.3, wrapper Maven 3.3.4 → Maven 3.9.16 (nessuna installazione di Maven). Codice minimo: `ProductInfo`, `ModelFormat`, facciata `QbHost` (segnaposto), finestra `MainFrame` con icona provvisoria e testi in `messages.properties`.
+- `avvia.cmd`: compila e apre la finestra; trova da solo il JDK 25. `.editorconfig`, `.gitattributes`.
+
+Validazione:
+| Test | Esito | Evidenza |
+|---|---|---|
+| T0.1 build da clone pulito senza Maven | ✅ | `mvnw verify` BUILD SUCCESS, 6 test (1+1+1+2+1), da clone in cartella temporanea |
+| T0.2 finestra FlatLaf | ✅ | `avvia.cmd` → finestra «RamaSQL Client dev» in 6 s |
+| T0.3 nessuna credenziale versionata | ✅ | ricerca su tutti i file versionabili: solo falsi positivi (`ItConfig` legge da variabili d'ambiente, `mvnw` cita `MVNW_PASSWORD`); `local DBs.txt`, script e log di ripristino ignorati da git |
+| T0.4 LICENSE e NOTICE | ✅ | GPL-3 (674 righe), NOTICE con SQLeo e SQLeonardo |
+
+Difetti trovati e risolti durante lo step: `avvia.cmd` falliva con «mvnw.cmd non è riconosciuto» (su questo PC `NoDefaultCurrentDirectoryInExePath=1`) e poi usava Java 8 (sessione aperta prima dell'installazione del JDK) → percorso esplicito e ricerca automatica del JDK. Segnalato dall'utente con uno screenshot.
+
+**Indicazioni dell'utente durante lo step:**
+- **Installer solo alla fine**, dopo una versione stabile: tolte dalla roadmap le build installabili intermedie e lo spike S3 (spostato nello Step 13).
+- **Verificare il supporto alle query nidificate in query e viste** → letto il codice di SQLeo: supporto esplicito per sottoquery (`SubQuery`), tabelle derivate (`DerivedTable`) e CTE `WITH`, ciascuna aperta come nodo proprio dell'albero della query. Non ancora eseguito: nuovo spike **S2d** e test T7.7b / T8.7b. Corretta l'affermazione precedente che dava le CTE per non rappresentabili (`FEASIBILITY.md` F-05bis).
+
+**Prossimo:** Step 1 — spike di fattibilità (S1 estrazione del query builder, S2a–S2d query e viste incluse le nidificate e le due viste reali di `bibliotecasoft`, S4 driver, S5 resa, S6 canvas ER, S7 appunti a blocchi). Piano dello step da approvare prima del codice.
+
 ## 2026-09-21 — Ambiente database di sviluppo pronto (chiude D-03)
 Sul PC di sviluppo c'erano già due server, con l'accesso `root` perso: **MariaDB 11.5.2** (`C:\Program Files\MariaDB 11.5`, porta 3306, servizio Windows `MariaDB`) e **MySQL 8.0.40** (`C:\mysql`, installazione da ZIP, porta 3307, senza servizio). Su richiesta dell'utente (database solo di sviluppo, nessun dato critico):
 - reimpostata la password di `root@localhost`, `@127.0.0.1`, `@::1` su entrambi con la procedura ufficiale `--init-file` (script locale `ripristina-root.local.ps1`, escluso da git); dati non toccati;

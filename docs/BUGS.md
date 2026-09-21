@@ -11,6 +11,10 @@ Da tenere d'occhio, emersi dall'analisi di SQLeo (diventano difetti se sopravviv
 - chiamata a Google Analytics (`MDIMenubar`, `_Version.VERSION_TRACK`);
 - stato `static` nel query builder (`QueryBuilder.identifierQuoteString`, `selectAllColumns`…): rischio di interferenza tra due schede (R-06, test T7.8).
 
+## 1-bis. Note tecniche
+- `NoDefaultCurrentDirectoryInExePath=1` su questo PC: negli script chiamare `.\mvnw.cmd` / `"%~dp0mvnw.cmd"`. Risolto in `avvia.cmd` (Step 0).
+- Le sessioni avviate prima dell'installazione del JDK vedono ancora Java 8: `avvia.cmd` cerca da solo il JDK 25.
+
 ## 2. Forse dopo — parcheggiate su indicazione dell'utente, nessun impegno
 
 | ID | Idea | Nota |

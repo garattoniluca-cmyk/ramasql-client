@@ -6,11 +6,15 @@ RamaSQL Client (nome di lavoro): client desktop **Windows** per **MariaDB e MySQ
 
 ## Stack
 
-Java 25 LTS (Temurin) · Swing + FlatLaf · RSyntaxTextArea · modulo `sqleo-qb` estratto da SQLeo · MariaDB Connector/J (+ MySQL Connector/J se lo spike lo richiede) · Jackson, Commons CSV · Maven (wrapper) multi-modulo · JUnit 5 · jpackage (runtime incluso) + Inno Setup 6 (installer per-utente, senza admin) + ZIP portabile. Licenza del prodotto: **GPL-3.0-or-later** (`ADR-003`). Motivazioni in `docs/ANALYSIS.md`, decisioni in `docs/DECISIONS.md`.
+Java 25 LTS (Temurin) · Swing + FlatLaf · RSyntaxTextArea · modulo `sqleo-qb` estratto da SQLeo · MariaDB Connector/J (+ MySQL Connector/J se lo spike lo richiede) · Jackson, Commons CSV · Maven (wrapper) multi-modulo · JUnit 6 · a fine progetto: jpackage (runtime incluso) + Inno Setup 6 (installer per-utente, senza admin) + ZIP portabile. Licenza del prodotto: **GPL-3.0-or-later** (`ADR-003`). Motivazioni in `docs/ANALYSIS.md`, decisioni in `docs/DECISIONS.md`.
 
 ## Comandi essenziali
 
-Non esiste ancora codice (Step 0 da eseguire). I comandi arriveranno in `docs/CONSOLE.md`.
+```bash
+avvia.cmd              # compila e apre il programma (doppio clic)
+.\mvnw.cmd verify      # build + test
+```
+Elenco completo in `docs/CONSOLE.md`. Su questo PC i comandi nella cartella corrente vanno chiamati con `.\`.
 
 ## Mappa di `docs/` — quando leggere quale
 
@@ -44,4 +48,6 @@ Non esiste ancora codice (Step 0 da eseguire). I comandi arriveranno in `docs/CO
 
 ## Stato attuale
 
-**Analisi iniziale: completata** (2026-09-21). Scelto lo stack (Java/Swing, `ADR-001`), redatti fattibilità, design, architettura e roadmap con i test di validazione per step. Perimetro fissato dall'utente: **minimale/medio, «alla Apple»**; 9 requisiti (gli 8 iniziali + data-entry con appunti a blocchi e conferma esplicita); **niente gestione transazioni** (forse dopo); indici e FK verificati sul server; validazione incrociata dell'utente con **Navicat**. Nessun codice. **Prossimo:** l'utente rivede `docs/ANALYSIS.md` §8 (decisioni aperte) → Step 0 (fondamenta) → Step 1 (spike di fattibilità, con esito go/no-go).
+**Analisi iniziale: completata** (2026-09-21). Scelto lo stack (Java/Swing, `ADR-001`), redatti fattibilità, design, architettura e roadmap con i test di validazione per step. Perimetro fissato dall'utente: **minimale/medio, «alla Apple»**; 9 requisiti (gli 8 iniziali + data-entry con appunti a blocchi e conferma esplicita); **niente gestione transazioni** (forse dopo); indici e FK verificati sul server; validazione incrociata dell'utente con **Navicat**.
+
+**Step 0 — Fondamenta: completato** (2026-09-21): progetto Maven a 5 moduli, finestra vuota con FlatLaf, `avvia.cmd`, 6 test verdi. Database locali pronti (MariaDB :3306, MySQL :3307, utente `ramasql_test`; credenziali solo in `docs/local DBs.txt`). **Installer solo a fine progetto** (Step 13). **Prossimo:** Step 1, spike di fattibilità (estrazione del query builder di SQLeo, query nidificate, viste reali di `bibliotecasoft`) con esito go/no-go.

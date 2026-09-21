@@ -14,6 +14,7 @@ Ragionamento esteso e rischi (R-xx) in `ANALYSIS.md`; decisioni aperte (D-xx) in
 | F-03 | Indici, chiavi esterne, integrità referenziale | ✅ |
 | F-04 | Formati tabella InnoDB e MyISAM | ✅ (FK non disponibili su MyISAM: limite del server) |
 | F-05 | Query editor visivo + editor raw, SQL sempre mostrato | ✅ |
+| F-05bis | Query nidificate (sottoquery, tabelle derivate, CTE) in query e viste | ✅ nel codice di SQLeo · da confermare in S2d |
 | F-06 | Creazione viste con l'editor grafico | ✅ creazione · 🟡 riapertura grafica di viste esistenti |
 | F-07a | Importazione CSV | ✅ |
 | F-07b | Importazione JSON | ✅ (strutture annidate: 🟡) |
@@ -66,6 +67,14 @@ Ragionamento esteso e rischi (R-xx) in `ANALYSIS.md`; decisioni aperte (D-xx) in
 **Limiti:** R-03 (costrutti non coperti dal parser).
 **Step:** 4 (editor raw, pipeline) e 7 (visivo).
 
+## F-05bis — Query nidificate in query e viste ✅ sulla carta · da confermare nello spike S2d
+**Domanda dell'utente (2026-09-21):** il client supporta le query nidificate nelle query e nelle viste?
+**Cosa dice il codice di SQLeo** (letto il 2026-09-21, **non ancora eseguito**): il modello sintattico ha classi dedicate — `SubQuery` (sottoquery nelle condizioni: `IN (…)`, confronti, `EXISTS`, e nella lista `SELECT`) e `DerivedTable` (sottoquery nel `FROM` con alias); il parser (`SQLParser`) riconosce anche le **CTE `WITH`**, che tratta come tabelle derivate con nome. Nell'interfaccia ogni sottoquery compare come **nodo proprio nell'albero della query** (`ViewBrowser`, voci «SUBQUERY»), che si apre e si modifica come una query a sé; le tabelle derivate compaiono nel diagramma come entità con il loro alias.
+**Viste:** una vista è una query con un nome, quindi vale lo stesso supporto. Una vista che usa un'altra vista non richiede nulla di speciale: nel diagramma la vista di base è un'entità come una tabella.
+**Limiti attesi:** funzioni finestra (`OVER`), `UNION` complesse e sottoquery correlate molto articolate potrebbero non essere rappresentabili graficamente → si modificano come testo, senza perdita (regola R-03). Le CTE ricorsive (`WITH RECURSIVE`) quasi certamente no.
+**Correzione a un'affermazione precedente:** in `ANALYSIS.md` R-03 e in `ROADMAP.md` T7.7 le CTE erano indicate come «non rappresentabili»; il codice dice il contrario. Il test T7.7 ora usa una funzione finestra; le CTE sono verificate in S2d.
+**Verifica:** spike S2d (Step 1), test T7.7b (Step 7) e T8.7b (Step 8), su MariaDB e MySQL.
+
 ## F-06 — Viste con l'editor grafico ✅ / 🟡
 **Creazione ✅:** lo stesso query builder in «modalità vista»: nome vista + opzioni → `CREATE OR REPLACE VIEW … AS <query>` in anteprima.
 **Riapertura grafica di viste esistenti 🟡:** il server restituisce una definizione riscritta (R-02). Strategia a tre livelli: (1) sorgente originale conservato nel progetto locale, se la vista è nata in questo client; (2) normalizzatore + `SQLParser` sulla definizione del server; (3) ripiego nell'editor SQL. Non si garantisce il livello 2 per ogni vista scritta altrove.
@@ -106,6 +115,7 @@ Ragionamento esteso e rischi (R-xx) in `ANALYSIS.md`; decisioni aperte (D-xx) in
 **Step:** 11; canvas validato in S6.
 
 ## F-09 — Applicazione Windows con installer ✅ / 🟡
+**Quando:** solo alla fine, dopo una versione stabile (indicazione dell'utente); fino ad allora si usa `avvia.cmd`.
 **Soluzione:** `jlink` produce un runtime ridotto; `jpackage --type app-image` crea l'applicazione con `RamaSQL.exe`; **Inno Setup** la impacchetta in un `Setup.exe` in italiano, installazione **per-utente senza diritti di amministratore** (con opzione «per tutti gli utenti» se lanciato da admin), collegamenti, associazione `.rsqlmodel`/`.sql` facoltativa, disinstallazione pulita. In parallelo **ZIP portabile**. Dimensione attesa 45–60 MB. Requisito: Windows 10/11 x64.
 **Condizione 🟡:** senza firma del codice SmartScreen mostra «app non riconosciuta» al primo avvio dell'installer (D-05, R-05). Non blocca, ma in aula va spiegato o risolto con la firma / distribuzione tramite il tecnico.
 **Step:** prova anticipata in S3; produzione nello Step 13.

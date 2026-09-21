@@ -9,7 +9,7 @@ Stato: ✅ completato · 🔄 in corso · ⏳ da fare
 | Step | Titolo | Dim. | Stato |
 |---|---|---|---|
 | A | Analisi, fattibilità, design, piano | S | ✅ 2026-09-21 |
-| 0 | Fondamenta | S | ⏳ |
+| 0 | Fondamenta | S | ✅ 2026-09-21 |
 | 1 | **Spike di fattibilità (go/no-go)** | M | ⏳ |
 | 2 | Shell dell'applicazione e connessioni | M | ⏳ |
 | 3 | Navigatore, pipeline SQL, pannello SQL | M | ⏳ |
@@ -28,7 +28,7 @@ Stato: ✅ completato · 🔄 in corso · ⏳ da fare
 S = una sessione · M = 2–3 sessioni · L = 4+ sessioni (stime da affinare dopo lo Step 1).
 
 **Tappe:** M1 «Client di base» = fine Step 6 (già usabile in aula) · M2 «Visivo» = fine Step 8 · M3 «Completo» = fine Step 11 · M4 «Rilascio» = fine Step 14.
-Una **build installabile interna** si produce già a fine Step 2 e a ogni tappa: l'installer non è una sorpresa finale.
+**Installer: solo alla fine** (indicazione dell'utente, 2026-09-21): `Setup.exe` e ZIP portabile si fanno nello Step 13, **dopo una versione stabile**. Fino ad allora il programma si prova con `avvia.cmd`. Lo spike sull'installer (ex S3) è spostato nello Step 13.
 
 ## Come si valida uno step
 
@@ -81,25 +81,24 @@ A ─ 0 ─ 1 (spike) ─ 2 ─ 3 ─┬─ 4 ─┬─ 5 ─ 6 ─────�
 | T0.4 | M | controllo file | `LICENSE` (GPL-3), `NOTICE` con attribuzioni SQLeonardo/SQLeo presenti |
 
 ## Step 1 — Spike di fattibilità (go/no-go)
-**Richiede:** D-03 (server MariaDB e MySQL di prova), un PC dell'aula o equivalente. Codice in `spikes/`, usa-e-getta; risultati in `docs/SPIKE-STEP1.md`.
+**Richiede:** D-03 (✅ server locali). Codice in `spikes/`, usa-e-getta; risultati in `docs/SPIKE-STEP1.md`.
 
 | ID | Tipo | Domanda → procedura | Superato se |
 |---|---|---|---|
 | S1 | M | **Il query builder di SQLeo, estratto, gira su JDK 25?** Estrarre `com.sqleo.querybuilder` + minimo `common`, sostituire `Application`/`Preferences`/MDI con stub, compilare con `--release 25`, aprirlo in un `JFrame` nostro | compila senza riferimenti a `Application`/MDI; finestra funzionante; elenco dei file toccati; limite 3 tabelle rimosso (5 tabelle nel diagramma) |
 | S2a | M | **Grafico→SQL su entrambi i server:** costruire sulla `biblioteca` una query a 4 tabelle con join, WHERE, GROUP BY, ORDER BY | l'SQL generato è eseguito senza errori su MariaDB **e** MySQL con lo stesso risultato |
 | S2b | U | **SQL→grafico:** campionario di 20 query «da aula» passate a `SQLParser` | tabella esiti: ok / non rappresentabile; nessuna eccezione non gestita; ≥ 15 ok |
+| S2d | M+U | **Query nidificate** (richiesta dell'utente): sottoquery in `WHERE` (`IN`, `NOT IN`, `EXISTS`, confronto con `(SELECT MAX…)`), sottoquery nella lista `SELECT`, tabella derivata in `FROM`, CTE `WITH`, due livelli di annidamento; una vista che usa un'altra vista; una vista che contiene una sottoquery. Per ciascuna: costruzione grafica, SQL→grafico→SQL, esecuzione su MariaDB e MySQL | tabella esiti per costrutto (grafico ok / solo testo); stesso risultato sui due server; nessuna perdita di testo. Esito → aggiorna `FEASIBILITY.md` F-05bis |
 | S2c | I | **Viste rilette dal server:** creare 10 viste, rileggere `information_schema.VIEWS.VIEW_DEFINITION` su entrambi i server, passarle al parser (con bozza di normalizzatore) | tabella esiti per server; strategia a tre livelli confermata o corretta (R-02) |
-| S3a | M | **Installer:** `jlink` → `jpackage --type app-image` → Inno Setup su un'app di prova; installare su Windows pulito **senza Java, utente senza admin** | si installa senza elevazione e si avvia; annotati dimensione, tempo di avvio, avvisi SmartScreen/antivirus |
-| S3b | M | ZIP portabile avviato da chiavetta su un **PC dell'aula** | si avvia e si connette al server del laboratorio |
 | S4 | I | **Driver unico?** MariaDB Connector/J contro MySQL 8.4 e MariaDB 11: connessione, `caching_sha2_password`, metadati di colonne/indici/FK, `KILL QUERY` | tutti verdi → driver unico; altrimenti doppio driver → ADR |
 | S5 | M | **Resa:** QB sotto FlatLaf chiaro a 100/150/200% di scala | nessun testo tagliato o colore illeggibile; elenco correzioni necessarie |
 | S6 | M | **Canvas ER:** prototipo Java2D con 30 entità e 40 relazioni | trascinamento e zoom fluidi, zampa di gallina, esportazione PNG |
 | S7 | M | **Appunti a blocchi:** `JTable` con selezione a celle; copia 3×4 → Excel e LibreOffice Calc; blocco 20×3 da Excel → incolla | i blocchi cadono nelle celle giuste nei due sensi, inclusi valori con tabulazione, a-capo, virgolette |
 
-**Esito:** **GO / GO con riserve / NO-GO** per ciascuno. NO-GO su S1 o S2a rimette in discussione `ADR-001`/`ADR-002` (ripiego: fork integrale di SQLeo su JDK 21; estremo: riesame C#). Stime aggiornate.
+**Esito:** **GO / GO con riserve / NO-GO** per ciascuno. NO-GO su S1, S2a o S2d rimette in discussione `ADR-001`/`ADR-002` (ripiego: fork integrale di SQLeo su JDK 21; estremo: riesame C#). Stime aggiornate.
 
 ## Step 2 — Shell dell'applicazione e connessioni
-**Task:** struttura a tre zone · schermata iniziale a tessere · `ConnectionProfile` e archivio (senza password) · prova connessione con diagnosi · `ServerInfo` · import/export profili · barra di stato · impostazioni (4 voci) · i18n · prima **build installabile interna**.
+**Task:** struttura a tre zone · schermata iniziale a tessere · `ConnectionProfile` e archivio (senza password) · prova connessione con diagnosi · `ServerInfo` · import/export profili · barra di stato · impostazioni (4 voci) · i18n.
 
 | ID | Tipo | Procedura | Risultato atteso |
 |---|---|---|---|
@@ -110,7 +109,6 @@ A ─ 0 ─ 1 (spike) ─ 2 ─ 3 ─┬─ 4 ─┬─ 5 ─ 6 ─────�
 | T2.5 | U | serializzazione profili → JSON → profili | identici; il JSON **non contiene** alcun campo password |
 | T2.6 | M | esporta profili → importa con un altro utente Windows | tessere presenti, connessione riuscita dopo aver digitato la password |
 | T2.7 | M | dopo l'uso, ricerca in `%APPDATA%\RamaSQL` della password usata | assente |
-| T2.8 | M | build interna: installare su un secondo PC | si installa, si avvia, si connette |
 | T2.9 | M | «test dei 10 secondi»: una persona che non ha mai visto il client deve connettersi partendo da una tessera | ci riesce senza aiuto |
 
 ## Step 3 — Navigatore, pipeline SQL, pannello SQL
@@ -207,7 +205,8 @@ A ─ 0 ─ 1 (spike) ─ 2 ─ 3 ─┬─ 4 ─┬─ 5 ─ 6 ─────�
 | T7.4 | M | trascinare `libri`, `editori`, `libri_autori`, `autori`, `prestiti` (5 tabelle) | tutte accettate; join proposti dalle FK; nessun avviso di limite |
 | T7.5 | M | clic su un join → LEFT; aggiungere filtro `anno > 2000`, raggruppare per editore con `COUNT(*)`, ordinare | l'SQL nella vista testo si aggiorna a ogni gesto; *Esegui* mostra il risultato atteso |
 | T7.6 | M | modificare l'SQL a mano (aggiungere una colonna) → tornare alla vista grafica | il diagramma riflette la modifica |
-| T7.7 | M | scrivere una query con CTE `WITH` o funzione finestra → vista grafica | avviso «non rappresentabile graficamente», testo intatto, esecuzione possibile |
+| T7.7 | M | scrivere una query con funzione finestra (`ROW_NUMBER() OVER …`) → vista grafica | avviso «non rappresentabile graficamente», testo intatto, esecuzione possibile |
+| T7.7b | M | **query nidificate:** costruire graficamente «libri con prezzo sopra la media» (sottoquery in WHERE), «editori con almeno un libro» (`EXISTS`), «numero di prestiti per socio» come tabella derivata in FROM e poi filtrata; aprire la sottoquery dall'albero della query, modificarla, tornare alla query esterna | ogni sottoquery si apre e si modifica come una query a sé; l'SQL esterno si aggiorna; risultati corretti su entrambi i server |
 | T7.8 | M | due schede «Query visiva» aperte su tabelle diverse, lavorare alternando | nessuna interferenza (rischio R-06) |
 | T7.9 | M | scala schermo 100% e 150% | nessun testo tagliato nel diagramma e nelle maschere |
 | T7.10 | M | controllo GPL: ogni file ereditato modificato ha nota di modifica; intestazioni originali intatte; `UPSTREAM.md` elenca i file | conforme |
@@ -226,6 +225,7 @@ A ─ 0 ─ 1 (spike) ─ 2 ─ 3 ─┬─ 4 ─┬─ 5 ─ 6 ─────�
 | T8.5 | M | *Modifica vista* su 5 viste create **fuori** dal client (script) | ciascuna si apre in grafico o, se non rappresentabile, nell'editor SQL con avviso; nessun blocco, nessuna perdita |
 | T8.6 | M | aprire i dati di una vista | griglia in sola lettura, copia a blocchi consentita |
 | T8.7 | M | eliminare una tabella usata da una vista, poi aprire la vista | errore del server spiegato (vista non valida) |
+| T8.7b | M | **viste nidificate:** vista con sottoquery (`v_libri_sopra_media`); vista costruita su un'altra vista (`v_riepilogo` che usa `v_prestiti_aperti`); le due viste reali di `bibliotecasoft` | create graficamente e riaperte; la vista-su-vista mostra l'altra vista come «tabella» nel diagramma; eliminare la vista di base segnala che l'altra non è più valida |
 | T8.8 | **N** | Navicat → *Views*: aprire le viste di T8.4 (dati e *Design View*) | esistono, restituiscono gli stessi dati, la definizione è quella attesa |
 
 ## Step 9 — Importazione CSV e JSON
@@ -292,7 +292,7 @@ A ─ 0 ─ 1 (spike) ─ 2 ─ 3 ─┬─ 4 ─┬─ 5 ─ 6 ─────�
 | T12.8 | M | «Informazioni su» | GPL-3, attribuzioni SQLeonardo/SQLeo, elenco librerie e licenze, dove trovare i sorgenti |
 
 ## Step 13 — Installer e distribuzione
-**Richiede:** D-05 (firma), D-07 (aggiornamenti).
+**Quando:** solo dopo una versione stabile (indicazione dell'utente). **Richiede:** D-05 (firma), D-07 (aggiornamenti), un PC dell'aula o una macchina virtuale Windows pulita. Include lo spike d'installazione prima previsto nello Step 1 (jlink → jpackage → Inno Setup, utente senza admin, ZIP da chiavetta).
 **Task:** `packaging/build-installer.ps1` definitivo · `jdeps`/`jlink` · icone e metadati dell'exe · script Inno Setup (it, per-utente/tutti, associazioni, file di connessioni facoltativo, disinstallazione, aggiornamento sopra versione precedente) · ZIP portabile · pacchetto sorgenti (obbligo GPL) · eventuale firma.
 
 Tutti i test su **macchine virtuali Windows 10 e Windows 11 pulite, senza Java**.
@@ -328,9 +328,9 @@ Tutti i test su **macchine virtuali Windows 10 e Windows 11 pulite, senza Java**
 | Quando | Cosa |
 |---|---|
 | Prima dello Step 0 | D-01 nome · D-02 conferma GPL-3 · D-04 repository |
-| Prima dello Step 1 | D-03: un MariaDB e un MySQL di prova (o via libera a Docker in locale) · accesso a **un PC dell'aula** (o equivalente) per S3 |
+| Prima dello Step 1 | ✅ D-03 chiusa (server locali) |
 | Step 3 | D-06 routine/trigger in sola lettura |
 | **A ogni stop di revisione (Step 3–11, 14)** | **controlli incrociati con Navicat** (test di tipo N) ed esito |
 | Step 7 | elenco di query/esercizi tipici del corso, per il campionario del parser |
-| Step 13 | D-05 firma del codice · D-07 aggiornamenti |
+| Step 13 | D-05 firma del codice · D-07 aggiornamenti · un PC dell'aula o una VM Windows pulita |
 | Step 14 | una classe e un'ora di laboratorio |
