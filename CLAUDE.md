@@ -13,7 +13,7 @@ Java 25 LTS (Temurin) · Swing + FlatLaf · RSyntaxTextArea · modulo `sqleo-qb`
 ```bash
 avvia.cmd              # compila e apre il programma (doppio clic)
 .\mvnw.cmd verify      # build + test
-powershell -NoProfile -ExecutionPolicy Bypass -File scriptserify.ps1   # verifica per step (VERIFY: PASS/FAIL)
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\verify.ps1   # verifica per step (VERIFY: PASS/FAIL)
 ```
 Elenco completo in `docs/CONSOLE.md`. Su questo PC i comandi nella cartella corrente vanno chiamati con `.\`.
 
@@ -35,7 +35,7 @@ Elenco completo in `docs/CONSOLE.md`. Su questo PC i comandi nella cartella corr
 ## Regole non negoziabili
 
 1. Prima di scrivere codice: leggere `JOURNAL.md` (ultime voci), `BUGS.md`, lo step corrente di `ROADMAP.md` e i documenti pertinenti.
-2. **Uno step alla volta.** A fine step: **tutti i test di validazione dello step** (`ROADMAP.md`: U, I, M) superati con evidenza, voce in `JOURNAL.md`, stop per la revisione dell'utente, che esegue i controlli incrociati con **Navicat** (test N). Se Navicat mostra qualcosa di diverso da ciò che il client dichiara, è un difetto del client. Niente anticipo di step successivi senza richiesta. **Eccezione in vigore:** esecuzione autonoma degli step 1–6 (`ADR-014`), regolata da `.claude/goal.md` e `.claude/loop.md`; verifica con `scriptserify.ps1`.
+2. **Uno step alla volta.** A fine step: **tutti i test di validazione dello step** (`ROADMAP.md`: U, I, M) superati con evidenza, voce in `JOURNAL.md`, stop per la revisione dell'utente, che esegue i controlli incrociati con **Navicat** (test N). Se Navicat mostra qualcosa di diverso da ciò che il client dichiara, è un difetto del client. Niente anticipo di step successivi senza richiesta. **Eccezione in vigore:** esecuzione autonoma degli step 1–6 (`ADR-014`), regolata da `.claude/goal.md` e `.claude/loop.md`; verifica con `scripts\verify.ps1`.
 3. **Ogni operazione che tocca il database passa dalla pipeline «anteprima SQL»** (`ARCHITECTURE.md` §4): la GUI genera SQL, lo mostra, poi lo esegue. Nessuna scorciatoia che esegua SQL non mostrato/registrato.
 4. **Solo MariaDB e MySQL.** Nessuna astrazione multi-DBMS: il codice ereditato da SQLeo per altri database si rimuove, non si mantiene.
 5. **Semplicità prima di completezza, «alla Apple»**: minimale nell'aspetto, medio nelle funzioni, semplice nell'uso; il pubblico sono studenti. Fa fede la colonna «v1» di `DESIGN.md` §1-bis: una funzione che non è lì non si aggiunge (nemmeno se Workbench ce l'ha); si annota in `BUGS.md` tra i «dopo» o i «forse dopo». **Niente gestione delle transazioni** in v1: connessione sempre in autocommit, il client non genera mai `START TRANSACTION`/`COMMIT`/`ROLLBACK`.
