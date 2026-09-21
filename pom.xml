@@ -82,6 +82,12 @@
       <artifactId>junit-platform-launcher</artifactId>
       <scope>test</scope>
     </dependency>
+    <!-- Report XML con i tag (@Tag("stepN")): lo legge scripts/verify.ps1 per contare i test per step -->
+    <dependency>
+      <groupId>org.junit.platform</groupId>
+      <artifactId>junit-platform-reporting</artifactId>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
   <build>
@@ -96,6 +102,14 @@
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-surefire-plugin</artifactId>
           <version>3.6.0</version>
+          <configuration>
+            <properties>
+              <configurationParameters>
+                junit.platform.reporting.open.xml.enabled = true
+                junit.platform.reporting.output.dir = target/test-report
+              </configurationParameters>
+            </properties>
+          </configuration>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>

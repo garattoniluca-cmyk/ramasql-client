@@ -6,11 +6,13 @@ package it.ramasql.core;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 class ProductInfoTest {
 
     @Test
+    @Tag("step0")
     void ilTitoloContieneNomeEVersione() {
         assertEquals("RamaSQL Client", ProductInfo.NAME);
         assertTrue(ProductInfo.title().startsWith(ProductInfo.NAME + " "));

@@ -27,3 +27,6 @@ Thumbs.db
 
 # credenziali dei database locali
 local DBs.txt
+
+# sorgenti originali di SQLeo clonati per l'estrazione (il codice estratto sta in sqleo-qb/)
+spikes/sqleo-upstream/

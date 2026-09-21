@@ -141,3 +141,14 @@ Data: 2026-09-21 · Stato: accettata (indicazioni dell'utente)
 Data: 2026-09-21 · Stato: accettata (indicazione dell'utente; chiude D-04)
 
 **Decisione:** repository pubblico su GitHub fin dalla fase di analisi. Coerente con la GPL-3 (`ADR-003`). Conseguenza pratica, già regola 8 di `CLAUDE.md`: nessuna credenziale, indirizzo di server privato o dato personale nel repository — nemmeno nei documenti.
+
+---
+
+## ADR-014 — Esecuzione autonoma degli step 1–6 con /goal e /loop
+Data: 2026-09-21 · Stato: accettata (richiesta esplicita dell'utente)
+
+**Contesto:** l'utente chiede di arrivare in esecuzione autonoma fino allo Step 6 compreso, con agenti che verificano, controllano, correggono e chiudono ogni punto, usando `/goal` e `/loop` come nell'altro progetto (`gestionaleFormazione`, ADR-018/036).
+
+**Decisione:** sospesa per gli step 1–6 la regola n. 2 di `CLAUDE.md` (stop a ogni step). Il lavoro è guidato da `/goal` (condizione in `.claude/goal.md`) in modalità automatica, con `/loop` + `.claude/loop.md` come rete di sicurezza; permessi in `.claude/settings.json`. «Fatto» = `scripts\verify.ps1` stampa `VERIFY: PASS`: build verde, nessun test fallito, per ogni step un numero minimo di test superati con `@Tag("stepN")` (di cui una quota `@Tag("it")` contro MariaDB e MySQL), e ogni test U/I/M della roadmap con esito ✅ ed evidenza in `JOURNAL.md`. Soglie congelate oggi. Commit locale per step, nessun push. Test N con Navicat e prove d'uso con una persona restano all'utente, a fine esecuzione.
+
+**Conseguenze:** le decisioni aperte fino allo Step 6 le prende l'agente, marcate «da rivedere»; al termine l'utente rivede diario, commit e decisioni, esegue i test N e fa il push.

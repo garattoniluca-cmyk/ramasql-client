@@ -1,0 +1,43 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(./mvnw *)",
+      "Bash(./mvnw.cmd *)",
+      "Bash(cmd /c *mvnw.cmd*)",
+      "Bash(powershell -NoProfile -ExecutionPolicy Bypass -File scripts*verify.ps1*)",
+      "PowerShell(.\\mvnw.cmd *)",
+      "PowerShell(powershell -NoProfile -ExecutionPolicy Bypass -File scripts\\verify.ps1*)",
+      "Bash(java *)",
+      "Bash(javac *)",
+      "Bash(git status*)",
+      "Bash(git diff*)",
+      "Bash(git log*)",
+      "Bash(git show*)",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(git mv *)",
+      "Bash(git rm *)",
+      "Bash(git restore *)",
+      "Bash(git stash*)",
+      "Bash(git clone https://github.com/ojwanganto/SQLeo*)",
+      "Bash(ls *)",
+      "Bash(mkdir *)",
+      "Bash(cp *)",
+      "Bash(mv *)"
+    ],
+    "deny": [
+      "Bash(git push*)",
+      "Bash(git remote *)",
+      "Bash(git reset --hard*)",
+      "Bash(git clean*)",
+      "Bash(git checkout -- *)",
+      "Bash(rm -rf /*)",
+      "Bash(rm -rf ~*)",
+      "Bash(winget *)",
+      "Bash(jpackage *)",
+      "PowerShell(git push*)",
+      "PowerShell(winget *)",
+      "PowerShell(jpackage *)"
+    ]
+  }
+}
