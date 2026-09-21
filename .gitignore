@@ -1,0 +1,26 @@
+# build
+target/
+dist/
+out/
+*.class
+
+# IDE
+.idea/
+*.iml
+.vscode/
+.project
+.classpath
+.settings/
+
+# locale / segreti: mai in git
+*.local.*
+.env
+.env.*
+!.env.example
+
+# Claude Code (impostazioni locali)
+.claude/settings.local.json
+
+# OS
+Thumbs.db
+.DS_Store

@@ -1,0 +1,24 @@
+RamaSQL Client
+Copyright (C) 2026 Luca Garattoni
+
+This program is free software: you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free Software
+Foundation, either version 3 of the License, or (at your option) any later
+version. See the LICENSE file.
+
+This product will include software derived from:
+
+  SQLeo Visual Query Builder :: java database frontend with join definitions
+  Copyright (C) 2012 anudeepgade@users.sourceforge.net
+  https://sourceforge.net/projects/sqleo/
+
+  SQLeonardo :: java database frontend
+  Copyright (C) 2004 nickyb@users.sourceforge.net
+
+both released under the GNU General Public License, version 2 or (at your
+option) any later version. The derived code lives in the `sqleo-qb` module;
+modified files carry a modification notice, and `sqleo-qb/UPSTREAM.md` lists
+the upstream version and the changes made.
+
+MySQL Workbench is used solely as a functional reference. No MySQL Workbench
+code is included in this product.
