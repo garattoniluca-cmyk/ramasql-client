@@ -48,7 +48,7 @@ ramaSQLClient/
 
 | Pacchetto | Responsabilità |
 |---|---|
-| `core.connection` | `ConnectionProfile`, archivio profili (JSON in `%APPDATA%`, **senza password** in v1), `Session` sempre in **autocommit** (connessione principale + connessione di servizio per `KILL QUERY` e metadati), rilevamento `ServerInfo` (MariaDB/MySQL, versione, capacità) |
+| `core.connection` | **(Step 2)** `ConnectionProfile` (senza password), `ProfileStore` (JSON in `%APPDATA%\RamaSQL\connessioni.json`, import/export con `formatVersion`), `AppData` (cartella dati; proprietà `ramasql.appdata` per i test), `AppSettings` (4 voci), `JsonFiles` (scrittura atomica), `ConnectionErrorClassifier` → `ConnectionFailure` (causa + messaggio italiano + originale del server), `Session` sempre in **autocommit** (principale + di servizio, `ServerInfo`, catalogo letto all'apertura), `ConnectionAttempt` (asincrono, annullabile, scadenza 10 s), `InternalQueries` (unico punto con SQL interno: `VERSION()`, `CONNECTION_ID()`, `DATABASE()`, `KILL QUERY`). Parametri JDBC: `ADR-016` |
 | `core.metadata` | Lettura del catalogo da `information_schema` + `SHOW CREATE`: `Catalog`, `Table`, `Column`, `Index`, `ForeignKey`, `View`, `Routine`… come **record immutabili**. Cache per sessione con invalidazione esplicita dopo ogni DDL |
 | `core.sqlgen` | **Generatori SQL puri** (nessun accesso al DB): `TableDiff(original, edited) → List<SqlStatement>`, `CREATE/ALTER/DROP`, indici, FK, viste, DML della griglia, quoting degli identificatori, differenze MariaDB/MySQL guidate da `ServerInfo`. È il cuore collaudabile a tappeto |
 | `core.exec` | **Pipeline SQL** (§4): `SqlScript`, `SqlExecutor`, `SqlLog`, politiche di conferma, separatore di istruzioni (gestisce `DELIMITER`, commenti, stringhe) |
@@ -133,7 +133,7 @@ Niente rifattorizzazioni «estetiche»: il modulo resta il più vicino possibile
 | FlatLaf (+ extras per SVG) | aspetto | Apache-2.0 | ✅ |
 | RSyntaxTextArea, AutoComplete | editor SQL | BSD-3 | ✅ |
 | MariaDB Connector/J 3.5.10 | driver **unico**, anche per MySQL (`ADR-015`) | LGPL-2.1+ | ✅ |
-| Jackson core/databind | JSON | Apache-2.0 | ✅ |
+| Jackson databind 2.22.2 | JSON (profili, impostazioni) | Apache-2.0 | ✅ |
 | Apache Commons CSV | CSV | Apache-2.0 | ✅ |
 | JUnit 5, AssertJ, AssertJ-Swing | test | EPL-2.0 / Apache-2.0 | ✅ (solo test, non distribuite) |
 

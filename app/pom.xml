@@ -19,6 +19,16 @@
   <build>
     <plugins>
       <plugin>
+        <!-- I test non devono MAI scrivere nella vera %APPDATA%\RamaSQL: cartella dei dati deviata sotto target/ -->
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <systemPropertyVariables>
+            <ramasql.appdata>${project.build.directory}/appdata-test</ramasql.appdata>
+          </systemPropertyVariables>
+        </configuration>
+      </plugin>
+      <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>exec-maven-plugin</artifactId>
         <configuration>

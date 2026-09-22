@@ -1,0 +1,7 @@
+T2.7 — ciclo d'uso: crea profilo, prova connessione, connetti, disconnetti, riconnetti, disconnetti, esporta, salva impostazioni
+richieste di password durante il ciclo: 3
+file esaminati (ricerca della password come byte UTF-8, UTF-16LE, UTF-16BE):
+  RamaSQL\connessioni.json (341 byte): assente
+  RamaSQL\impostazioni.json (118 byte): assente
+  esportati\connessioni-3A.json (261 byte): assente
+controprova: il nome utente si trova in connessioni.json (la ricerca funziona)

@@ -1,5 +1,25 @@
 # JOURNAL.md — Diario cronologico (più recente in alto)
 
+## 2026-09-22 — Step 2: shell dell'applicazione e connessioni ✅ (esecuzione autonoma)
+Fatto:
+- **core.connection**: `ConnectionProfile` (senza password), `ProfileStore` (JSON in `%APPDATA%\RamaSQL\connessioni.json`, import/export con `formatVersion`, conferma prima di sostituire profili omonimi, file illeggibile messo da parte con nome univoco e avvio sempre garantito), `JsonFiles` (scrittura atomica con `force`), `AppData` (cartella dati, sovrascrivibile con `ramasql.appdata` nei test), `AppSettings` (4 voci), `ConnectionErrorClassifier` (11 cause, messaggio italiano «cosa correggere» + codice originale), `Session` (connessione principale + di servizio, **sempre autocommit**, catalogo letto entro la scadenza), `ConnectionAttempt` (asincrono, annullabile, scadenza complessiva 10 s), `InternalQueries` (unico punto con SQL interno). Parametri JDBC in `ADR-016`.
+- **app**: finestra a tre zone (Navigatore, schede, Pannello SQL con Registro/Anteprima/Messaggi), barra con 10 pulsanti con testo (non ancora realizzati = disabilitati), barra di stato (connessione, server, catalogo), schermata iniziale a tessere, finestra del profilo con *Prova connessione*, richiesta password, attesa con *Annulla*, finestra d'errore con messaggio originale, *Disconnetti* con conferma se ci sono schede, Impostazioni a 4 voci, menu File/Aiuto. Rete sempre fuori dall'EDT; finestre modali dietro l'interfaccia `Prompts` (sostituibile nei test).
+- Revisione indipendente: nessun difetto bloccante; 4 da correggere (schermata di connessione bloccabile da una query dopo la scadenza, importazione che sovrascriveva senza chiedere, cambio di connessione con conferma non raggiungibile dall'interfaccia, file profili illeggibile che poteva impedire l'avvio) e 11 note: **tutti corretti**, ciascuno con un test.
+
+Validazione (test con `@Tag("step2")`; evidenze in `test-results/step2/`):
+| Test | Esito | Evidenza |
+|---|---|---|
+| T2.1 | ✅ | `SessionServerTest#t21_laSessioneRiconosceTipoEVersioneDelServer` (it, 2 server): «MariaDB 11.5.2» e «MySQL 8.0.40», confrontati con `VERSION()`/`@@version_comment` letti dal test; autocommit attivo anche per il server; connessione di servizio con `CONNECTION_ID` diverso → `T2.1-mariadb.txt`, `T2.1-mysql.txt`; in più utente MySQL `caching_sha2_password` senza TLS → `T2.1-mysql-caching-sha2.txt` |
+| T2.2 | ✅ | `ConnectionErrorClassifierTest` (28 test): 16 eccezioni simulate, 11 cause distinte (host sconosciuto, porta chiusa, tempo scaduto, accesso negato, catalogo senza permesso, catalogo inesistente, troppe connessioni, host non ammesso, SSL, plugin di autenticazione, altro), messaggi tutti diversi; host come «classlab» non scambiati per errori SSL |
+| T2.3 | ✅ | `T23ConnectionErrorsTest` (ui, contro i 2 server, dal clic sulla tessera): host inesistente, porta chiusa, password errata (1045), catalogo senza permesso (1044), catalogo inesistente (1049) → **5 messaggi distinti in italiano** che nominano il campo da correggere, con il messaggio originale del server → `T2.3-mariadb.txt`, `T2.3-mysql.txt`, 10 schermate `T2.3-*.png` |
+| T2.4 | ✅ | `T24UnreachableHostTest` (ui, host `10.255.255.1`): clic che torna in 81 ms, latenza massima dell'EDT 47 ms durante l'attesa (limite 200), *Annulla* in 78 ms (limite 1000), nessuna finestra tardiva; senza annullare: diagnosi TIMEOUT dopo 8028 ms (limite 10 000) → `T2.4-annulla.txt`, `T2.4-tempo-scaduto.txt`, `T2.4-attesa.png`, `T2.4-tempo-scaduto.png` |
+| T2.5 | ✅ | `ProfileStoreTest` (13 test): profili → JSON → profili identici; nessuna chiave con «pass», «pwd», «secret» a nessun livello; campo `password` inserito a mano nel file ignorato e non riscritto; `formatVersion` |
+| T2.6 | ✅ | `T26T27ProfilesOnDiskTest#t26_…` (ui, 2 server): esportazione → importazione in un'**altra cartella dati** (secondo utente simulato: l'unico stato per utente è quella cartella) → tessere «Aula 3A - MariaDB»/«Aula 3A - MySQL» presenti → connessione riuscita dopo aver digitato la password → `T2.6.txt`, `T2.6-tessere-importate.png`, `T2.6-connesso.png` |
+| T2.7 | ✅ | `T26T27ProfilesOnDiskTest#t27_…`: ciclo d'uso completo (crea profilo, prova, connetti, disconnetti, riconnetti, esporta): password chiesta 3 volte, mai ricordata; ricerca byte per byte (UTF-8, UTF-16LE, UTF-16BE) in tutti i file della cartella dati e nell'esportazione → **assente** (controprova: il nome utente si trova) → `T2.7.txt`. Il revisore ha verificato anche `test-results/`, i report e la vera `%APPDATA%` |
+| T2.9 | ✅ | predisposto: procedura pronta, da eseguire con l'utente (`test-results/step2/T2.9-procedura.md`) |
+
+Schermate generali: `shell.png`, `home-tessere.png`, `profilo.png`, `impostazioni.png` (controllate a vista). Test N: nessuno per questo step (non crea oggetti sul server).
+
 ## 2026-09-22 — Step 1: spike di fattibilità ✅ (esecuzione autonoma, `ADR-014`)
 Esito dettagliato in `docs/SPIKE-STEP1.md`: **nessun NO-GO**; `ADR-001` (Java/Swing) e `ADR-002` (app nuova + query builder estratto) confermate; driver unico MariaDB Connector/J (`ADR-015`, da rivedere).
 

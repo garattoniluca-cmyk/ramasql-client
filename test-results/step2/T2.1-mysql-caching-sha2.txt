@@ -1,0 +1,5 @@
+utente = ramasql_test_sha2 (plugin caching_sha2_password, verificato con SHOW CREATE USER)
+Session.serverInfo() = ServerInfo[kind=MYSQL, versionText=8.0.40, major=8, minor=0, patch=40]
+Ssl_cipher = «» (vuoto: nessun TLS)
+autocommit = true
+parametro decisivo: allowPublicKeyRetrieval=true

@@ -6,7 +6,7 @@ RamaSQL Client (nome di lavoro): client desktop **Windows** per **MariaDB e MySQ
 
 ## Stack
 
-Java 25 LTS (Temurin) · Swing + FlatLaf · RSyntaxTextArea · modulo `sqleo-qb` estratto da SQLeo · MariaDB Connector/J (+ MySQL Connector/J se lo spike lo richiede) · Jackson, Commons CSV · Maven (wrapper) multi-modulo · JUnit 6 · a fine progetto: jpackage (runtime incluso) + Inno Setup 6 (installer per-utente, senza admin) + ZIP portabile. Licenza del prodotto: **GPL-3.0-or-later** (`ADR-003`). Motivazioni in `docs/ANALYSIS.md`, decisioni in `docs/DECISIONS.md`.
+Java 25 LTS (Temurin) · Swing + FlatLaf · RSyntaxTextArea · modulo `sqleo-qb` estratto da SQLeo · MariaDB Connector/J (driver unico anche per MySQL, `ADR-015`) · Jackson, Commons CSV · Maven (wrapper) multi-modulo · JUnit 6 · a fine progetto: jpackage (runtime incluso) + Inno Setup 6 (installer per-utente, senza admin) + ZIP portabile. Licenza del prodotto: **GPL-3.0-or-later** (`ADR-003`). Motivazioni in `docs/ANALYSIS.md`, decisioni in `docs/DECISIONS.md`.
 
 ## Comandi essenziali
 
@@ -53,4 +53,4 @@ Elenco completo in `docs/CONSOLE.md`. Su questo PC i comandi nella cartella corr
 
 **Step 0 — Fondamenta: completato** (2026-09-21): progetto Maven a 5 moduli, finestra vuota con FlatLaf, `avvia.cmd`. Database locali pronti (MariaDB :3306, MySQL :3307, utente `ramasql_test`; credenziali solo in `docs/local DBs.txt`). **Installer solo a fine progetto** (Step 13).
 
-**Step 1 — Spike: completato, GO** (2026-09-22, `docs/SPIKE-STEP1.md`): query builder di SQLeo estratto in `sqleo-qb` e funzionante su JDK 25 con i due server; query nidificate grafiche (CTE solo testo); driver unico MariaDB Connector/J (`ADR-015`). **In corso:** esecuzione autonoma degli step 2–6 (`ADR-014`); stato per step: `scripts\verify.ps1`.
+**Step 1 — Spike: completato, GO** (2026-09-22, `docs/SPIKE-STEP1.md`): query builder di SQLeo estratto in `sqleo-qb` e funzionante su JDK 25 con i due server; query nidificate grafiche (CTE solo testo); driver unico MariaDB Connector/J (`ADR-015`). **Step 2 — Shell e connessioni: completato** (2026-09-22): finestra a tre zone, tessere, profili senza password, diagnosi degli errori in italiano. **In corso:** esecuzione autonoma degli step 3–6 (`ADR-014`); stato per step: `scripts\verify.ps1`.

@@ -1,0 +1,8 @@
+server di test = MySQL
+SELECT VERSION() letto dal test = 8.0.40
+@@version_comment letto dal test = MySQL Community Server - GPL
+Session.serverInfo() = ServerInfo[kind=MYSQL, versionText=8.0.40, major=8, minor=0, patch=40]
+barra di stato = MySQL 8.0.40
+autocommit (principale, servizio) = true, true
+CONNECTION_ID principale = 300, di servizio = 301
+Session.toString() = Session[Test MySQL, ramasql_test@127.0.0.1:3307, MySQL 8.0.40]

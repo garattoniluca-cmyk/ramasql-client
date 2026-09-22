@@ -11,7 +11,7 @@ Stato: ✅ completato · 🔄 in corso · ⏳ da fare
 | A | Analisi, fattibilità, design, piano | S | ✅ 2026-09-21 |
 | 0 | Fondamenta | S | ✅ 2026-09-21 |
 | 1 | **Spike di fattibilità (go/no-go)** | M | ✅ 2026-09-22 (GO, `docs/SPIKE-STEP1.md`) |
-| 2 | Shell dell'applicazione e connessioni | M | ⏳ |
+| 2 | Shell dell'applicazione e connessioni | M | ✅ 2026-09-22 |
 | 3 | Navigatore, pipeline SQL, pannello SQL | M | ⏳ |
 | 4 | Editor SQL raw e **data-entry** (griglia, appunti a blocchi, conferma esplicita) | L | ⏳ |
 | 5 | Editor di tabelle (colonne, opzioni, engine) | L | ⏳ |

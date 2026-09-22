@@ -11,5 +11,17 @@
   <artifactId>ramasql-core</artifactId>
   <name>RamaSQL :: core (connessioni, metadati, generatori SQL, pipeline - senza Swing)</name>
 
-
+  <dependencies>
+    <!-- Driver unico per MariaDB e MySQL (LGPL-2.1+): si usa solo tramite java.sql, quindi basta a runtime -->
+    <dependency>
+      <groupId>org.mariadb.jdbc</groupId>
+      <artifactId>mariadb-java-client</artifactId>
+      <scope>runtime</scope>
+    </dependency>
+    <!-- JSON di profili e impostazioni (Apache-2.0) -->
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-databind</artifactId>
+    </dependency>
+  </dependencies>
 </project>
