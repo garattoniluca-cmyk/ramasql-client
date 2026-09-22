@@ -1,0 +1,5 @@
+utente = ramasql_test
+plugin dell'utente (da SHOW CREATE USER) = mysql_native_password
+variabili = {require_secure_transport=OFF}
+TLS della sessione JDBC (Ssl_cipher) = <nessuno: connessione in chiaro>
+caching_sha2_password esercitato da questo test = NO

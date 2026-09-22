@@ -24,7 +24,12 @@ Credenziali: **solo** in `docs/local DBs.txt` (escluso da git). I cataloghi già
 .\mvnw.cmd -q install -DskipTests  # compila senza test (lo fa avvia.cmd)
 .\mvnw.cmd -q -pl app exec:java    # apre la finestra (dopo install)
 ```
-I test d'integrazione (I) arrivano con lo Step 3.
+**Verifica completa per step** (carica da sola le credenziali di test; ultima riga `VERIFY: PASS` / `VERIFY: FAIL`):
+```
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\verify.ps1
+```
+Un solo modulo: `.\mvnw.cmd -q -pl core verify` (le dipendenze interne devono essere già in `~/.m2`: prima `install`).
+I test d'integrazione (`@Tag("it")`, modulo `it-tests`) girano contro **entrambi** i server e **falliscono** (non saltano) se le variabili mancano. I test con tag `office` (appunti a blocchi, spike S7) avviano **Excel** e **LibreOffice** nascosti e usano gli appunti di sistema, poi ripristinati: durante la verifica non copiare/incollare (`BUG-009`). Le evidenze (schermate, tabelle esiti) finiscono in `test-results/stepN/`.
 I test d'integrazione leggono le connessioni da variabili d'ambiente (mai da file in git):
 `RAMASQL_IT_MARIADB_URL`, `RAMASQL_IT_MARIADB_USER`, `RAMASQL_IT_MARIADB_PASSWORD` e le tre equivalenti `RAMASQL_IT_MYSQL_*`. Usano e distruggono solo cataloghi con prefisso `ramasql_test_`.
 

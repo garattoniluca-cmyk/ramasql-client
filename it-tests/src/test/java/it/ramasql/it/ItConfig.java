@@ -7,7 +7,7 @@ import java.util.Optional;
 
 /**
  * Connessioni per i test d'integrazione, lette da variabili d'ambiente (mai da file in git).
- * Se mancano, i test d'integrazione si saltano invece di fallire.
+ * Chi le usa passa da {@link ItServers}, che fa fallire il test se mancano (goal.md, vincolo 4).
  */
 record ItConfig(String url, String user, String password) {
 
@@ -29,5 +29,11 @@ record ItConfig(String url, String user, String password) {
             return Optional.empty();
         }
         return Optional.of(new ItConfig(url, user, password));
+    }
+
+    /** La password non deve mai finire in un log o nel messaggio di un'asserzione. */
+    @Override
+    public String toString() {
+        return "ItConfig[url=" + url + ", user=" + user + ", password=***]";
     }
 }

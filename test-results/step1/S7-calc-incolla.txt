@@ -1,0 +1,7 @@
+JTable -> appunti di sistema -> letti da LibreOffice -> motore "Importazione testo" di Calc (tab, virgolette), celle rilette con .String:
+[r3c1] [via Roma<TAB>12] [riga uno<LF>riga due] [r3c4]
+[dice "ciao"] [] [r4c3] ["tra virgolette"]
+[r5c1] [r5c2] [àèìòù € 😀] [r5c4]
+
+script: formati negli appunti visti da LibreOffice: ['text/plain;charset=utf-16', 'text/markdown']
+soffice-pid=13856 [exit 0]

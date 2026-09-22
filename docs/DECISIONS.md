@@ -6,7 +6,7 @@ Stati: **accettata** · **proposta** (in attesa di conferma dell'utente o dell'e
 ---
 
 ## ADR-001 — Java 25 + Swing come piattaforma del client
-Data: 2026-09-21 · Stato: proposta (da confermare con l'esito dello Step 1, spike S1/S2/S5)
+Data: 2026-09-21 · Stato: accettata — confermata dallo spike dello Step 1 (S1, S2, S5: GO; `docs/SPIKE-STEP1.md`)
 
 **Contesto:** client Windows per MariaDB/MySQL che deve *ereditare* l'editor visivo di query di SQLeo. SQLeo è Java Swing, GPL, fermo dal 2017. Candidati: Java, C#, C++.
 
@@ -19,7 +19,7 @@ Data: 2026-09-21 · Stato: proposta (da confermare con l'esito dello Step 1, spi
 ---
 
 ## ADR-002 — Applicazione nuova con il solo query builder di SQLeo estratto in un modulo, non un fork dell'intero SQLeo
-Data: 2026-09-21 · Stato: proposta (da confermare con S1)
+Data: 2026-09-21 · Stato: accettata — confermata dallo spike S1 (GO; `docs/SPIKE-STEP1.md`)
 
 **Contesto:** SQLeo intero è un client multi-DBMS con interfaccia MDI datata, comparatori, pivot, gestione driver: l'opposto di «più semplice possibile».
 
@@ -152,3 +152,25 @@ Data: 2026-09-21 · Stato: accettata (richiesta esplicita dell'utente)
 **Decisione:** sospesa per gli step 1–6 la regola n. 2 di `CLAUDE.md` (stop a ogni step). Il lavoro è guidato da `/goal` (condizione in `.claude/goal.md`) in modalità automatica, con `/loop` + `.claude/loop.md` come rete di sicurezza; permessi in `.claude/settings.json`. «Fatto» = `scripts\verify.ps1` stampa `VERIFY: PASS`: build verde, nessun test fallito, per ogni step un numero minimo di test superati con `@Tag("stepN")` (di cui una quota `@Tag("it")` contro MariaDB e MySQL), e ogni test U/I/M della roadmap con esito ✅ ed evidenza in `JOURNAL.md`. Soglie congelate oggi. Commit locale per step, nessun push. Test N con Navicat e prove d'uso con una persona restano all'utente, a fine esecuzione.
 
 **Conseguenze:** le decisioni aperte fino allo Step 6 le prende l'agente, marcate «da rivedere»; al termine l'utente rivede diario, commit e decisioni, esegue i test N e fa il push.
+
+---
+
+## ADR-015 — Driver unico: MariaDB Connector/J anche per MySQL
+Data: 2026-09-21 · Stato: accettata — decisa dall'agente, da rivedere (esito dello spike S4, `docs/SPIKE-STEP1.md`)
+
+**Decisione:** un solo driver JDBC, **MariaDB Connector/J 3.5.x** (LGPL-2.1+), per MariaDB e per MySQL, con URL `jdbc:mariadb://host:porta/catalogo`. MySQL Connector/J non entra nel prodotto.
+
+**Motivi:** nello spike tutti i controlli (connessione, TLS, `information_schema`, `DatabaseMetaData`, `KILL QUERY`, `Statement.cancel()`, chiavi generate, tipi, autenticazione) sono verdi su MariaDB 11.5 e MySQL 8.0 con lo stesso driver. Un driver solo = un solo comportamento da spiegare e da collaudare.
+
+**Conseguenze:** i parametri di connessione del prodotto devono permettere `caching_sha2_password` (predefinito di MySQL 8.4) anche senza TLS. Le differenze nei metadati tra i due server (`int(10) unsigned` vs `int unsigned`, default tra apici o no, «nessun default») si normalizzano in `core.metadata`, non nel driver. Riserva: provato su MySQL 8.0.40, non su 8.4 (non disponibile sul PC di sviluppo) → `BUG-008`.
+
+---
+
+## ADR-016 — Parametri di connessione e connessione di servizio
+Data: 2026-09-22 · Stato: accettata — decisa dall'agente, da rivedere (Step 2)
+
+**Decisione:** `Session` apre due connessioni con MariaDB Connector/J (`ADR-015`): la **principale**, sul catalogo scelto, per ciò che l'utente esegue; la **di servizio**, senza catalogo, per `KILL QUERY` e letture interne. Parametri del driver (`Session.driverProperties`): `connectTimeout=8000` (il tentativo complessivo è limitato a 10 s da `ConnectionAttempt`, annullabile); `autocommit=true` (`ADR-010`: mai transazioni); `allowPublicKeyRetrieval=true` (serve a `caching_sha2_password`, predefinito di MySQL 8.4, quando non c'è TLS — provato con un utente dedicato su MySQL 8.0); `tinyInt1isBit=false` (`TINYINT(1)` resta un numero, come lo scrive lo studente); `connectionAttributes=program_name:RamaSQL Client` (il client si riconosce nell'elenco dei processi del server). Utente e password non compaiono mai nell'indirizzo JDBC; la password vive solo in memoria per la durata della sessione.
+
+**Motivi:** in aula i server sono quasi sempre locali o in rete di laboratorio senza TLS; `allowPublicKeyRetrieval` è il compromesso che fa funzionare MySQL 8.4 «di serie» senza configurare certificati. La connessione di servizio senza catalogo resta valida anche se il catalogo corrente viene eliminato.
+
+**Conseguenze:** `allowPublicKeyRetrieval` espone a un attacco man-in-the-middle sulla rete del laboratorio: accettabile per un client didattico, da rivalutare con le opzioni SSL (**[dopo]**, `IDEA-012`). Limite noto: il driver vuole la password come `String` nelle proprietà durante l'apertura.

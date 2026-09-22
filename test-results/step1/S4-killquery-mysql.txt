@@ -1,0 +1,1 @@
+KILL QUERY <id> -> SLEEP(30) terminato in 0 ms; esito: valore 1

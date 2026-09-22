@@ -1,0 +1,9 @@
+id : INTEGER UNSIGNED -> java.lang.Long
+anno : SMALLINT UNSIGNED -> java.lang.Integer
+prezzo : DECIMAL -> java.math.BigDecimal
+pubblicato : DATE -> java.sql.Date
+registrato : DATETIME -> java.sql.Timestamp
+disponibile : BOOLEAN -> java.lang.Boolean
+flag : BIT -> java.lang.Boolean
+maschera : BIT -> [B
+titolo : VARCHAR -> java.lang.String

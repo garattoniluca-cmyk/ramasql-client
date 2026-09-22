@@ -13,6 +13,22 @@
   <dependencies>
     <dependency><groupId>it.ramasql</groupId><artifactId>ramasql-core</artifactId></dependency>
     <dependency><groupId>it.ramasql</groupId><artifactId>ramasql-model</artifactId></dependency>
+    <!-- spike S2a/S2c/S2d: query builder e parser ereditati da SQLeo contro i server veri -->
+    <dependency>
+      <groupId>it.ramasql</groupId>
+      <artifactId>ramasql-sqleo-qb</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.formdev</groupId>
+      <artifactId>flatlaf</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.mariadb.jdbc</groupId>
+      <artifactId>mariadb-java-client</artifactId>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
 </project>

@@ -1,0 +1,10 @@
+id -> INT UNSIGNED|size=10|dec=0|null=NO|ai=YES|def=null|rem=
+autore_id -> INT UNSIGNED|size=10|dec=0|null=NO|ai=NO|def=null|rem=
+titolo -> VARCHAR|size=120|dec=0|null=NO|ai=NO|def=null|rem=Titolo: àèìòù €
+anno -> SMALLINT UNSIGNED|size=5|dec=0|null=YES|ai=NO|def=null|rem=
+prezzo -> DECIMAL|size=8|dec=2|null=NO|ai=NO|def=9.90|rem=
+pubblicato -> DATE|size=10|dec=0|null=YES|ai=NO|def=null|rem=
+registrato -> DATETIME|size=19|dec=0|null=YES|ai=NO|def=null|rem=
+disponibile -> BOOLEAN|size=3|dec=0|null=NO|ai=NO|def=1|rem=
+flag -> BIT|size=1|dec=0|null=YES|ai=NO|def=null|rem=
+maschera -> BIT|size=8|dec=0|null=YES|ai=NO|def=null|rem=

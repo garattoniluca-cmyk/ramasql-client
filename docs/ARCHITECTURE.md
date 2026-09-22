@@ -103,7 +103,9 @@ public interface QbHost {
 }
 ```
 
-L'app usa il QB solo attraverso `QueryBuilderPanel` (adattatore nel modulo `app`): `setSql(String)`, `getSql()`, `addTable(name)`, ascoltatore di modifiche, `isRepresentable(sql)`.
+L'app usa il QB solo attraverso `QueryBuilderPanel` (adattatore nel modulo `app`, Step 7): `setSql(String)`, `getSql()`, `addTable(name)`, ascoltatore di modifiche, `isRepresentable(sql)`.
+
+**Stato reale dopo lo Step 1** (pacchetto `it.ramasql.qb`, codice nostro): `QbHost` + `BasicQbHost` da estendere (`connection()`, `catalog()`, `icon(QbIcon)`, `text`, `scale`, `option(QbOption)`, `alert`, `joinHints` → `List<JoinHint>`; testi italiani in `qb_it.properties`); `QbRuntime.setHost(host)` (un host per processo, connessione per istanza); `QbSql.parse(sql)` → `QueryModel` (lancia `QbParseException`), `QbSql.check(sql)` → `Result(representable, model, regenerated, warnings, reason)` che non lancia mai, `isRepresentable`, `normalize`. Pannello: `new QueryBuilder(host)`, `setQueryModel(model)` sull'EDT, `getQueryModel().toString(true)`. **Regola:** non si passa mai al pannello un modello che `check` rifiuta (`BUG-005`). Mancano ancora le voci di `BUG-006`.
 
 **Interventi previsti sul codice ereditato** (ciascuno annotato in `UPSTREAM.md` e nell'intestazione del file):
 1. sostituzione dei riferimenti esterni con `QbHost`;
@@ -130,8 +132,7 @@ Niente rifattorizzazioni «estetiche»: il modulo resta il più vicino possibile
 | SQLeo (codice incorporato) | query builder | GPL-2.0-or-later | ✅ (si esercita «or later») |
 | FlatLaf (+ extras per SVG) | aspetto | Apache-2.0 | ✅ |
 | RSyntaxTextArea, AutoComplete | editor SQL | BSD-3 | ✅ |
-| MariaDB Connector/J 3.x | driver | LGPL-2.1+ | ✅ |
-| MySQL Connector/J (solo se S4 lo richiede) | driver | GPL-2.0 + Universal FOSS Exception | ✅ |
+| MariaDB Connector/J 3.5.10 | driver **unico**, anche per MySQL (`ADR-015`) | LGPL-2.1+ | ✅ |
 | Jackson core/databind | JSON | Apache-2.0 | ✅ |
 | Apache Commons CSV | CSV | Apache-2.0 | ✅ |
 | JUnit 5, AssertJ, AssertJ-Swing | test | EPL-2.0 / Apache-2.0 | ✅ (solo test, non distribuite) |

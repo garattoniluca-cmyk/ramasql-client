@@ -1,0 +1,46 @@
+Calc (.uno:Copy di 20x3 celle di testo) -> appunti -> JTable.
+Testo grezzo negli appunti:
+cod-1<TAB>con tabulazione 1<TAB>descrizione àè 1<LF>
+cod-2<TAB>prima riga seconda riga 2<TAB>descrizione àè 2<LF>
+cod-3<TAB>detto "tra virgolette" 3<TAB>descrizione àè 3<LF>
+cod-4<TAB>"inizia con virgolette 4<TAB>descrizione àè 4<LF>
+cod-5<TAB>semplice 5<TAB>descrizione àè 5<LF>
+cod-6<TAB>con tabulazione 6<TAB>descrizione àè 6<LF>
+cod-7<TAB>prima riga seconda riga 7<TAB>descrizione àè 7<LF>
+cod-8<TAB>detto "tra virgolette" 8<TAB>descrizione àè 8<LF>
+cod-9<TAB>"inizia con virgolette 9<TAB>descrizione àè 9<LF>
+cod-10<TAB>semplice 10<TAB>descrizione àè 10<LF>
+cod-11<TAB>con tabulazione 11<TAB>descrizione àè 11<LF>
+cod-12<TAB>prima riga seconda riga 12<TAB>descrizione àè 12<LF>
+cod-13<TAB>detto "tra virgolette" 13<TAB>descrizione àè 13<LF>
+cod-14<TAB>"inizia con virgolette 14<TAB>descrizione àè 14<LF>
+cod-15<TAB>semplice 15<TAB>descrizione àè 15<LF>
+cod-16<TAB>con tabulazione 16<TAB>descrizione àè 16<LF>
+cod-17<TAB>prima riga seconda riga 17<TAB>descrizione àè 17<LF>
+cod-18<TAB>detto "tra virgolette" 18<TAB>descrizione àè 18<LF>
+cod-19<TAB>"inizia con virgolette 19<TAB>descrizione àè 19<LF>
+cod-20<TAB>semplice 20<TAB>descrizione àè 20<LF>
+
+Celle nella JTable:
+[cod-1] [con tabulazione 1] [descrizione àè 1]
+[cod-2] [prima riga seconda riga 2] [descrizione àè 2]
+[cod-3] [detto "tra virgolette" 3] [descrizione àè 3]
+[cod-4] ["inizia con virgolette 4] [descrizione àè 4]
+[cod-5] [semplice 5] [descrizione àè 5]
+[cod-6] [con tabulazione 6] [descrizione àè 6]
+[cod-7] [prima riga seconda riga 7] [descrizione àè 7]
+[cod-8] [detto "tra virgolette" 8] [descrizione àè 8]
+[cod-9] ["inizia con virgolette 9] [descrizione àè 9]
+[cod-10] [semplice 10] [descrizione àè 10]
+[cod-11] [con tabulazione 11] [descrizione àè 11]
+[cod-12] [prima riga seconda riga 12] [descrizione àè 12]
+[cod-13] [detto "tra virgolette" 13] [descrizione àè 13]
+[cod-14] ["inizia con virgolette 14] [descrizione àè 14]
+[cod-15] [semplice 15] [descrizione àè 15]
+[cod-16] [con tabulazione 16] [descrizione àè 16]
+[cod-17] [prima riga seconda riga 17] [descrizione àè 17]
+[cod-18] [detto "tra virgolette" 18] [descrizione àè 18]
+[cod-19] ["inizia con virgolette 19] [descrizione àè 19]
+[cod-20] [semplice 20] [descrizione àè 20]
+
+script: soffice-pid=34296 [exit 0]

@@ -1,0 +1,6 @@
+VERSION() = 8.0.40
+@@version_comment = MySQL Community Server - GPL
+driver = MariaDB Connector/J 3.5.10
+DatabaseMetaData.getDatabaseProductName() = MySQL
+DatabaseMetaData.getDatabaseProductVersion() = 8.0.40
+autocommit = true

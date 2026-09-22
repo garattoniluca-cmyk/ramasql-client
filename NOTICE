@@ -6,10 +6,10 @@ the terms of the GNU General Public License as published by the Free Software
 Foundation, either version 3 of the License, or (at your option) any later
 version. See the LICENSE file.
 
-This product will include software derived from:
+This product includes software derived from:
 
   SQLeo Visual Query Builder :: java database frontend with join definitions
-  Copyright (C) 2012 anudeepgade@users.sourceforge.net
+  Copyright (C) 2012-2013 anudeepgade@users.sourceforge.net
   https://sourceforge.net/projects/sqleo/
 
   SQLeonardo :: java database frontend
@@ -19,6 +19,36 @@ both released under the GNU General Public License, version 2 or (at your
 option) any later version. The derived code lives in the `sqleo-qb` module;
 modified files carry a modification notice, and `sqleo-qb/UPSTREAM.md` lists
 the upstream version and the changes made.
+
+Third-party attributions carried over from the SQLeo sources, exactly as stated
+in the original file headers (checked against SQLeo commit 86d3c46; the headers
+are preserved unchanged in `sqleo-qb`):
+
+  - `com/sqleo/common/util/I18n.java`, `com/sqleo/querybuilder/beans/Entity.java`,
+    `com/sqleo/querybuilder/beans/Tag.java`:
+    Copyright (C) 2004 nickyb@users.sourceforge.net, with the note
+    "File contributed by JasperSoft Corp."; GNU General Public License,
+    version 2 or (at your option) any later version.
+  - `com/sqleo/querybuilder/ObjectsListCellRenderer.java`,
+    `com/sqleo/querybuilder/beans/EntityField.java`,
+    `com/sqleo/querybuilder/dnd/DragMouseAdapter.java`,
+    `com/sqleo/querybuilder/dnd/EntityDropTargetListener.java`,
+    `com/sqleo/querybuilder/dnd/EntityTransferHandler.java`,
+    `com/sqleo/querybuilder/dnd/RelationDropTargetListener.java`,
+    `com/sqleo/querybuilder/dnd/RelationTransferHandler.java`:
+    Copyright (C) 2006 JasperSoft http://www.jaspersoft.com (author tag where
+    present: gtoffoli); GNU General Public License, version 2 or (at your
+    option) any later version.
+
+Replaced on 2026-09-22: two files inherited from SQLeo whose original header
+(Copyright (C) 2005 - 2006 JasperSoft Corporation) granted the GNU General
+Public License version 2 only (`QueryModelTreeCellRenderer.java` and
+`dnd/TransferableObject.java`) were removed and replaced by a clean-room
+rewrite, original code of this project under GPL-3.0-or-later; the 13 PNG
+icons of undeclared origin inherited in `sqleo-qb/src/main/resources/images/`
+were removed and replaced by icons drawn in code (`it.ramasql.qb.QbDrawnIcon`,
+GPL-3.0-or-later). Neither the original files nor the icons are included in
+this product.
 
 MySQL Workbench is used solely as a functional reference. No MySQL Workbench
 code is included in this product.

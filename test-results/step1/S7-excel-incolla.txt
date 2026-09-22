@@ -1,0 +1,6 @@
+JTable -> appunti -> Excel (Paste in A1), celle rilette da Excel con Value2:
+[r3c1] [via Roma<TAB>12] [riga uno<CR><LF>riga due] [r3c4]
+[dice "ciao"] [] [r4c3] ["tra virgolette"]
+[r5c1] [r5c2] [àèìòù € 😀] [r5c4]
+
+script: excel-pid=29900 [exit 0]

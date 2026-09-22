@@ -1,0 +1,6 @@
+VERSION() = 11.5.2-MariaDB
+@@version_comment = mariadb.org binary distribution
+driver = MariaDB Connector/J 3.5.10
+DatabaseMetaData.getDatabaseProductName() = MariaDB
+DatabaseMetaData.getDatabaseProductVersion() = 11.5.2-MariaDB
+autocommit = true

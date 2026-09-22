@@ -1,0 +1,1 @@
+Statement.cancel() -> SLEEP(30) terminato in 3 ms; esito: errore 1317 [70100]: (conn=273) Query execution was interrupted

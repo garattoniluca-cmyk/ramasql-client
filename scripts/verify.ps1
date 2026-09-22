@@ -19,7 +19,7 @@ param([switch]$SkipBuild)
 $ErrorActionPreference = 'Continue'
 $root = Split-Path -Parent $PSScriptRoot
 Set-Location $root
-$OK = [string][char]0x2705
+$SPUNTA = [string][char]0x2705   # non $OK: in PowerShell $OK e $ok (conteggi, sotto) sono la stessa variabile
 
 # --- soglie congelate: test superati minimi per step (totale / di cui integrazione) ------------
 $soglie = [ordered]@{
@@ -124,7 +124,7 @@ foreach ($k in $soglie.Keys) {
     $num = [int]($k -replace 'step', '')
     $mancanti = @($idPerStep[$num] | Where-Object {
         $id = [regex]::Escape($_)
-        -not ($journal | Where-Object { $_ -match "^\|\s*$id\b" -and $_.Contains($OK) })
+        -not ($journal | Where-Object { $_ -match "^\|\s*$id\b" -and $_.Contains($SPUNTA) })
     })
     $stepOk = ($n -ge $s.Tot) -and ($ni -ge $s.It) -and ($mancanti.Count -eq 0)
     if (-not $stepOk) { $pass = $false }

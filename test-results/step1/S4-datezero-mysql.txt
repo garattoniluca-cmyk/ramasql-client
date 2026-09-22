@@ -1,0 +1,4 @@
+getString(DATE zero) = 0000-00-00
+getDate(DATE zero) = null
+getString(DATETIME zero) = 0000-00-00 00:00:00
+getTimestamp(DATETIME zero) = null

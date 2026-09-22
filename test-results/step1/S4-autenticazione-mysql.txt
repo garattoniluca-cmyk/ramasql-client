@@ -1,0 +1,21 @@
+utente = ramasql_test
+plugin dell'utente (da SHOW CREATE USER) = mysql_native_password
+variabili = {authentication_policy=*,,, default_authentication_plugin=mysql_native_password, require_secure_transport=OFF}
+TLS della sessione JDBC (Ssl_cipher) = <nessuno: connessione in chiaro>
+caching_sha2_password esercitato da questo test = NO
+
+--- caching_sha2_password: utente ramasql_test_sha2 (solo MySQL), driver MariaDB Connector/J ---
+(e) senza allowPublicKeyRetrieval e senza TLS, primo tentativo = RIUSCITO (cache del server calda: percorso «veloce»)
+(e) subito dopo, con allowPublicKeyRetrieval=true senza TLS = RIUSCITO: percorso «veloce» (la cache era già calda: il percorso completo NON è stato esercitato ora)
+(e) senza parametri, di nuovo (cache già calda: nessuna autenticazione completa in questa esecuzione) = RIUSCITO (percorso «veloce» dalla cache)
+plugin dell'utente sha2 (da SHOW CREATE USER) = caching_sha2_password
+(a) allowPublicKeyRetrieval=true, senza TLS = RIUSCITO, Ssl_cipher vuoto
+(b) sslMode=trust = RIUSCITO, Ssl_cipher=TLS_AES_256_GCM_SHA384
+(d) catalogo ramasql_test_s4_sha2_* creato, usato e distrutto dall'utente sha2 = SÌ (fuori dal prefisso: errore 1044)
+caching_sha2_password esercitato = SÌ
+nota sulla cache: il plugin tiene sul server una cache degli utenti già autenticati. La prima
+autenticazione dopo l'avvio del server, FLUSH PRIVILEGES o un cambio di password è «completa»
+(serve TLS oppure la chiave RSA del server); le successive sono «veloci» (nessun requisito).
+L'utente di test non può svuotare la cache: il percorso esercitato si deduce dal tentativo (e);
+quando (e) fallisce al primo tentativo, il caso a cache fredda resta documentato anche in
+S4-sha2-senza-parametri-cache-fredda.txt (file scritto solo quando il caso si presenta).

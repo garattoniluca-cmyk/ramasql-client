@@ -36,6 +36,10 @@
 
     <flatlaf.version>3.7.2</flatlaf.version>
     <junit.version>6.1.3</junit.version>
+    <!-- LGPL-2.1+: driver unico per MariaDB e MySQL (spike S4, docs/ARCHITECTURE.md §7) -->
+    <mariadb-jdbc.version>3.5.10</mariadb-jdbc.version>
+    <!-- Apache-2.0: JSON di profili e impostazioni (docs/ARCHITECTURE.md §7) -->
+    <jackson.version>2.22.2</jackson.version>
   </properties>
 
   <dependencyManagement>
@@ -59,6 +63,16 @@
         <groupId>com.formdev</groupId>
         <artifactId>flatlaf</artifactId>
         <version>${flatlaf.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.mariadb.jdbc</groupId>
+        <artifactId>mariadb-java-client</artifactId>
+        <version>${mariadb-jdbc.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.fasterxml.jackson.core</groupId>
+        <artifactId>jackson-databind</artifactId>
+        <version>${jackson.version}</version>
       </dependency>
       <dependency>
         <groupId>org.junit</groupId>
