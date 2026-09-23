@@ -215,6 +215,9 @@ public final class NavigatorPanel extends JPanel {
             if (!rebuilding) {
                 TreePath p = tree.getSelectionPath();
                 selectedKey = p == null ? null : nodeOf(p).key();
+                if (onSelection != null) {   // la selezione può cambiare mentre il pannello si costruisce
+                    onSelection.run();
+                }
             }
         });
         tree.addMouseListener(new MouseAdapter() {
@@ -644,6 +647,13 @@ public final class NavigatorPanel extends JPanel {
     }
 
     // ---------------------------------------------------------------- aperture chieste dall'albero
+
+    /** Avvisato quando cambia il nodo selezionato: la barra degli strumenti si aggiorna di conseguenza. */
+    private Runnable onSelection = () -> { };
+
+    public void setOnSelection(Runnable handler) {
+        this.onSelection = handler == null ? () -> { } : handler;
+    }
 
     /** Chi apre la scheda di data-entry di una tabella (la tabella è già letta dai metadati). */
     private BiConsumer<String, TableDef> onOpenTable = (catalog, table) -> { };

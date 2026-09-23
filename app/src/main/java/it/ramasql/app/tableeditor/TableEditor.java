@@ -455,7 +455,8 @@ public final class TableEditor extends JPanel {
             }
         }
         if (own.isEmpty() && incoming.isEmpty()) {
-            return null;
+            // elenco vuoto: sicuro solo se la lettura dei metadati è riuscita davvero
+            return tables.isComplete() ? null : Texts.get("tableeditor.options.engine.unknown", edited.name());
         }
         StringBuilder sb = new StringBuilder(Texts.get("tableeditor.options.engine.blocked", edited.name()));
         if (!incoming.isEmpty()) {

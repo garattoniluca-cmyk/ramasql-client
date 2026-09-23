@@ -1,17 +1,17 @@
 T4.10 e T4.11 — Conferma sul server MySQL
-Catalogo di test: ramasql_test_ui_conferma_3gsk3o — soci: 101 righe
+Catalogo di test: ramasql_test_ui_conferma_akttod — soci: 101 righe
 T4.10 — anteprima con 5 istruzioni (1 DELETE, 3 UPDATE, 1 INSERT), nessuna transazione:
-    DELETE FROM `ramasql_test_ui_conferma_3gsk3o`.`soci` WHERE `id` = 101;
+    DELETE FROM `ramasql_test_ui_conferma_akttod`.`soci` WHERE `id` = 101;
     
-    UPDATE `ramasql_test_ui_conferma_3gsk3o`.`soci` SET `cognome` = 'Rossi Cognome Nuovo' WHERE `id` = 1;
+    UPDATE `ramasql_test_ui_conferma_akttod`.`soci` SET `cognome` = 'Rossi Cognome Nuovo' WHERE `id` = 1;
     
-    UPDATE `ramasql_test_ui_conferma_3gsk3o`.`soci` SET `nome` = 'NomeCambiato' WHERE `id` = 2;
+    UPDATE `ramasql_test_ui_conferma_akttod`.`soci` SET `nome` = 'NomeCambiato' WHERE `id` = 2;
     
-    UPDATE `ramasql_test_ui_conferma_3gsk3o`.`soci` SET `email` = 'nuova.email@esempio.it' WHERE `id` = 3;
+    UPDATE `ramasql_test_ui_conferma_akttod`.`soci` SET `email` = 'nuova.email@esempio.it' WHERE `id` = 3;
     
-    INSERT INTO `ramasql_test_ui_conferma_3gsk3o`.`soci` (`tessera`, `cognome`, `nome`) VALUES ('T500001', 'Nuovi', 'Nicola');
+    INSERT INTO `ramasql_test_ui_conferma_akttod`.`soci` (`tessera`, `cognome`, `nome`) VALUES ('T500001', 'Nuovi', 'Nicola');
   sul server: riga 101 eliminata, riga nuova id=102 (tessera T500001) — l'id AUTO_INCREMENT si vede in griglia
   cognome/nome/email modificati riletti dal server: [Rossi Cognome Nuovo]
-T4.11 — 1ª salvata, 2ª in errore «[1062] (conn=952) Duplicate entry 'T500001' for key 'soci.uq_soci_tessera' — Valore duplicato: esiste già una riga con lo stesso valore nella chiave primaria o in un indice UNIQUE.», 3ª in sospeso; sul server 102 righe (prima 101)
+T4.11 — 1ª salvata, 2ª in errore «[1062] (conn=5527) Duplicate entry 'T500001' for key 'soci.uq_soci_tessera' — Valore duplicato: esiste già una riga con lo stesso valore nella chiave primaria o in un indice UNIQUE.», 3ª in sospeso; sul server 102 righe (prima 101)
   corretta la tessera del 2º → sul server 104 righe, le tre tessere T600001/T600002/T600003 presenti
 Esito: SUPERATO

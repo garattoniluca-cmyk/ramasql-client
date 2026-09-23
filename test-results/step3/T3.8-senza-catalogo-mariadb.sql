@@ -1,34 +1,34 @@
--- RamaSQL Client - registro SQL esportato il 2026-09-23 07:44:47
+-- RamaSQL Client - registro SQL esportato il 2026-09-23 08:45:16
 -- Connessione: Test MariaDB (MariaDB 11.5.2)
 -- Istruzioni: 8 riuscite; 0 non riuscite o interrotte (commentate, non vengono rieseguite: possono essere state applicate in parte, verifica)
 -- Riferimenti al catalogo «<origine>» tolti: lo script si riesegue sul catalogo corrente
 
--- #1 07:44:47 · Editor SQL · OK · 1 righe · 0 ms
+-- #1 08:45:16 · Editor SQL · OK · 1 righe · 0 ms
 -- CREATE DATABASE `<origine>` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 -- (istruzione sul catalogo d'origine «<origine>» omessa: rieseguire lo script non deve mai crearlo, modificarlo o eliminarlo)
 
--- #2 07:44:47 · Editor SQL · OK · 0 righe · 0 ms
+-- #2 08:45:16 · Editor SQL · OK · 0 righe · 0 ms
 -- USE `<origine>`;
 -- (USE del catalogo d'origine omesso)
 
--- #3 07:44:47 · Editor SQL · OK · 0 righe · 3 ms
+-- #3 08:45:16 · Editor SQL · OK · 0 righe · 5 ms
 -- (istruzione scritta a mano: tolti i riferimenti al catalogo «<origine>», controlla che faccia ancora ciò che vuoi)
 CREATE TABLE `t` (id INT PRIMARY KEY, nota VARCHAR(20));
 
--- #4 07:44:47 · Editor SQL · OK · 1 righe · 0 ms
+-- #4 08:45:16 · Editor SQL · OK · 1 righe · 1 ms
 -- INSERT INTO <origine> . t VALUES (1, 'spazi');
 -- (omessa: nomina ancora il catalogo d'origine «<origine>» in una forma che non si può togliere con sicurezza; adattala a mano se serve)
 
--- #5 07:44:47 · Editor SQL · OK · 1 righe · 0 ms
+-- #5 08:45:16 · Editor SQL · OK · 1 righe · 0 ms
 INSERT INTO t VALUES (2, 'corrente');
 
--- #6 07:44:47 · Editor SQL · OK · 1 righe · 0 ms
+-- #6 08:45:16 · Editor SQL · OK · 1 righe · 0 ms
 -- ALTER DATABASE `<origine>` COLLATE utf8mb4_bin;
 -- (istruzione sul catalogo d'origine «<origine>» omessa: rieseguire lo script non deve mai crearlo, modificarlo o eliminarlo)
 
--- #7 07:44:47 · Editor SQL · OK · 0 righe · 4 ms
+-- #7 08:45:16 · Editor SQL · OK · 0 righe · 2 ms
 CREATE TABLE u (x INT);
 
--- #8 07:44:47 · Editor SQL · OK · 2 righe · 6 ms
+-- #8 08:45:16 · Editor SQL · OK · 2 righe · 5 ms
 -- DROP DATABASE `<origine>`;
 -- (istruzione sul catalogo d'origine «<origine>» omessa: rieseguire lo script non deve mai crearlo, modificarlo o eliminarlo)

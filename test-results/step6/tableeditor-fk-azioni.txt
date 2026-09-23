@@ -1,0 +1,16 @@
+ALTER TABLE `ramasql_test_fk`.`libri` ADD CONSTRAINT `fk_libri_editori` FOREIGN KEY (`id_editore`) REFERENCES `editori` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT
+ALTER TABLE `ramasql_test_fk`.`libri` ADD CONSTRAINT `fk_libri_editori` FOREIGN KEY (`id_editore`) REFERENCES `editori` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE
+ALTER TABLE `ramasql_test_fk`.`libri` ADD CONSTRAINT `fk_libri_editori` FOREIGN KEY (`id_editore`) REFERENCES `editori` (`id`) ON DELETE RESTRICT ON UPDATE SET NULL
+ALTER TABLE `ramasql_test_fk`.`libri` ADD CONSTRAINT `fk_libri_editori` FOREIGN KEY (`id_editore`) REFERENCES `editori` (`id`) ON DELETE RESTRICT ON UPDATE NO ACTION
+ALTER TABLE `ramasql_test_fk`.`libri` ADD CONSTRAINT `fk_libri_editori` FOREIGN KEY (`id_editore`) REFERENCES `editori` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT
+ALTER TABLE `ramasql_test_fk`.`libri` ADD CONSTRAINT `fk_libri_editori` FOREIGN KEY (`id_editore`) REFERENCES `editori` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+ALTER TABLE `ramasql_test_fk`.`libri` ADD CONSTRAINT `fk_libri_editori` FOREIGN KEY (`id_editore`) REFERENCES `editori` (`id`) ON DELETE CASCADE ON UPDATE SET NULL
+ALTER TABLE `ramasql_test_fk`.`libri` ADD CONSTRAINT `fk_libri_editori` FOREIGN KEY (`id_editore`) REFERENCES `editori` (`id`) ON DELETE CASCADE ON UPDATE NO ACTION
+ALTER TABLE `ramasql_test_fk`.`libri` ADD CONSTRAINT `fk_libri_editori` FOREIGN KEY (`id_editore`) REFERENCES `editori` (`id`) ON DELETE SET NULL ON UPDATE RESTRICT
+ALTER TABLE `ramasql_test_fk`.`libri` ADD CONSTRAINT `fk_libri_editori` FOREIGN KEY (`id_editore`) REFERENCES `editori` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
+ALTER TABLE `ramasql_test_fk`.`libri` ADD CONSTRAINT `fk_libri_editori` FOREIGN KEY (`id_editore`) REFERENCES `editori` (`id`) ON DELETE SET NULL ON UPDATE SET NULL
+ALTER TABLE `ramasql_test_fk`.`libri` ADD CONSTRAINT `fk_libri_editori` FOREIGN KEY (`id_editore`) REFERENCES `editori` (`id`) ON DELETE SET NULL ON UPDATE NO ACTION
+ALTER TABLE `ramasql_test_fk`.`libri` ADD CONSTRAINT `fk_libri_editori` FOREIGN KEY (`id_editore`) REFERENCES `editori` (`id`) ON DELETE NO ACTION ON UPDATE RESTRICT
+ALTER TABLE `ramasql_test_fk`.`libri` ADD CONSTRAINT `fk_libri_editori` FOREIGN KEY (`id_editore`) REFERENCES `editori` (`id`) ON DELETE NO ACTION ON UPDATE CASCADE
+ALTER TABLE `ramasql_test_fk`.`libri` ADD CONSTRAINT `fk_libri_editori` FOREIGN KEY (`id_editore`) REFERENCES `editori` (`id`) ON DELETE NO ACTION ON UPDATE SET NULL
+ALTER TABLE `ramasql_test_fk`.`libri` ADD CONSTRAINT `fk_libri_editori` FOREIGN KEY (`id_editore`) REFERENCES `editori` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION

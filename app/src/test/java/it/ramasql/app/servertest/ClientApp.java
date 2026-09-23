@@ -112,6 +112,14 @@ public final class ClientApp implements AutoCloseable {
         return fromEdt(() -> nav().find(kind, catalog, name));
     }
 
+    /** Apre un nodo già trovato (es. il gruppo «Indici» di una tabella) e aspetta che i figli siano letti. */
+    public void expandPath(TreePath path) {
+        onEdt(() -> nav().tree().expandPath(path));
+        waitUntil("figli letti di " + path.getLastPathComponent(), TIMEOUT, () -> nav().isIdle()
+                && nav().tree().isExpanded(path)
+                && nav().childrenOf(path).stream().noneMatch(n -> n.kind() == NavNode.Kind.LOADING));
+    }
+
     /** Clic su una voce del menu contestuale del nodo. */
     public void menu(NavNode.Kind kind, String catalog, String name, String itemName) {
         node(kind, catalog, name);

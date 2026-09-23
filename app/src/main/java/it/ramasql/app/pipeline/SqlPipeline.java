@@ -99,7 +99,9 @@ public final class SqlPipeline {
             if (error != null) {
                 view.message(PipelineView.MessageKind.ERROR, Texts.get("pipeline.failedToRun", script.title(),
                         String.valueOf(error.getMessage())));
-                shown.complete(null);
+                // fallito non è annullato: chi ha proposto lo script deve poterli distinguere, altrimenti direbbe
+                // all'utente «operazione annullata» quando invece qualcosa si è rotto
+                shown.completeExceptionally(error);
             } else {
                 view.scriptFinished(result);
                 shown.complete(result);

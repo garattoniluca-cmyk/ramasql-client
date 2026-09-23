@@ -48,6 +48,7 @@ import it.ramasql.app.connection.ShellView;
 import it.ramasql.app.editor.SqlEditor;
 import it.ramasql.app.grid.DataGrid;
 import it.ramasql.app.navigator.NavigatorPanel;
+import it.ramasql.app.pipeline.PipelineView;
 import it.ramasql.app.tableeditor.TableEditor;
 import it.ramasql.app.workspace.MetadataCompletionSource;
 import it.ramasql.app.workspace.WorkTabs;
@@ -140,6 +141,7 @@ public final class MainFrame extends JFrame implements ShellView {
         navigatorPanel.setOnDesignTable((catalog, table) -> openTableEditor(catalog, table));
         navigatorPanel.setOnNewTable(catalog -> openTableEditor(catalog, null));
         navigatorPanel.setOnOpenView(this::openView);
+        navigatorPanel.setOnSelection(this::updateToolbar);
         settings.addListener(changed -> {
             if (workspace != null) {
                 workspace.setRowLimit(changed.rowLimit());
@@ -150,6 +152,9 @@ public final class MainFrame extends JFrame implements ShellView {
         addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
+                if (!tabs.confirmCloseAll()) {
+                    return;   // c'è lavoro in sospeso e l'utente ha scelto di restare
+                }
                 closeWorkspace();
                 connections.shutdown();
             }
@@ -490,8 +495,16 @@ public final class MainFrame extends JFrame implements ShellView {
         if (workspace == null) {
             return null;
         }
-        DataGrid grid = tabs.openDataEntry(workspace, table, settings.settings().rowLimit(),
-                workspacePrompts.gridPrompts());
+        DataGrid grid;
+        try {
+            grid = tabs.openDataEntry(workspace, table, settings.settings().rowLimit(),
+                    workspacePrompts.gridPrompts());
+        } catch (RuntimeException e) {
+            // la prima pagina non si è letta (connessione caduta, permessi, tabella sparita): si dice e basta
+            sqlPanel.message(PipelineView.MessageKind.ERROR, Texts.get("grid.read.failed", table.name(),
+                    e.getMessage() == null ? e.getClass().getSimpleName() : e.getMessage()));
+            return null;
+        }
         updateToolbar();
         return grid;
     }
@@ -501,8 +514,15 @@ public final class MainFrame extends JFrame implements ShellView {
         if (workspace == null) {
             return null;
         }
-        DataGrid grid = tabs.openView(workspace, view.catalog(), view.name(), view.columns(),
-                settings.settings().rowLimit(), workspacePrompts.gridPrompts());
+        DataGrid grid;
+        try {
+            grid = tabs.openView(workspace, view.catalog(), view.name(), view.columns(),
+                    settings.settings().rowLimit(), workspacePrompts.gridPrompts());
+        } catch (RuntimeException e) {
+            sqlPanel.message(PipelineView.MessageKind.ERROR, Texts.get("grid.read.failed", view.name(),
+                    e.getMessage() == null ? e.getClass().getSimpleName() : e.getMessage()));
+            return null;
+        }
         updateToolbar();
         return grid;
     }
@@ -526,6 +546,8 @@ public final class MainFrame extends JFrame implements ShellView {
         SqlEditor editor = tabs.openSqlEditor(workspace, settings.settings().rowLimit(),
                 workspacePrompts.editorPrompts(), workspacePrompts.gridPrompts(),
                 new MetadataCompletionSource(workspace.reader(), navigatorPanel::selectedCatalog));
+        // mentre una query gira, «Esegui» si spegne e «Interrompi» si accende
+        editor.addPropertyChangeListener(SqlEditor.PROPERTY_RUNNING, e -> updateToolbar());
         updateToolbar();
         return editor;
     }
@@ -619,17 +641,26 @@ public final class MainFrame extends JFrame implements ShellView {
      */
     public void updateToolbar() {
         boolean connected = workspace != null;
-        enable(button("newQuery"), connected, Texts.get("toolbar.newQuery.tooltip"));
-        enable(button("newTable"), connected && navigatorPanel.selectedCatalog() != null,
-                Texts.get("toolbar.newTable.tooltip"));
+        enable(button("newQuery"), connected, Texts.get("toolbar.newQuery.tooltip"),
+                Texts.get("toolbar.disabled.notConnected"));
+        String catalog = navigatorPanel.selectedCatalog();
+        enable(button("newTable"), connected && catalog != null && !catalog.isBlank(),
+                Texts.get("toolbar.newTable.tooltip"),
+                connected ? Texts.get("toolbar.disabled.noCatalog") : Texts.get("toolbar.disabled.notConnected"));
         SqlEditor editor = tabs.selectedEditor();
-        enable(button("run"), editor != null && !editor.isRunning(), Texts.get("toolbar.run.tooltip"));
-        enable(button("stop"), editor != null && editor.isRunning(), Texts.get("toolbar.stop.tooltip"));
+        enable(button("run"), editor != null && !editor.isRunning(), Texts.get("toolbar.run.tooltip"),
+                editor == null ? Texts.get("toolbar.disabled.noEditor") : Texts.get("toolbar.disabled.running"));
+        enable(button("stop"), editor != null && editor.isRunning(), Texts.get("toolbar.stop.tooltip"),
+                Texts.get("toolbar.disabled.nothingRunning"));
     }
 
-    private static void enable(JButton button, boolean on, String tooltip) {
+    /**
+     * Accende o spegne un pulsante <b>già realizzato</b>: quando è spento il suggerimento dice <i>perché</i> non si
+     * può usare adesso, non «Arriva in una prossima versione» (che sarebbe falso).
+     */
+    private static void enable(JButton button, boolean on, String tooltip, String whyDisabled) {
         button.setEnabled(on);
-        button.setToolTipText(on ? tooltip : Texts.get("toolbar.comingSoon"));
+        button.setToolTipText(on ? tooltip : whyDisabled);
     }
 
     public final JButton connectButton() {

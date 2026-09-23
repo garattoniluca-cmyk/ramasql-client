@@ -117,6 +117,7 @@ class T410T411ConfirmFlowTest {
         onEdt(() -> {
             grid.markSaved(statements.get(0).change().rowId(), Map.of("id", "13"));
             grid.markError(statements.get(1).change().rowId(), errore);
+            grid.confirmFinished();   // come fa GridApplier quando l'esito torna: la Conferma torna disponibile
         });
         assertEquals(PendingChanges.State.SALVATA, fromEdt(() -> grid.model().pending().state(12)));
         assertEquals("13", GridTestSupport.cells(grid, 12, 12, 0, 0).get(0).get(0));

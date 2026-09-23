@@ -29,6 +29,8 @@ Credenziali: **solo** in `docs/local DBs.txt` (escluso da git). I cataloghi già
 powershell -NoProfile -ExecutionPolicy Bypass -File scripts\verify.ps1
 ```
 Un solo modulo: `.\mvnw.cmd -q -pl core verify` (le dipendenze interne devono essere già in `~/.m2`: prima `install`).
+Una sola classe di test (utile mentre si lavora): `.\mvnw.cmd -pl app test -Dtest=T47* -DfailIfNoTests=false`; prima `.\mvnw.cmd -q -DskipTests -pl app -am install` e, per i test d'integrazione, le variabili `RAMASQL_IT_*` impostate a mano nella sessione (le stesse righe che carica `scriptserify.ps1`).
+I test d'interfaccia contro i server veri stanno in `app/src/test/java/it/ramasql/app/servertest/` (supporti condivisi `DbServer`, `ClientApp`, `Probe`): avviano il **programma vero** senza mostrare finestre e verificano gli esiti con una connessione separata.
 I test d'integrazione (`@Tag("it")`, modulo `it-tests`) girano contro **entrambi** i server e **falliscono** (non saltano) se le variabili mancano. I test con tag `office` (appunti a blocchi, spike S7) avviano **Excel** e **LibreOffice** nascosti e usano gli appunti di sistema, poi ripristinati: durante la verifica non copiare/incollare (`BUG-009`). Le evidenze (schermate, tabelle esiti) finiscono in `test-results/stepN/`.
 I test d'integrazione leggono le connessioni da variabili d'ambiente (mai da file in git):
 `RAMASQL_IT_MARIADB_URL`, `RAMASQL_IT_MARIADB_USER`, `RAMASQL_IT_MARIADB_PASSWORD` e le tre equivalenti `RAMASQL_IT_MYSQL_*`. Usano e distruggono solo cataloghi con prefisso `ramasql_test_`.

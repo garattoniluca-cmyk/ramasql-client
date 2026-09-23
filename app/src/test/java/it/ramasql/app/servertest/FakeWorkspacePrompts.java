@@ -24,9 +24,14 @@ import it.ramasql.core.exec.SqlScript;
 import it.ramasql.core.metadata.CollationInfo;
 
 /**
- * {@link WorkspacePrompts} dei test: costruisce le <b>finestre vere</b> (anteprima, nuovo catalogo, SQL di
- * creazione) senza mostrarle, le passa al test che le pilota via API (scrive, preme i pulsanti, le disegna) e
- * restituisce ciò che la finestra ha deciso. Registra tutto ciò che è stato mostrato.
+ * {@link WorkspacePrompts} dei test. Per l'<b>anteprima</b>, il <b>nuovo catalogo</b> e l'<b>SQL di creazione</b>
+ * costruisce le <b>finestre vere</b> senza mostrarle, le passa al test che le pilota via API (scrive, preme i
+ * pulsanti, le disegna) e restituisce ciò che la finestra ha deciso.
+ *
+ * <p>Le finestre modali <b>delle schede</b> — {@link #gridPrompts()}, {@link #editorPrompts()},
+ * {@link #tableEditorPrompts()} — sono invece <b>finte semplici</b>: non costruiscono nessuna finestra, registrano il
+ * testo ricevuto e restituiscono la risposta impostata dal test. Le asserzioni su quei testi verificano quindi ciò
+ * che il componente ha chiesto, non come la finestra lo mostra.
  */
 public final class FakeWorkspacePrompts implements WorkspacePrompts {
 

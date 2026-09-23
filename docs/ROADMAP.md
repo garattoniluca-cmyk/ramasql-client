@@ -12,10 +12,10 @@ Stato: ✅ completato · 🔄 in corso · ⏳ da fare
 | 0 | Fondamenta | S | ✅ 2026-09-21 |
 | 1 | **Spike di fattibilità (go/no-go)** | M | ✅ 2026-09-22 (GO, `docs/SPIKE-STEP1.md`) |
 | 2 | Shell dell'applicazione e connessioni | M | ✅ 2026-09-22 |
-| 3 | Navigatore, pipeline SQL, pannello SQL | M | ⏳ |
-| 4 | Editor SQL raw e **data-entry** (griglia, appunti a blocchi, conferma esplicita) | L | ⏳ |
-| 5 | Editor di tabelle (colonne, opzioni, engine) | L | ⏳ |
-| 6 | **Indici, chiavi esterne, integrità referenziale** (con verifica sul server) | M | ⏳ |
+| 3 | Navigatore, pipeline SQL, pannello SQL | M | ✅ 2026-09-23 |
+| 4 | Editor SQL raw e **data-entry** (griglia, appunti a blocchi, conferma esplicita) | L | ✅ 2026-09-23 |
+| 5 | Editor di tabelle (colonne, opzioni, engine) | L | ✅ 2026-09-23 |
+| 6 | **Indici, chiavi esterne, integrità referenziale** (con verifica sul server) | M | ✅ 2026-09-23 (Tappa M1) |
 | 7 | Query editor visivo (integrazione SQLeo) | L | ⏳ |
 | 8 | Viste grafiche | M | ⏳ |
 | 9 | Importazione CSV e JSON | M | ⏳ |
@@ -26,6 +26,8 @@ Stato: ✅ completato · 🔄 in corso · ⏳ da fare
 | 14 | Collaudo in aula e rilascio 1.0 | M | ⏳ |
 
 S = una sessione · M = 2–3 sessioni · L = 4+ sessioni (stime da affinare dopo lo Step 1).
+
+Gli step 1-6 sono stati eseguiti in autonomia (`ADR-014`). I **test N con Navicat** degli step 3-6 restano da fare con l'utente: l'elenco, con cosa guardare e cosa ricostruire a mano (i cataloghi dei test si distruggono da soli), è nel resoconto in testa a `docs/JOURNAL.md`. Esito per step: `scriptserify.ps1`.
 
 **Tappe:** M1 «Client di base» = fine Step 6 (già usabile in aula) · M2 «Visivo» = fine Step 8 · M3 «Completo» = fine Step 11 · M4 «Rilascio» = fine Step 14.
 **Installer: solo alla fine** (indicazione dell'utente, 2026-09-21): `Setup.exe` e ZIP portabile si fanno nello Step 13, **dopo una versione stabile**. Fino ad allora il programma si prova con `avvia.cmd`. Lo spike sull'installer (ex S3) è spostato nello Step 13.
@@ -329,7 +331,7 @@ Tutti i test su **macchine virtuali Windows 10 e Windows 11 pulite, senza Java**
 |---|---|
 | Prima dello Step 0 | D-01 nome · D-02 conferma GPL-3 · D-04 repository |
 | Prima dello Step 1 | ✅ D-03 chiusa (server locali) |
-| Step 3 | D-06 routine/trigger in sola lettura |
+| Step 3 | ✅ D-06 chiusa: routine, trigger ed eventi in sola lettura (`ADR-017`, decisa dall'agente) |
 | **A ogni stop di revisione (Step 3–11, 14)** | **controlli incrociati con Navicat** (test di tipo N) ed esito |
 | Step 7 | elenco di query/esercizi tipici del corso, per il campionario del parser |
 | Step 13 | D-05 firma del codice · D-07 aggiornamenti · un PC dell'aula o una VM Windows pulita |

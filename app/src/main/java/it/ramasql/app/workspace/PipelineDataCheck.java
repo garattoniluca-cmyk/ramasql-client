@@ -47,8 +47,10 @@ public final class PipelineDataCheck implements DataCheck {
         Objects.requireNonNull(done, "done");
         SqlScript script = SqlScript.of(it.ramasql.app.Texts.get("tableeditor.dataCheck.title"),
                 SqlOrigin.TABLE_EDITOR.label(), sql);
-        pipeline.propose(script).whenComplete((result, error) ->
-                SwingUtilities.invokeLater(() -> done.accept(convert(result))));
+        pipeline.propose(script).whenComplete((result, error) -> SwingUtilities.invokeLater(() ->
+                done.accept(error != null
+                        ? DataCheckResult.failed(it.ramasql.app.Texts.get("pipeline.failedShort"))
+                        : convert(result))));
     }
 
     private static DataCheckResult convert(ScriptResult result) {

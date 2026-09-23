@@ -138,6 +138,10 @@ class T42T43T46EditorSulServerTest {
                         .append(fromEdt(editor::errorLine)).append(" evidenziata, testo evidenziato «")
                         .append(fromEdt(editor::errorHighlightedText)).append("»\nEsito: SUPERATO\n");
             }
+        } catch (Throwable t) {
+            // un test fallito non deve lasciare un file di evidenza che sembra valido
+            ev.append("Esito: FALLITO - ").append(t).append('\n');
+            throw t;
         } finally {
             Probe.writeText("step4", "T4.2-T4.3-T4.6-server-" + server.id() + ".txt", ev.toString());
             server.dropQuietly(catalog);

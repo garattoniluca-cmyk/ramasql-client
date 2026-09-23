@@ -108,7 +108,7 @@ class T54T58SulServerTest {
                         .append("  esito: ").append(esito.replace('\n', ' ')).append('\n')
                         .append("  TableDiff(riletta dal server, voluta): 0 istruzioni\n");
 
-                // ---------------------------------------------------------------- T5.4: libri (con FK su editori)
+                // ---------------------------------------------------------------- T5.4: libri (con commento di tabella)
                 TableEditor libri = fromEdt(() -> a.frame().openTableEditor(catalog, null));
                 onEdt(() -> {
                     libri.optionsTab().setTableName("libri");
@@ -173,6 +173,10 @@ class T54T58SulServerTest {
                         .append(anteprimaRis.get(0).replace('\n', ' ')).append("\n  riga di prova scritta: order=7, ")
                         .append("select='nuovo' (DEFAULT)\nEsito: SUPERATO\n");
             }
+        } catch (Throwable t) {
+            // un test fallito non deve lasciare un file di evidenza che sembra valido
+            ev.append("Esito: FALLITO - ").append(t).append('\n');
+            throw t;
         } finally {
             Probe.writeText("step5", "T5.4-T5.8-server-" + server.id() + ".txt", ev.toString());
             server.dropQuietly(catalog);

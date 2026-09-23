@@ -66,8 +66,15 @@ public final class PipelineTableApplier implements TableApplier {
                 ? it.ramasql.app.Texts.get("tableeditor.script.create", request.edited().name())
                 : it.ramasql.app.Texts.get("tableeditor.script.alter", request.edited().name());
         SqlScript script = new SqlScript(title, origin, statements);
-        pipeline.propose(script).whenComplete((result, error) ->
-                SwingUtilities.invokeLater(() -> done.accept(outcome(request, texts, result))));
+        pipeline.propose(script).whenComplete((result, error) -> SwingUtilities.invokeLater(() -> {
+            if (error != null) {
+                // non annullato: fallito. L'errore l'ha già mostrato la pipeline; qui si dice che nulla è partito
+                done.accept(ApplyOutcome.failure(List.of(), texts, new ApplyError(0,
+                        it.ramasql.app.Texts.get("pipeline.failedShort"), ""), reload(request)));
+            } else {
+                done.accept(outcome(request, texts, result));
+            }
+        }));
     }
 
     /** Da esito dello script a esito per l'editor, con la tabella riletta dal server. */
@@ -79,6 +86,9 @@ public final class PipelineTableApplier implements TableApplier {
         ApplyError failure = null;
         int failedIndex = -1;
         for (StatementResult r : result.results()) {
+            if (r.index() < 0 || r.index() >= texts.size()) {
+                continue;   // indice fuori posto: non si inventa nulla
+            }
             if (r.isOk()) {
                 applied.add(texts.get(r.index()));
             } else {
@@ -88,6 +98,12 @@ public final class PipelineTableApplier implements TableApplier {
             }
         }
         TableDef reloaded = reload(request);
+        if (failure == null && result.interrupted() && applied.size() < texts.size()) {
+            // interrotta fra un'istruzione e la successiva: le rimanenti non sono partite, e dire «applicate tutte»
+            // sarebbe falso
+            failedIndex = applied.size();
+            failure = new ApplyError(0, it.ramasql.app.Texts.get("tableeditor.outcome.interrupted"), "");
+        }
         if (failure == null) {
             return ApplyOutcome.success(applied, reloaded);
         }

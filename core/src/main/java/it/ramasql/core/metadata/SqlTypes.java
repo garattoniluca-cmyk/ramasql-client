@@ -22,6 +22,9 @@ public final class SqlTypes {
     private static final Set<String> APPROXIMATE = Set.of("FLOAT", "DOUBLE");
     private static final Set<String> TEXT =
             Set.of("CHAR", "VARCHAR", "TINYTEXT", "TEXT", "MEDIUMTEXT", "LONGTEXT", "ENUM", "SET");
+    /** Tipi il cui valore è una sequenza di byte, non testo: si scrivono come {@code X'…'}, mai fra apici. */
+    private static final Set<String> BINARY = Set.of("BINARY", "VARBINARY", "TINYBLOB", "BLOB", "MEDIUMBLOB",
+            "LONGBLOB", "BIT");
 
     private SqlTypes() {
     }
@@ -60,6 +63,15 @@ public final class SqlTypes {
     /** Tipi con charset e collation. */
     public static boolean isText(String dataType) {
         return TEXT.contains(canonical(dataType));
+    }
+
+    /**
+     * Tipi binari (BINARY, VARBINARY, i BLOB, BIT): il valore è una sequenza di byte. Vanno scritti come
+     * {@code X'48656C6C6F'} — metterli fra apici salverebbe il <i>testo</i> «0x48656C6C6F» al posto dei byte, e in
+     * una condizione {@code WHERE} su una chiave binaria non troverebbe nessuna riga.
+     */
+    public static boolean isBinary(String dataType) {
+        return BINARY.contains(canonical(dataType));
     }
 
     /** BOOL/BOOLEAN oppure TINYINT(1), la forma in cui il server li conserva. */

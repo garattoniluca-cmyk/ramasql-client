@@ -1,0 +1,18 @@
+QUERY:
+SELECT figlia.* FROM `ramasql_test_t67`.`prestiti` AS figlia LEFT JOIN `ramasql_test_t67`.`soci` AS riferita ON riferita.`id` = figlia.`id_socio` WHERE figlia.`id_socio` IS NOT NULL AND riferita.`id` IS NULL
+
+ESITO VERIFICA:
+⚠ Trovate 3 righe orfane (valori che non esistono nella tabella riferita): con queste righe il server rifiuterà la chiave esterna (errore 1452). Correggile o cancellale prima.
+
+ESECUZIONE COMUNQUE:
+✘ Istruzioni applicate: 0 su 1; il server si è fermato alla n. 1. Le istruzioni DDL non si annullano: ciò che è stato applicato resta.
+✘ Errore 1452: Cannot add or update a child row: a foreign key constraint fails
+Ci sono righe che riferiscono valori che non esistono nella tabella riferita.
+Non riuscita: ALTER TABLE `ramasql_test_t67`.`prestiti` ADD CONSTRAINT `fk_prestiti_soci` FOREIGN KEY (`id_socio`) REFERENCES `soci` (`id`) ON DELETE RESTRICT ON UPDATE RE…
+ℹ L'editor mostra ora la tabella com'è davvero sul server (riletta dopo l'esecuzione).
+
+DOPO LA CORREZIONE:
+✔ Istruzione applicata.
+Applicata: ALTER TABLE `ramasql_test_t67`.`prestiti` ADD CONSTRAINT `fk_prestiti_soci` FOREIGN KEY (`id_socio`) REFERENCES `soci` (`id`) ON DELETE RESTRICT ON UPDATE RE…
+ℹ L'editor mostra ora la tabella com'è davvero sul server (riletta dopo l'esecuzione).
+✔ verificato sul server: indici e chiavi esterne di «prestiti» sono quelli chiesti

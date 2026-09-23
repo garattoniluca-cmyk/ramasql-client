@@ -1,0 +1,946 @@
+# T6.4 — verifica dopo l'applicazione su MySQL
+# Classe: it.ramasql.it.step6.T64VerificaDopoTest (step6, it)
+# I01–I20 = casi di T6.1, F01–F32 = casi di T6.2 (F01–F16: le 16 combinazioni di azioni), X1–X3 = casi alterati ad arte.
+# Casi: 55 — conformi: 52 — alterati con differenza dichiarata: 3
+
+## F01 — crea FK: ON DELETE RESTRICT ON UPDATE RESTRICT
+tabella di partenza:
+    CREATE TABLE `libri` (
+      `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+      `titolo` VARCHAR(100) NOT NULL,
+      `id_editore` INT UNSIGNED NULL,
+      PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB;
+SQL applicato (= test U):
+    ALTER TABLE `libri` ADD CONSTRAINT `fk_libri_editori` FOREIGN KEY (`id_editore`) REFERENCES `editori` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+esecuzione: 1 istruzioni OK, nell'ordine
+riletti dal server: indici [PRIMARY `PRIMARY` [id], INDEX `fk_libri_editori` [id_editore]]; FK [`fk_libri_editori` [id_editore] → editori[id] ON DELETE RESTRICT ON UPDATE RESTRICT]
+verifica: ✔ verificato sul server: indici e chiavi esterne di «libri» sono quelli chiesti
+    ℹ Il server ha creato da sé l'indice «fk_libri_editori» (id_editore) per la chiave esterna «fk_libri_editori»: una chiave esterna ha sempre bisogno di un indice sulle sue colonne.
+ESITO: conforme
+
+## F02 — crea FK: ON DELETE RESTRICT ON UPDATE CASCADE
+tabella di partenza:
+    CREATE TABLE `libri` (
+      `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+      `titolo` VARCHAR(100) NOT NULL,
+      `id_editore` INT UNSIGNED NULL,
+      PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB;
+SQL applicato (= test U):
+    ALTER TABLE `libri` ADD CONSTRAINT `fk_libri_editori` FOREIGN KEY (`id_editore`) REFERENCES `editori` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+esecuzione: 1 istruzioni OK, nell'ordine
+riletti dal server: indici [PRIMARY `PRIMARY` [id], INDEX `fk_libri_editori` [id_editore]]; FK [`fk_libri_editori` [id_editore] → editori[id] ON DELETE RESTRICT ON UPDATE CASCADE]
+verifica: ✔ verificato sul server: indici e chiavi esterne di «libri» sono quelli chiesti
+    ℹ Il server ha creato da sé l'indice «fk_libri_editori» (id_editore) per la chiave esterna «fk_libri_editori»: una chiave esterna ha sempre bisogno di un indice sulle sue colonne.
+ESITO: conforme
+
+## F03 — crea FK: ON DELETE RESTRICT ON UPDATE SET NULL
+tabella di partenza:
+    CREATE TABLE `libri` (
+      `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+      `titolo` VARCHAR(100) NOT NULL,
+      `id_editore` INT UNSIGNED NULL,
+      PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB;
+SQL applicato (= test U):
+    ALTER TABLE `libri` ADD CONSTRAINT `fk_libri_editori` FOREIGN KEY (`id_editore`) REFERENCES `editori` (`id`) ON DELETE RESTRICT ON UPDATE SET NULL;
+esecuzione: 1 istruzioni OK, nell'ordine
+riletti dal server: indici [PRIMARY `PRIMARY` [id], INDEX `fk_libri_editori` [id_editore]]; FK [`fk_libri_editori` [id_editore] → editori[id] ON DELETE RESTRICT ON UPDATE SET NULL]
+verifica: ✔ verificato sul server: indici e chiavi esterne di «libri» sono quelli chiesti
+    ℹ Il server ha creato da sé l'indice «fk_libri_editori» (id_editore) per la chiave esterna «fk_libri_editori»: una chiave esterna ha sempre bisogno di un indice sulle sue colonne.
+ESITO: conforme
+
+## F04 — crea FK: ON DELETE RESTRICT ON UPDATE NO ACTION
+tabella di partenza:
+    CREATE TABLE `libri` (
+      `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+      `titolo` VARCHAR(100) NOT NULL,
+      `id_editore` INT UNSIGNED NULL,
+      PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB;
+SQL applicato (= test U):
+    ALTER TABLE `libri` ADD CONSTRAINT `fk_libri_editori` FOREIGN KEY (`id_editore`) REFERENCES `editori` (`id`) ON DELETE RESTRICT ON UPDATE NO ACTION;
+esecuzione: 1 istruzioni OK, nell'ordine
+riletti dal server: indici [PRIMARY `PRIMARY` [id], INDEX `fk_libri_editori` [id_editore]]; FK [`fk_libri_editori` [id_editore] → editori[id] ON DELETE RESTRICT ON UPDATE NO ACTION]
+verifica: ✔ verificato sul server: indici e chiavi esterne di «libri» sono quelli chiesti
+    ℹ Il server ha creato da sé l'indice «fk_libri_editori» (id_editore) per la chiave esterna «fk_libri_editori»: una chiave esterna ha sempre bisogno di un indice sulle sue colonne.
+ESITO: conforme
+
+## F05 — crea FK: ON DELETE CASCADE ON UPDATE RESTRICT
+tabella di partenza:
+    CREATE TABLE `libri` (
+      `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+      `titolo` VARCHAR(100) NOT NULL,
+      `id_editore` INT UNSIGNED NULL,
+      PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB;
+SQL applicato (= test U):
+    ALTER TABLE `libri` ADD CONSTRAINT `fk_libri_editori` FOREIGN KEY (`id_editore`) REFERENCES `editori` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT;
+esecuzione: 1 istruzioni OK, nell'ordine
+riletti dal server: indici [PRIMARY `PRIMARY` [id], INDEX `fk_libri_editori` [id_editore]]; FK [`fk_libri_editori` [id_editore] → editori[id] ON DELETE CASCADE ON UPDATE RESTRICT]
+verifica: ✔ verificato sul server: indici e chiavi esterne di «libri» sono quelli chiesti
+    ℹ Il server ha creato da sé l'indice «fk_libri_editori» (id_editore) per la chiave esterna «fk_libri_editori»: una chiave esterna ha sempre bisogno di un indice sulle sue colonne.
+ESITO: conforme
+
+## F06 — crea FK: ON DELETE CASCADE ON UPDATE CASCADE
+tabella di partenza:
+    CREATE TABLE `libri` (
+      `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+      `titolo` VARCHAR(100) NOT NULL,
+      `id_editore` INT UNSIGNED NULL,
+      PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB;
+SQL applicato (= test U):
+    ALTER TABLE `libri` ADD CONSTRAINT `fk_libri_editori` FOREIGN KEY (`id_editore`) REFERENCES `editori` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+esecuzione: 1 istruzioni OK, nell'ordine
+riletti dal server: indici [PRIMARY `PRIMARY` [id], INDEX `fk_libri_editori` [id_editore]]; FK [`fk_libri_editori` [id_editore] → editori[id] ON DELETE CASCADE ON UPDATE CASCADE]
+verifica: ✔ verificato sul server: indici e chiavi esterne di «libri» sono quelli chiesti
+    ℹ Il server ha creato da sé l'indice «fk_libri_editori» (id_editore) per la chiave esterna «fk_libri_editori»: una chiave esterna ha sempre bisogno di un indice sulle sue colonne.
+ESITO: conforme
+
+## F07 — crea FK: ON DELETE CASCADE ON UPDATE SET NULL
+tabella di partenza:
+    CREATE TABLE `libri` (
+      `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+      `titolo` VARCHAR(100) NOT NULL,
+      `id_editore` INT UNSIGNED NULL,
+      PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB;
+SQL applicato (= test U):
+    ALTER TABLE `libri` ADD CONSTRAINT `fk_libri_editori` FOREIGN KEY (`id_editore`) REFERENCES `editori` (`id`) ON DELETE CASCADE ON UPDATE SET NULL;
+esecuzione: 1 istruzioni OK, nell'ordine
+riletti dal server: indici [PRIMARY `PRIMARY` [id], INDEX `fk_libri_editori` [id_editore]]; FK [`fk_libri_editori` [id_editore] → editori[id] ON DELETE CASCADE ON UPDATE SET NULL]
+verifica: ✔ verificato sul server: indici e chiavi esterne di «libri» sono quelli chiesti
+    ℹ Il server ha creato da sé l'indice «fk_libri_editori» (id_editore) per la chiave esterna «fk_libri_editori»: una chiave esterna ha sempre bisogno di un indice sulle sue colonne.
+ESITO: conforme
+
+## F08 — crea FK: ON DELETE CASCADE ON UPDATE NO ACTION
+tabella di partenza:
+    CREATE TABLE `libri` (
+      `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+      `titolo` VARCHAR(100) NOT NULL,
+      `id_editore` INT UNSIGNED NULL,
+      PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB;
+SQL applicato (= test U):
+    ALTER TABLE `libri` ADD CONSTRAINT `fk_libri_editori` FOREIGN KEY (`id_editore`) REFERENCES `editori` (`id`) ON DELETE CASCADE ON UPDATE NO ACTION;
+esecuzione: 1 istruzioni OK, nell'ordine
+riletti dal server: indici [PRIMARY `PRIMARY` [id], INDEX `fk_libri_editori` [id_editore]]; FK [`fk_libri_editori` [id_editore] → editori[id] ON DELETE CASCADE ON UPDATE NO ACTION]
+verifica: ✔ verificato sul server: indici e chiavi esterne di «libri» sono quelli chiesti
+    ℹ Il server ha creato da sé l'indice «fk_libri_editori» (id_editore) per la chiave esterna «fk_libri_editori»: una chiave esterna ha sempre bisogno di un indice sulle sue colonne.
+ESITO: conforme
+
+## F09 — crea FK: ON DELETE SET NULL ON UPDATE RESTRICT
+tabella di partenza:
+    CREATE TABLE `libri` (
+      `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+      `titolo` VARCHAR(100) NOT NULL,
+      `id_editore` INT UNSIGNED NULL,
+      PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB;
+SQL applicato (= test U):
+    ALTER TABLE `libri` ADD CONSTRAINT `fk_libri_editori` FOREIGN KEY (`id_editore`) REFERENCES `editori` (`id`) ON DELETE SET NULL ON UPDATE RESTRICT;
+esecuzione: 1 istruzioni OK, nell'ordine
+riletti dal server: indici [PRIMARY `PRIMARY` [id], INDEX `fk_libri_editori` [id_editore]]; FK [`fk_libri_editori` [id_editore] → editori[id] ON DELETE SET NULL ON UPDATE RESTRICT]
+verifica: ✔ verificato sul server: indici e chiavi esterne di «libri» sono quelli chiesti
+    ℹ Il server ha creato da sé l'indice «fk_libri_editori» (id_editore) per la chiave esterna «fk_libri_editori»: una chiave esterna ha sempre bisogno di un indice sulle sue colonne.
+ESITO: conforme
+
+## F10 — crea FK: ON DELETE SET NULL ON UPDATE CASCADE
+tabella di partenza:
+    CREATE TABLE `libri` (
+      `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+      `titolo` VARCHAR(100) NOT NULL,
+      `id_editore` INT UNSIGNED NULL,
+      PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB;
+SQL applicato (= test U):
+    ALTER TABLE `libri` ADD CONSTRAINT `fk_libri_editori` FOREIGN KEY (`id_editore`) REFERENCES `editori` (`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+esecuzione: 1 istruzioni OK, nell'ordine
+riletti dal server: indici [PRIMARY `PRIMARY` [id], INDEX `fk_libri_editori` [id_editore]]; FK [`fk_libri_editori` [id_editore] → editori[id] ON DELETE SET NULL ON UPDATE CASCADE]
+verifica: ✔ verificato sul server: indici e chiavi esterne di «libri» sono quelli chiesti
+    ℹ Il server ha creato da sé l'indice «fk_libri_editori» (id_editore) per la chiave esterna «fk_libri_editori»: una chiave esterna ha sempre bisogno di un indice sulle sue colonne.
+ESITO: conforme
+
+## F11 — crea FK: ON DELETE SET NULL ON UPDATE SET NULL
+tabella di partenza:
+    CREATE TABLE `libri` (
+      `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+      `titolo` VARCHAR(100) NOT NULL,
+      `id_editore` INT UNSIGNED NULL,
+      PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB;
+SQL applicato (= test U):
+    ALTER TABLE `libri` ADD CONSTRAINT `fk_libri_editori` FOREIGN KEY (`id_editore`) REFERENCES `editori` (`id`) ON DELETE SET NULL ON UPDATE SET NULL;
+esecuzione: 1 istruzioni OK, nell'ordine
+riletti dal server: indici [PRIMARY `PRIMARY` [id], INDEX `fk_libri_editori` [id_editore]]; FK [`fk_libri_editori` [id_editore] → editori[id] ON DELETE SET NULL ON UPDATE SET NULL]
+verifica: ✔ verificato sul server: indici e chiavi esterne di «libri» sono quelli chiesti
+    ℹ Il server ha creato da sé l'indice «fk_libri_editori» (id_editore) per la chiave esterna «fk_libri_editori»: una chiave esterna ha sempre bisogno di un indice sulle sue colonne.
+ESITO: conforme
+
+## F12 — crea FK: ON DELETE SET NULL ON UPDATE NO ACTION
+tabella di partenza:
+    CREATE TABLE `libri` (
+      `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+      `titolo` VARCHAR(100) NOT NULL,
+      `id_editore` INT UNSIGNED NULL,
+      PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB;
+SQL applicato (= test U):
+    ALTER TABLE `libri` ADD CONSTRAINT `fk_libri_editori` FOREIGN KEY (`id_editore`) REFERENCES `editori` (`id`) ON DELETE SET NULL ON UPDATE NO ACTION;
+esecuzione: 1 istruzioni OK, nell'ordine
+riletti dal server: indici [PRIMARY `PRIMARY` [id], INDEX `fk_libri_editori` [id_editore]]; FK [`fk_libri_editori` [id_editore] → editori[id] ON DELETE SET NULL ON UPDATE NO ACTION]
+verifica: ✔ verificato sul server: indici e chiavi esterne di «libri» sono quelli chiesti
+    ℹ Il server ha creato da sé l'indice «fk_libri_editori» (id_editore) per la chiave esterna «fk_libri_editori»: una chiave esterna ha sempre bisogno di un indice sulle sue colonne.
+ESITO: conforme
+
+## F13 — crea FK: ON DELETE NO ACTION ON UPDATE RESTRICT
+tabella di partenza:
+    CREATE TABLE `libri` (
+      `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+      `titolo` VARCHAR(100) NOT NULL,
+      `id_editore` INT UNSIGNED NULL,
+      PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB;
+SQL applicato (= test U):
+    ALTER TABLE `libri` ADD CONSTRAINT `fk_libri_editori` FOREIGN KEY (`id_editore`) REFERENCES `editori` (`id`) ON DELETE NO ACTION ON UPDATE RESTRICT;
+esecuzione: 1 istruzioni OK, nell'ordine
+riletti dal server: indici [PRIMARY `PRIMARY` [id], INDEX `fk_libri_editori` [id_editore]]; FK [`fk_libri_editori` [id_editore] → editori[id] ON DELETE NO ACTION ON UPDATE RESTRICT]
+verifica: ✔ verificato sul server: indici e chiavi esterne di «libri» sono quelli chiesti
+    ℹ Il server ha creato da sé l'indice «fk_libri_editori» (id_editore) per la chiave esterna «fk_libri_editori»: una chiave esterna ha sempre bisogno di un indice sulle sue colonne.
+ESITO: conforme
+
+## F14 — crea FK: ON DELETE NO ACTION ON UPDATE CASCADE
+tabella di partenza:
+    CREATE TABLE `libri` (
+      `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+      `titolo` VARCHAR(100) NOT NULL,
+      `id_editore` INT UNSIGNED NULL,
+      PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB;
+SQL applicato (= test U):
+    ALTER TABLE `libri` ADD CONSTRAINT `fk_libri_editori` FOREIGN KEY (`id_editore`) REFERENCES `editori` (`id`) ON DELETE NO ACTION ON UPDATE CASCADE;
+esecuzione: 1 istruzioni OK, nell'ordine
+riletti dal server: indici [PRIMARY `PRIMARY` [id], INDEX `fk_libri_editori` [id_editore]]; FK [`fk_libri_editori` [id_editore] → editori[id] ON DELETE NO ACTION ON UPDATE CASCADE]
+verifica: ✔ verificato sul server: indici e chiavi esterne di «libri» sono quelli chiesti
+    ℹ Il server ha creato da sé l'indice «fk_libri_editori» (id_editore) per la chiave esterna «fk_libri_editori»: una chiave esterna ha sempre bisogno di un indice sulle sue colonne.
+ESITO: conforme
+
+## F15 — crea FK: ON DELETE NO ACTION ON UPDATE SET NULL
+tabella di partenza:
+    CREATE TABLE `libri` (
+      `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+      `titolo` VARCHAR(100) NOT NULL,
+      `id_editore` INT UNSIGNED NULL,
+      PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB;
+SQL applicato (= test U):
+    ALTER TABLE `libri` ADD CONSTRAINT `fk_libri_editori` FOREIGN KEY (`id_editore`) REFERENCES `editori` (`id`) ON DELETE NO ACTION ON UPDATE SET NULL;
+esecuzione: 1 istruzioni OK, nell'ordine
+riletti dal server: indici [PRIMARY `PRIMARY` [id], INDEX `fk_libri_editori` [id_editore]]; FK [`fk_libri_editori` [id_editore] → editori[id] ON DELETE NO ACTION ON UPDATE SET NULL]
+verifica: ✔ verificato sul server: indici e chiavi esterne di «libri» sono quelli chiesti
+    ℹ Il server ha creato da sé l'indice «fk_libri_editori» (id_editore) per la chiave esterna «fk_libri_editori»: una chiave esterna ha sempre bisogno di un indice sulle sue colonne.
+ESITO: conforme
+
+## F16 — crea FK: ON DELETE NO ACTION ON UPDATE NO ACTION
+tabella di partenza:
+    CREATE TABLE `libri` (
+      `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+      `titolo` VARCHAR(100) NOT NULL,
+      `id_editore` INT UNSIGNED NULL,
+      PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB;
+SQL applicato (= test U):
+    ALTER TABLE `libri` ADD CONSTRAINT `fk_libri_editori` FOREIGN KEY (`id_editore`) REFERENCES `editori` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION;
+esecuzione: 1 istruzioni OK, nell'ordine
+riletti dal server: indici [PRIMARY `PRIMARY` [id], INDEX `fk_libri_editori` [id_editore]]; FK [`fk_libri_editori` [id_editore] → editori[id] ON DELETE NO ACTION ON UPDATE NO ACTION]
+verifica: ✔ verificato sul server: indici e chiavi esterne di «libri» sono quelli chiesti
+    ℹ Il server ha creato da sé l'indice «fk_libri_editori» (id_editore) per la chiave esterna «fk_libri_editori»: una chiave esterna ha sempre bisogno di un indice sulle sue colonne.
+ESITO: conforme
+
+## F17 — FK composta
+tabella di partenza:
+    CREATE TABLE `citazioni` (
+      `id` INT NOT NULL,
+      `id_libro` INT UNSIGNED NOT NULL,
+      `id_autore` INT UNSIGNED NOT NULL,
+      PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB;
+SQL applicato (= test U):
+    ALTER TABLE `citazioni` ADD CONSTRAINT `fk_citazioni_libri_autori` FOREIGN KEY (`id_libro`, `id_autore`) REFERENCES `libri_autori` (`id_libro`, `id_autore`) ON DELETE CASCADE ON UPDATE RESTRICT;
+esecuzione: 1 istruzioni OK, nell'ordine
+riletti dal server: indici [PRIMARY `PRIMARY` [id], INDEX `fk_citazioni_libri_autori` [id_libro, id_autore]]; FK [`fk_citazioni_libri_autori` [id_libro, id_autore] → libri_autori[id_libro, id_autore] ON DELETE CASCADE ON UPDATE RESTRICT]
+verifica: ✔ verificato sul server: indici e chiavi esterne di «citazioni» sono quelli chiesti
+    ℹ Il server ha creato da sé l'indice «fk_citazioni_libri_autori» (id_libro, id_autore) per la chiave esterna «fk_citazioni_libri_autori»: una chiave esterna ha sempre bisogno di un indice sulle sue colonne.
+ESITO: conforme
+
+## F18 — elimina FK
+tabella di partenza:
+    CREATE TABLE `libri` (
+      `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+      `titolo` VARCHAR(100) NOT NULL,
+      `id_editore` INT UNSIGNED NULL,
+      PRIMARY KEY (`id`),
+      CONSTRAINT `fk_libri_editori` FOREIGN KEY (`id_editore`) REFERENCES `editori` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT
+    ) ENGINE=InnoDB;
+SQL applicato (= test U):
+    ALTER TABLE `libri` DROP FOREIGN KEY `fk_libri_editori`;
+esecuzione: 1 istruzioni OK, nell'ordine
+riletti dal server: indici [PRIMARY `PRIMARY` [id], INDEX `fk_libri_editori` [id_editore]]; FK []
+verifica: ✔ verificato sul server: indici e chiavi esterne di «libri» sono quelli chiesti
+    ℹ L'indice «fk_libri_editori» (id_editore) era stato creato per una chiave esterna ora eliminata: il server lo conserva. Se non serve, lo puoi eliminare.
+ESITO: conforme
+
+## F19 — modifica azione: prima DROP FOREIGN KEY, poi ADD CONSTRAINT, in due istruzioni
+tabella di partenza:
+    CREATE TABLE `libri` (
+      `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+      `titolo` VARCHAR(100) NOT NULL,
+      `id_editore` INT UNSIGNED NULL,
+      PRIMARY KEY (`id`),
+      CONSTRAINT `fk_libri_editori` FOREIGN KEY (`id_editore`) REFERENCES `editori` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT
+    ) ENGINE=InnoDB;
+SQL applicato (= test U):
+    ALTER TABLE `libri` DROP FOREIGN KEY `fk_libri_editori`;
+    ALTER TABLE `libri` ADD CONSTRAINT `fk_libri_editori` FOREIGN KEY (`id_editore`) REFERENCES `editori` (`id`) ON DELETE SET NULL ON UPDATE RESTRICT;
+esecuzione: 2 istruzioni OK, nell'ordine
+modifica di FK: DROP FOREIGN KEY eseguita prima di ADD CONSTRAINT (log #2 < #3)
+riletti dal server: indici [PRIMARY `PRIMARY` [id], INDEX `fk_libri_editori` [id_editore]]; FK [`fk_libri_editori` [id_editore] → editori[id] ON DELETE SET NULL ON UPDATE RESTRICT]
+verifica: ✔ verificato sul server: indici e chiavi esterne di «libri» sono quelli chiesti
+    ℹ Il server ha creato da sé l'indice «fk_libri_editori» (id_editore) per la chiave esterna «fk_libri_editori»: una chiave esterna ha sempre bisogno di un indice sulle sue colonne.
+ESITO: conforme
+
+## F20 — modifica tabella riferita: DROP poi ADD
+tabella di partenza:
+    CREATE TABLE `libri` (
+      `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+      `titolo` VARCHAR(100) NOT NULL,
+      `id_editore` INT UNSIGNED NULL,
+      PRIMARY KEY (`id`),
+      CONSTRAINT `fk_libri_editori` FOREIGN KEY (`id_editore`) REFERENCES `editori` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT
+    ) ENGINE=InnoDB;
+SQL applicato (= test U):
+    ALTER TABLE `libri` DROP FOREIGN KEY `fk_libri_editori`;
+    ALTER TABLE `libri` ADD CONSTRAINT `fk_libri_editori` FOREIGN KEY (`id_editore`) REFERENCES `case_editrici` (`codice`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+esecuzione: 2 istruzioni OK, nell'ordine
+modifica di FK: DROP FOREIGN KEY eseguita prima di ADD CONSTRAINT (log #2 < #3)
+riletti dal server: indici [PRIMARY `PRIMARY` [id], INDEX `fk_libri_editori` [id_editore]]; FK [`fk_libri_editori` [id_editore] → case_editrici[codice] ON DELETE RESTRICT ON UPDATE RESTRICT]
+verifica: ✔ verificato sul server: indici e chiavi esterne di «libri» sono quelli chiesti
+    ℹ Il server ha creato da sé l'indice «fk_libri_editori» (id_editore) per la chiave esterna «fk_libri_editori»: una chiave esterna ha sempre bisogno di un indice sulle sue colonne.
+ESITO: conforme
+
+## F21 — rinomina FK: DROP poi ADD con il nome nuovo
+tabella di partenza:
+    CREATE TABLE `libri` (
+      `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+      `titolo` VARCHAR(100) NOT NULL,
+      `id_editore` INT UNSIGNED NULL,
+      PRIMARY KEY (`id`),
+      CONSTRAINT `fk_libri_editori` FOREIGN KEY (`id_editore`) REFERENCES `editori` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT
+    ) ENGINE=InnoDB;
+SQL applicato (= test U):
+    ALTER TABLE `libri` DROP FOREIGN KEY `fk_libri_editori`;
+    ALTER TABLE `libri` ADD CONSTRAINT `fk editore` FOREIGN KEY (`id_editore`) REFERENCES `editori` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+esecuzione: 2 istruzioni OK, nell'ordine
+modifica di FK: DROP FOREIGN KEY eseguita prima di ADD CONSTRAINT (log #2 < #3)
+riletti dal server: indici [PRIMARY `PRIMARY` [id], INDEX `fk editore` [id_editore]]; FK [`fk editore` [id_editore] → editori[id] ON DELETE RESTRICT ON UPDATE RESTRICT]
+verifica: ✔ verificato sul server: indici e chiavi esterne di «libri» sono quelli chiesti
+    ℹ Il server ha creato da sé l'indice «fk editore» (id_editore) per la chiave esterna «fk editore»: una chiave esterna ha sempre bisogno di un indice sulle sue colonne.
+ESITO: conforme
+
+## F22 — FK autoreferenziale
+tabella di partenza:
+    CREATE TABLE `categorie` (
+      `id` INT NOT NULL,
+      `nome` VARCHAR(50) NOT NULL,
+      `id_padre` INT NULL,
+      PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB;
+SQL applicato (= test U):
+    ALTER TABLE `categorie` ADD CONSTRAINT `fk_categorie_padre` FOREIGN KEY (`id_padre`) REFERENCES `categorie` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT;
+esecuzione: 1 istruzioni OK, nell'ordine
+riletti dal server: indici [PRIMARY `PRIMARY` [id], INDEX `fk_categorie_padre` [id_padre]]; FK [`fk_categorie_padre` [id_padre] → categorie[id] ON DELETE CASCADE ON UPDATE RESTRICT]
+verifica: ✔ verificato sul server: indici e chiavi esterne di «categorie» sono quelli chiesti
+    ℹ Il server ha creato da sé l'indice «fk_categorie_padre» (id_padre) per la chiave esterna «fk_categorie_padre»: una chiave esterna ha sempre bisogno di un indice sulle sue colonne.
+ESITO: conforme
+
+## F23 — FK autoreferenziale già nel CREATE TABLE
+SQL applicato (= test U):
+    CREATE TABLE `categorie` (
+      `id` INT NOT NULL,
+      `nome` VARCHAR(50) NOT NULL,
+      `id_padre` INT NULL,
+      PRIMARY KEY (`id`),
+      CONSTRAINT `fk_categorie_padre` FOREIGN KEY (`id_padre`) REFERENCES `categorie` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT
+    ) ENGINE=InnoDB;
+esecuzione: 1 istruzioni OK, nell'ordine
+riletti dal server: indici [PRIMARY `PRIMARY` [id], INDEX `fk_categorie_padre` [id_padre]]; FK [`fk_categorie_padre` [id_padre] → categorie[id] ON DELETE CASCADE ON UPDATE RESTRICT]
+verifica: ✔ verificato sul server: indici e chiavi esterne di «categorie» sono quelli chiesti
+    ℹ Il server ha creato da sé l'indice «fk_categorie_padre» (id_padre) per la chiave esterna «fk_categorie_padre»: una chiave esterna ha sempre bisogno di un indice sulle sue colonne.
+ESITO: conforme
+
+## F24 — FK autoreferenziale + rinomina della tabella: basta il RENAME
+tabella di partenza:
+    CREATE TABLE `categorie` (
+      `id` INT NOT NULL,
+      `nome` VARCHAR(50) NOT NULL,
+      `id_padre` INT NULL,
+      PRIMARY KEY (`id`),
+      CONSTRAINT `fk_categorie_padre` FOREIGN KEY (`id_padre`) REFERENCES `categorie` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT
+    ) ENGINE=InnoDB;
+SQL applicato (= test U):
+    RENAME TABLE `categorie` TO `generi`;
+esecuzione: 1 istruzioni OK, nell'ordine
+riletti dal server: indici [PRIMARY `PRIMARY` [id], INDEX `fk_categorie_padre` [id_padre]]; FK [`fk_categorie_padre` [id_padre] → generi[id] ON DELETE CASCADE ON UPDATE RESTRICT]
+verifica: ✔ verificato sul server: indici e chiavi esterne di «generi» sono quelli chiesti
+    ℹ Il server ha creato da sé l'indice «fk_categorie_padre» (id_padre) per la chiave esterna «fk_categorie_padre»: una chiave esterna ha sempre bisogno di un indice sulle sue colonne.
+ESITO: conforme
+
+## F25 — nuova colonna, indice e FK in un solo ALTER, nell'ordine giusto
+tabella di partenza:
+    CREATE TABLE `citazioni` (
+      `id` INT NOT NULL,
+      `id_libro` INT UNSIGNED NOT NULL,
+      `id_autore` INT UNSIGNED NOT NULL,
+      PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB;
+SQL applicato (= test U):
+    ALTER TABLE `citazioni`
+      ADD COLUMN `id_editore` INT UNSIGNED NULL,
+      ADD INDEX `ix_editore` (`id_editore`),
+      ADD CONSTRAINT `fk_citazioni_editori` FOREIGN KEY (`id_editore`) REFERENCES `editori` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+esecuzione: 1 istruzioni OK, nell'ordine
+riletti dal server: indici [PRIMARY `PRIMARY` [id], INDEX `ix_editore` [id_editore]]; FK [`fk_citazioni_editori` [id_editore] → editori[id] ON DELETE RESTRICT ON UPDATE RESTRICT]
+verifica: ✔ verificato sul server: indici e chiavi esterne di «citazioni» sono quelli chiesti
+ESITO: conforme
+
+## F26 — elimina FK e la sua colonna: prima l'ALTER della FK, poi quello della colonna
+tabella di partenza:
+    CREATE TABLE `libri` (
+      `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+      `titolo` VARCHAR(100) NOT NULL,
+      `id_editore` INT UNSIGNED NULL,
+      PRIMARY KEY (`id`),
+      CONSTRAINT `fk_libri_editori` FOREIGN KEY (`id_editore`) REFERENCES `editori` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT
+    ) ENGINE=InnoDB;
+SQL applicato (= test U):
+    ALTER TABLE `libri` DROP FOREIGN KEY `fk_libri_editori`;
+    ALTER TABLE `libri` DROP COLUMN `id_editore`;
+esecuzione: 2 istruzioni OK, nell'ordine
+riletti dal server: indici [PRIMARY `PRIMARY` [id]]; FK []
+verifica: ✔ verificato sul server: indici e chiavi esterne di «libri» sono quelli chiesti
+ESITO: conforme
+
+## F27 — due FK eliminate e una creata
+tabella di partenza:
+    CREATE TABLE `libri` (
+      `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+      `titolo` VARCHAR(100) NOT NULL,
+      `id_editore` INT UNSIGNED NULL,
+      PRIMARY KEY (`id`),
+      CONSTRAINT `fk_libri_editori` FOREIGN KEY (`id_editore`) REFERENCES `editori` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT,
+      CONSTRAINT `fk_doppia` FOREIGN KEY (`id_editore`) REFERENCES `editori` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT
+    ) ENGINE=InnoDB;
+SQL applicato (= test U):
+    ALTER TABLE `libri`
+      DROP FOREIGN KEY `fk_libri_editori`,
+      DROP FOREIGN KEY `fk_doppia`;
+    ALTER TABLE `libri` ADD CONSTRAINT `fk_nuova` FOREIGN KEY (`id_editore`) REFERENCES `editori` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+esecuzione: 2 istruzioni OK, nell'ordine
+modifica di FK: DROP FOREIGN KEY eseguita prima di ADD CONSTRAINT (log #2 < #3)
+riletti dal server: indici [PRIMARY `PRIMARY` [id], INDEX `fk_nuova` [id_editore]]; FK [`fk_nuova` [id_editore] → editori[id] ON DELETE RESTRICT ON UPDATE CASCADE]
+verifica: ✔ verificato sul server: indici e chiavi esterne di «libri» sono quelli chiesti
+    ℹ Il server ha creato da sé l'indice «fk_nuova» (id_editore) per la chiave esterna «fk_nuova»: una chiave esterna ha sempre bisogno di un indice sulle sue colonne.
+ESITO: conforme
+
+## F28 — FK senza nome: lo assegna il server
+tabella di partenza:
+    CREATE TABLE `libri` (
+      `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+      `titolo` VARCHAR(100) NOT NULL,
+      `id_editore` INT UNSIGNED NULL,
+      PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB;
+SQL applicato (= test U):
+    ALTER TABLE `libri` ADD FOREIGN KEY (`id_editore`) REFERENCES `editori` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+esecuzione: 1 istruzioni OK, nell'ordine
+riletti dal server: indici [PRIMARY `PRIMARY` [id], INDEX `id_editore` [id_editore]]; FK [`libri_ibfk_1` [id_editore] → editori[id] ON DELETE RESTRICT ON UPDATE RESTRICT]
+verifica: ✔ verificato sul server: indici e chiavi esterne di «libri» sono quelli chiesti
+    ℹ Il server ha creato da sé l'indice «id_editore» (id_editore) per la chiave esterna «libri_ibfk_1»: una chiave esterna ha sempre bisogno di un indice sulle sue colonne.
+    ℹ Il server ha chiamato «libri_ibfk_1» la chiave esterna senza nome (id_editore → editori).
+ESITO: conforme
+
+## F29 — FK verso un altro catalogo: tabella riferita qualificata
+tabella di partenza:
+    CREATE TABLE `ramasql_test_t64_mudqox4km0jx`.`libri` (
+      `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+      `titolo` VARCHAR(100) NOT NULL,
+      `id_editore` INT UNSIGNED NULL,
+      PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB;
+SQL applicato (= test U):
+    ALTER TABLE `ramasql_test_t64_mudqox4km0jx`.`libri` ADD CONSTRAINT `fk_libri_editori` FOREIGN KEY (`id_editore`) REFERENCES `ramasql_test_t64b_mudqox4h7bzj`.`editori` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+esecuzione: 1 istruzioni OK, nell'ordine
+riletti dal server: indici [PRIMARY `PRIMARY` [id], INDEX `fk_libri_editori` [id_editore]]; FK [`fk_libri_editori` [id_editore] → ramasql_test_t64b_mudqox4h7bzj.editori[id] ON DELETE RESTRICT ON UPDATE RESTRICT]
+verifica: ✔ verificato sul server: indici e chiavi esterne di «libri» sono quelli chiesti
+    ℹ Il server ha creato da sé l'indice «fk_libri_editori» (id_editore) per la chiave esterna «fk_libri_editori»: una chiave esterna ha sempre bisogno di un indice sulle sue colonne.
+ESITO: conforme
+
+## F30 — nomi con spazi e parole riservate
+tabella di partenza:
+    CREATE TABLE `ordine dettagli` (
+      `order` INT NULL
+    );
+SQL applicato (= test U):
+    ALTER TABLE `ordine dettagli` ADD CONSTRAINT `fk order` FOREIGN KEY (`order`) REFERENCES `order` (`primary key`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+esecuzione: 1 istruzioni OK, nell'ordine
+riletti dal server: indici [INDEX `fk order` [order]]; FK [`fk order` [order] → order[primary key] ON DELETE RESTRICT ON UPDATE RESTRICT]
+verifica: ✔ verificato sul server: indici e chiavi esterne di «ordine dettagli» sono quelli chiesti
+    ℹ Il server ha creato da sé l'indice «fk order» (order) per la chiave esterna «fk order»: una chiave esterna ha sempre bisogno di un indice sulle sue colonne.
+ESITO: conforme
+
+## F31 — nessuna modifica → zero istruzioni
+tabella di partenza:
+    CREATE TABLE `libri` (
+      `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+      `titolo` VARCHAR(100) NOT NULL,
+      `id_editore` INT UNSIGNED NULL,
+      PRIMARY KEY (`id`),
+      CONSTRAINT `fk_libri_editori` FOREIGN KEY (`id_editore`) REFERENCES `editori` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT
+    ) ENGINE=InnoDB;
+SQL applicato (= test U):
+    (nessuna istruzione)
+esecuzione: 0 istruzioni OK, nell'ordine
+riletti dal server: indici [PRIMARY `PRIMARY` [id], INDEX `fk_libri_editori` [id_editore]]; FK [`fk_libri_editori` [id_editore] → editori[id] ON DELETE RESTRICT ON UPDATE RESTRICT]
+verifica: ✔ verificato sul server: indici e chiavi esterne di «libri» sono quelli chiesti
+    ℹ Il server ha creato da sé l'indice «fk_libri_editori» (id_editore) per la chiave esterna «fk_libri_editori»: una chiave esterna ha sempre bisogno di un indice sulle sue colonne.
+ESITO: conforme
+
+## F32 — rinomina della colonna della FK: la FK non si tocca
+tabella di partenza:
+    CREATE TABLE `libri` (
+      `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+      `titolo` VARCHAR(100) NOT NULL,
+      `id_editore` INT UNSIGNED NULL,
+      PRIMARY KEY (`id`),
+      CONSTRAINT `fk_libri_editori` FOREIGN KEY (`id_editore`) REFERENCES `editori` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT
+    ) ENGINE=InnoDB;
+SQL applicato (= test U):
+    ALTER TABLE `libri` CHANGE COLUMN `id_editore` `editore` INT UNSIGNED NULL;
+esecuzione: 1 istruzioni OK, nell'ordine
+riletti dal server: indici [PRIMARY `PRIMARY` [id], INDEX `fk_libri_editori` [editore]]; FK [`fk_libri_editori` [editore] → editori[id] ON DELETE RESTRICT ON UPDATE RESTRICT]
+verifica: ✔ verificato sul server: indici e chiavi esterne di «libri» sono quelli chiesti
+    ℹ Il server ha creato da sé l'indice «fk_libri_editori» (editore) per la chiave esterna «fk_libri_editori»: una chiave esterna ha sempre bisogno di un indice sulle sue colonne.
+ESITO: conforme
+
+## I01 — crea INDEX
+tabella di partenza:
+    CREATE TABLE `soci` (
+      `id` INT NOT NULL,
+      `tessera` VARCHAR(10) NOT NULL,
+      `cognome` VARCHAR(50) NOT NULL,
+      `nome` VARCHAR(50) NOT NULL,
+      `email` VARCHAR(100) NULL
+    ) ENGINE=InnoDB;
+SQL applicato (= test U):
+    ALTER TABLE `soci` ADD INDEX `ix_cognome` (`cognome`);
+esecuzione: 1 istruzioni OK, nell'ordine
+riletti dal server: indici [INDEX `ix_cognome` [cognome]]; FK []
+verifica: ✔ verificato sul server: indici e chiavi esterne di «soci» sono quelli chiesti
+ESITO: conforme
+
+## I02 — crea UNIQUE
+tabella di partenza:
+    CREATE TABLE `soci` (
+      `id` INT NOT NULL,
+      `tessera` VARCHAR(10) NOT NULL,
+      `cognome` VARCHAR(50) NOT NULL,
+      `nome` VARCHAR(50) NOT NULL,
+      `email` VARCHAR(100) NULL
+    ) ENGINE=InnoDB;
+SQL applicato (= test U):
+    ALTER TABLE `soci` ADD UNIQUE INDEX `uq_email` (`email`);
+esecuzione: 1 istruzioni OK, nell'ordine
+riletti dal server: indici [UNIQUE `uq_email` [email]]; FK []
+verifica: ✔ verificato sul server: indici e chiavi esterne di «soci» sono quelli chiesti
+ESITO: conforme
+
+## I03 — crea PRIMARY
+tabella di partenza:
+    CREATE TABLE `soci` (
+      `id` INT NOT NULL,
+      `tessera` VARCHAR(10) NOT NULL,
+      `cognome` VARCHAR(50) NOT NULL,
+      `nome` VARCHAR(50) NOT NULL,
+      `email` VARCHAR(100) NULL
+    ) ENGINE=InnoDB;
+SQL applicato (= test U):
+    ALTER TABLE `soci` ADD PRIMARY KEY (`id`);
+esecuzione: 1 istruzioni OK, nell'ordine
+riletti dal server: indici [PRIMARY `PRIMARY` [id]]; FK []
+verifica: ✔ verificato sul server: indici e chiavi esterne di «soci» sono quelli chiesti
+ESITO: conforme
+
+## I04 — crea INDEX multi-colonna: l'ordine è quello dato
+tabella di partenza:
+    CREATE TABLE `soci` (
+      `id` INT NOT NULL,
+      `tessera` VARCHAR(10) NOT NULL,
+      `cognome` VARCHAR(50) NOT NULL,
+      `nome` VARCHAR(50) NOT NULL,
+      `email` VARCHAR(100) NULL
+    ) ENGINE=InnoDB;
+SQL applicato (= test U):
+    ALTER TABLE `soci` ADD INDEX `ix_nome` (`nome`, `cognome`);
+esecuzione: 1 istruzioni OK, nell'ordine
+riletti dal server: indici [INDEX `ix_nome` [nome, cognome]]; FK []
+verifica: ✔ verificato sul server: indici e chiavi esterne di «soci» sono quelli chiesti
+ESITO: conforme
+
+## I05 — crea più indici in un solo ALTER
+tabella di partenza:
+    CREATE TABLE `soci` (
+      `id` INT NOT NULL,
+      `tessera` VARCHAR(10) NOT NULL,
+      `cognome` VARCHAR(50) NOT NULL,
+      `nome` VARCHAR(50) NOT NULL,
+      `email` VARCHAR(100) NULL
+    ) ENGINE=InnoDB;
+SQL applicato (= test U):
+    ALTER TABLE `soci`
+      ADD PRIMARY KEY (`id`),
+      ADD UNIQUE INDEX `uq_tessera` (`tessera`),
+      ADD INDEX `order by` (`cognome`, `nome`);
+esecuzione: 1 istruzioni OK, nell'ordine
+riletti dal server: indici [PRIMARY `PRIMARY` [id], INDEX `order by` [cognome, nome], UNIQUE `uq_tessera` [tessera]]; FK []
+verifica: ✔ verificato sul server: indici e chiavi esterne di «soci» sono quelli chiesti
+ESITO: conforme
+
+## I06 — elimina INDEX
+tabella di partenza:
+    CREATE TABLE `soci` (
+      `id` INT NOT NULL,
+      `tessera` VARCHAR(10) NOT NULL,
+      `cognome` VARCHAR(50) NOT NULL,
+      `nome` VARCHAR(50) NOT NULL,
+      `email` VARCHAR(100) NULL,
+      PRIMARY KEY (`id`),
+      UNIQUE INDEX `uq_tessera` (`tessera`),
+      INDEX `ix_nome` (`cognome`, `nome`)
+    ) ENGINE=InnoDB;
+SQL applicato (= test U):
+    ALTER TABLE `soci` DROP INDEX `ix_nome`;
+esecuzione: 1 istruzioni OK, nell'ordine
+riletti dal server: indici [PRIMARY `PRIMARY` [id], UNIQUE `uq_tessera` [tessera]]; FK []
+verifica: ✔ verificato sul server: indici e chiavi esterne di «soci» sono quelli chiesti
+ESITO: conforme
+
+## I07 — elimina UNIQUE
+tabella di partenza:
+    CREATE TABLE `soci` (
+      `id` INT NOT NULL,
+      `tessera` VARCHAR(10) NOT NULL,
+      `cognome` VARCHAR(50) NOT NULL,
+      `nome` VARCHAR(50) NOT NULL,
+      `email` VARCHAR(100) NULL,
+      PRIMARY KEY (`id`),
+      UNIQUE INDEX `uq_tessera` (`tessera`),
+      INDEX `ix_nome` (`cognome`, `nome`)
+    ) ENGINE=InnoDB;
+SQL applicato (= test U):
+    ALTER TABLE `soci` DROP INDEX `uq_tessera`;
+esecuzione: 1 istruzioni OK, nell'ordine
+riletti dal server: indici [PRIMARY `PRIMARY` [id], INDEX `ix_nome` [cognome, nome]]; FK []
+verifica: ✔ verificato sul server: indici e chiavi esterne di «soci» sono quelli chiesti
+ESITO: conforme
+
+## I08 — elimina PRIMARY
+tabella di partenza:
+    CREATE TABLE `soci` (
+      `id` INT NOT NULL,
+      `tessera` VARCHAR(10) NOT NULL,
+      `cognome` VARCHAR(50) NOT NULL,
+      `nome` VARCHAR(50) NOT NULL,
+      `email` VARCHAR(100) NULL,
+      PRIMARY KEY (`id`),
+      UNIQUE INDEX `uq_tessera` (`tessera`),
+      INDEX `ix_nome` (`cognome`, `nome`)
+    ) ENGINE=InnoDB;
+SQL applicato (= test U):
+    ALTER TABLE `soci` DROP PRIMARY KEY;
+esecuzione: 1 istruzioni OK, nell'ordine
+riletti dal server: indici [INDEX `ix_nome` [cognome, nome], UNIQUE `uq_tessera` [tessera]]; FK []
+verifica: ✔ verificato sul server: indici e chiavi esterne di «soci» sono quelli chiesti
+ESITO: conforme
+
+## I09 — rinomina INDEX
+tabella di partenza:
+    CREATE TABLE `soci` (
+      `id` INT NOT NULL,
+      `tessera` VARCHAR(10) NOT NULL,
+      `cognome` VARCHAR(50) NOT NULL,
+      `nome` VARCHAR(50) NOT NULL,
+      `email` VARCHAR(100) NULL,
+      PRIMARY KEY (`id`),
+      UNIQUE INDEX `uq_tessera` (`tessera`),
+      INDEX `ix_nome` (`cognome`, `nome`)
+    ) ENGINE=InnoDB;
+SQL applicato (= test U):
+    ALTER TABLE `soci` RENAME INDEX `ix_nome` TO `ix_anagrafica`;
+esecuzione: 1 istruzioni OK, nell'ordine
+riletti dal server: indici [PRIMARY `PRIMARY` [id], INDEX `ix_anagrafica` [cognome, nome], UNIQUE `uq_tessera` [tessera]]; FK []
+verifica: ✔ verificato sul server: indici e chiavi esterne di «soci» sono quelli chiesti
+ESITO: conforme
+
+## I10 — rinomina UNIQUE
+tabella di partenza:
+    CREATE TABLE `soci` (
+      `id` INT NOT NULL,
+      `tessera` VARCHAR(10) NOT NULL,
+      `cognome` VARCHAR(50) NOT NULL,
+      `nome` VARCHAR(50) NOT NULL,
+      `email` VARCHAR(100) NULL,
+      PRIMARY KEY (`id`),
+      UNIQUE INDEX `uq_tessera` (`tessera`),
+      INDEX `ix_nome` (`cognome`, `nome`)
+    ) ENGINE=InnoDB;
+SQL applicato (= test U):
+    ALTER TABLE `soci` RENAME INDEX `uq_tessera` TO `tessera unica`;
+esecuzione: 1 istruzioni OK, nell'ordine
+riletti dal server: indici [PRIMARY `PRIMARY` [id], INDEX `ix_nome` [cognome, nome], UNIQUE `tessera unica` [tessera]]; FK []
+verifica: ✔ verificato sul server: indici e chiavi esterne di «soci» sono quelli chiesti
+ESITO: conforme
+
+## I11 — modifica colonne di un indice: DROP + ADD nello stesso ALTER
+tabella di partenza:
+    CREATE TABLE `soci` (
+      `id` INT NOT NULL,
+      `tessera` VARCHAR(10) NOT NULL,
+      `cognome` VARCHAR(50) NOT NULL,
+      `nome` VARCHAR(50) NOT NULL,
+      `email` VARCHAR(100) NULL,
+      PRIMARY KEY (`id`),
+      UNIQUE INDEX `uq_tessera` (`tessera`),
+      INDEX `ix_nome` (`cognome`, `nome`)
+    ) ENGINE=InnoDB;
+SQL applicato (= test U):
+    ALTER TABLE `soci`
+      DROP INDEX `ix_nome`,
+      ADD INDEX `ix_nome` (`cognome`, `nome`, `email`);
+esecuzione: 1 istruzioni OK, nell'ordine
+riletti dal server: indici [PRIMARY `PRIMARY` [id], INDEX `ix_nome` [cognome, nome, email], UNIQUE `uq_tessera` [tessera]]; FK []
+verifica: ✔ verificato sul server: indici e chiavi esterne di «soci» sono quelli chiesti
+ESITO: conforme
+
+## I12 — cambia solo l'ordine delle colonne: è una modifica
+tabella di partenza:
+    CREATE TABLE `soci` (
+      `id` INT NOT NULL,
+      `tessera` VARCHAR(10) NOT NULL,
+      `cognome` VARCHAR(50) NOT NULL,
+      `nome` VARCHAR(50) NOT NULL,
+      `email` VARCHAR(100) NULL,
+      PRIMARY KEY (`id`),
+      UNIQUE INDEX `uq_tessera` (`tessera`),
+      INDEX `ix_nome` (`cognome`, `nome`)
+    ) ENGINE=InnoDB;
+SQL applicato (= test U):
+    ALTER TABLE `soci`
+      DROP INDEX `ix_nome`,
+      ADD INDEX `ix_nome` (`nome`, `cognome`);
+esecuzione: 1 istruzioni OK, nell'ordine
+riletti dal server: indici [PRIMARY `PRIMARY` [id], INDEX `ix_nome` [nome, cognome], UNIQUE `uq_tessera` [tessera]]; FK []
+verifica: ✔ verificato sul server: indici e chiavi esterne di «soci» sono quelli chiesti
+ESITO: conforme
+
+## I13 — da INDEX a UNIQUE: DROP + ADD nello stesso ALTER
+tabella di partenza:
+    CREATE TABLE `soci` (
+      `id` INT NOT NULL,
+      `tessera` VARCHAR(10) NOT NULL,
+      `cognome` VARCHAR(50) NOT NULL,
+      `nome` VARCHAR(50) NOT NULL,
+      `email` VARCHAR(100) NULL,
+      PRIMARY KEY (`id`),
+      UNIQUE INDEX `uq_tessera` (`tessera`),
+      INDEX `ix_nome` (`cognome`, `nome`)
+    ) ENGINE=InnoDB;
+SQL applicato (= test U):
+    ALTER TABLE `soci`
+      DROP INDEX `ix_nome`,
+      ADD UNIQUE INDEX `ix_nome` (`cognome`, `nome`);
+esecuzione: 1 istruzioni OK, nell'ordine
+riletti dal server: indici [PRIMARY `PRIMARY` [id], UNIQUE `ix_nome` [cognome, nome], UNIQUE `uq_tessera` [tessera]]; FK []
+verifica: ✔ verificato sul server: indici e chiavi esterne di «soci» sono quelli chiesti
+ESITO: conforme
+
+## I14 — rinomina e modifica insieme: non è una rinomina
+tabella di partenza:
+    CREATE TABLE `soci` (
+      `id` INT NOT NULL,
+      `tessera` VARCHAR(10) NOT NULL,
+      `cognome` VARCHAR(50) NOT NULL,
+      `nome` VARCHAR(50) NOT NULL,
+      `email` VARCHAR(100) NULL,
+      PRIMARY KEY (`id`),
+      UNIQUE INDEX `uq_tessera` (`tessera`),
+      INDEX `ix_nome` (`cognome`, `nome`)
+    ) ENGINE=InnoDB;
+SQL applicato (= test U):
+    ALTER TABLE `soci`
+      DROP INDEX `ix_nome`,
+      ADD INDEX `ix_cognome` (`cognome`);
+esecuzione: 1 istruzioni OK, nell'ordine
+riletti dal server: indici [PRIMARY `PRIMARY` [id], INDEX `ix_cognome` [cognome], UNIQUE `uq_tessera` [tessera]]; FK []
+verifica: ✔ verificato sul server: indici e chiavi esterne di «soci» sono quelli chiesti
+ESITO: conforme
+
+## I15 — cambia la PRIMARY
+tabella di partenza:
+    CREATE TABLE `soci` (
+      `id` INT NOT NULL,
+      `tessera` VARCHAR(10) NOT NULL,
+      `cognome` VARCHAR(50) NOT NULL,
+      `nome` VARCHAR(50) NOT NULL,
+      `email` VARCHAR(100) NULL,
+      PRIMARY KEY (`id`),
+      UNIQUE INDEX `uq_tessera` (`tessera`),
+      INDEX `ix_nome` (`cognome`, `nome`)
+    ) ENGINE=InnoDB;
+SQL applicato (= test U):
+    ALTER TABLE `soci`
+      DROP PRIMARY KEY,
+      ADD PRIMARY KEY (`id`, `tessera`);
+esecuzione: 1 istruzioni OK, nell'ordine
+riletti dal server: indici [PRIMARY `PRIMARY` [id, tessera], INDEX `ix_nome` [cognome, nome], UNIQUE `uq_tessera` [tessera]]; FK []
+verifica: ✔ verificato sul server: indici e chiavi esterne di «soci» sono quelli chiesti
+ESITO: conforme
+
+## I16 — rinomina di colonna indicizzata: l'indice non si tocca
+tabella di partenza:
+    CREATE TABLE `soci` (
+      `id` INT NOT NULL,
+      `tessera` VARCHAR(10) NOT NULL,
+      `cognome` VARCHAR(50) NOT NULL,
+      `nome` VARCHAR(50) NOT NULL,
+      `email` VARCHAR(100) NULL,
+      PRIMARY KEY (`id`),
+      UNIQUE INDEX `uq_tessera` (`tessera`),
+      INDEX `ix_nome` (`cognome`, `nome`)
+    ) ENGINE=InnoDB;
+SQL applicato (= test U):
+    ALTER TABLE `soci` CHANGE COLUMN `cognome` `famiglia` VARCHAR(50) NOT NULL;
+esecuzione: 1 istruzioni OK, nell'ordine
+riletti dal server: indici [PRIMARY `PRIMARY` [id], INDEX `ix_nome` [famiglia, nome], UNIQUE `uq_tessera` [tessera]]; FK []
+verifica: ✔ verificato sul server: indici e chiavi esterne di «soci» sono quelli chiesti
+ESITO: conforme
+
+## I17 — nuova colonna con il suo indice: ADD COLUMN prima di ADD INDEX
+tabella di partenza:
+    CREATE TABLE `soci` (
+      `id` INT NOT NULL,
+      `tessera` VARCHAR(10) NOT NULL,
+      `cognome` VARCHAR(50) NOT NULL,
+      `nome` VARCHAR(50) NOT NULL,
+      `email` VARCHAR(100) NULL,
+      PRIMARY KEY (`id`),
+      UNIQUE INDEX `uq_tessera` (`tessera`),
+      INDEX `ix_nome` (`cognome`, `nome`)
+    ) ENGINE=InnoDB;
+SQL applicato (= test U):
+    ALTER TABLE `soci`
+      ADD COLUMN `citta` VARCHAR(40) NULL,
+      ADD INDEX `ix_citta` (`citta`);
+esecuzione: 1 istruzioni OK, nell'ordine
+riletti dal server: indici [PRIMARY `PRIMARY` [id], INDEX `ix_citta` [citta], INDEX `ix_nome` [cognome, nome], UNIQUE `uq_tessera` [tessera]]; FK []
+verifica: ✔ verificato sul server: indici e chiavi esterne di «soci» sono quelli chiesti
+ESITO: conforme
+
+## I18 — elimina colonna e il suo indice: DROP INDEX prima di DROP COLUMN
+tabella di partenza:
+    CREATE TABLE `soci` (
+      `id` INT NOT NULL,
+      `tessera` VARCHAR(10) NOT NULL,
+      `cognome` VARCHAR(50) NOT NULL,
+      `nome` VARCHAR(50) NOT NULL,
+      `email` VARCHAR(100) NULL,
+      PRIMARY KEY (`id`),
+      UNIQUE INDEX `uq_tessera` (`tessera`),
+      INDEX `ix_nome` (`cognome`, `nome`)
+    ) ENGINE=InnoDB;
+SQL applicato (= test U):
+    ALTER TABLE `soci`
+      DROP INDEX `uq_tessera`,
+      DROP COLUMN `tessera`;
+esecuzione: 1 istruzioni OK, nell'ordine
+riletti dal server: indici [PRIMARY `PRIMARY` [id], INDEX `ix_nome` [cognome, nome]]; FK []
+verifica: ✔ verificato sul server: indici e chiavi esterne di «soci» sono quelli chiesti
+ESITO: conforme
+
+## I19 — nessuna modifica: nomi di colonna con maiuscole diverse
+tabella di partenza:
+    CREATE TABLE `soci` (
+      `id` INT NOT NULL,
+      `tessera` VARCHAR(10) NOT NULL,
+      `cognome` VARCHAR(50) NOT NULL,
+      `nome` VARCHAR(50) NOT NULL,
+      `email` VARCHAR(100) NULL,
+      PRIMARY KEY (`id`),
+      UNIQUE INDEX `uq_tessera` (`tessera`),
+      INDEX `ix_nome` (`cognome`, `nome`)
+    ) ENGINE=InnoDB;
+SQL applicato (= test U):
+    (nessuna istruzione)
+esecuzione: 0 istruzioni OK, nell'ordine
+riletti dal server: indici [PRIMARY `PRIMARY` [id], INDEX `ix_nome` [cognome, nome], UNIQUE `uq_tessera` [tessera]]; FK []
+verifica: ✔ verificato sul server: indici e chiavi esterne di «soci» sono quelli chiesti
+ESITO: conforme
+
+## I20 — tabella nuova con indici
+SQL applicato (= test U):
+    CREATE TABLE `soci` (
+      `id` INT NOT NULL,
+      `tessera` VARCHAR(10) NOT NULL,
+      `cognome` VARCHAR(50) NOT NULL,
+      `nome` VARCHAR(50) NOT NULL,
+      `email` VARCHAR(100) NULL,
+      PRIMARY KEY (`id`),
+      UNIQUE INDEX `uq_tessera` (`tessera`),
+      INDEX `ix_nome` (`cognome`, `nome`)
+    ) ENGINE=InnoDB;
+esecuzione: 1 istruzioni OK, nell'ordine
+riletti dal server: indici [PRIMARY `PRIMARY` [id], INDEX `ix_nome` [cognome, nome], UNIQUE `uq_tessera` [tessera]]; FK []
+verifica: ✔ verificato sul server: indici e chiavi esterne di «soci» sono quelli chiesti
+ESITO: conforme
+
+## X1 — alterato ad arte: FK creata sul server con ON DELETE CASCADE, chiesta RESTRICT
+creata fuori dal client:
+    CREATE TABLE `libri` (`id` INT UNSIGNED NOT NULL AUTO_INCREMENT, `titolo` VARCHAR(100) NOT NULL, `id_editore` INT UNSIGNED NULL, PRIMARY KEY (`id`), CONSTRAINT `fk_libri_editori` FOREIGN KEY (`id_editore`) REFERENCES `editori` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT) ENGINE=InnoDB;
+verifica: Il server non ha applicato esattamente ciò che è stato chiesto per «libri»: 1 differenze
+    ℹ Il server ha creato da sé l'indice «fk_libri_editori» (id_editore) per la chiave esterna «fk_libri_editori»: una chiave esterna ha sempre bisogno di un indice sulle sue colonne.
+    ✘ La chiave esterna «fk_libri_editori» ha un'altra azione ON DELETE: chiesta RESTRICT, sul server CASCADE.
+ESITO: differenza dichiarata
+
+## X2 — alterato ad arte: indice creato sul server con le colonne in un altro ordine
+creata fuori dal client:
+    CREATE TABLE `soci` (`id` INT NOT NULL, `tessera` VARCHAR(10) NOT NULL, `cognome` VARCHAR(50) NOT NULL, `nome` VARCHAR(50) NOT NULL, `email` VARCHAR(100) NULL, PRIMARY KEY (`id`), UNIQUE INDEX `uq_tessera` (`tessera`), INDEX `ix_nome` (`nome`, `cognome`)) ENGINE=InnoDB;
+verifica: Il server non ha applicato esattamente ciò che è stato chiesto per «soci»: 1 differenze
+    ✘ L'indice «ix_nome» ha le colonne in un altro ordine: chiesto (cognome, nome), sul server (nome, cognome). L'ordine conta: l'indice serve alle ricerche che partono dalla prima colonna.
+ESITO: differenza dichiarata
+
+## X3 — FK del generatore su una tabella MyISAM
+SQL applicato:
+    CREATE TABLE `libri` (
+      `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+      `titolo` VARCHAR(100) NOT NULL,
+      `id_editore` INT UNSIGNED NULL,
+      PRIMARY KEY (`id`)
+    ) ENGINE=MyISAM;
+    ALTER TABLE `libri` ADD CONSTRAINT `fk_libri_editori` FOREIGN KEY (`id_editore`) REFERENCES `editori` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+esecuzione: 2 istruzioni OK (il server non protesta)
+verifica: Il server non ha applicato esattamente ciò che è stato chiesto per «libri»: 1 differenze
+    ℹ Il server ha creato da sé l'indice «fk_libri_editori» (id_editore) per la chiave esterna «fk_libri_editori»: una chiave esterna ha sempre bisogno di un indice sulle sue colonne.
+    ✘ La chiave esterna «fk_libri_editori» (id_editore → editori) non c'è sul server: la tabella usa l'engine MyISAM, che accetta l'istruzione ma ignora le chiavi esterne. Convertila in InnoDB.
+ESITO: differenza dichiarata
+

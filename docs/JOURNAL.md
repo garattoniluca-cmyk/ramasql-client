@@ -1,5 +1,140 @@
 # JOURNAL.md — Diario cronologico (più recente in alto)
 
+## 2026-09-23 — RESOCONTO dell'esecuzione autonoma degli step 1–6 (`ADR-014`)
+
+**Esito: step 1, 2, 3, 4, 5 e 6 completati.** La **Tappa M1** della roadmap («client di base, già usabile in aula») è raggiunta: la biblioteca si costruisce dall'inizio alla fine **solo con il client** — catalogo, tabelle, indici, chiavi esterne, dati — e il registro SQL esportato, rieseguito su un catalogo vuoto, dà due cataloghi identici (metadati e `CHECKSUM TABLE`). Un commit per step: `Step 1` … `Step 6`. **Nessun push**: lo farà l'utente dopo la revisione.
+
+### Output di `scripts\verify.ps1`
+
+```
+Credenziali di integrazione: caricate
+[INFO] BUILD SUCCESS
+Build Maven: OK
+Test eseguiti: 1230 - falliti: 0 - saltati: 0
+
+Step | superati (it)  | soglia (it) | diario       | esito
+1    |   146 (  45)  |    8 (  4)  | completo     | PASS
+2    |   122 (  17)  |    8 (  2)  | completo     | PASS
+3    |   196 (  61)  |   12 (  4)  | completo     | PASS
+4    |   323 (  12)  |   45 (  4)  | completo     | PASS
+5    |   188 (  84)  |   60 ( 20)  | completo     | PASS
+6    |   249 ( 126)  |   45 ( 12)  | completo     | PASS
+
+VERIFY: PASS
+```
+
+### Spike dello Step 1: nessun NO-GO
+
+S1 GO · S2a GO · S2b GO · S2c GO con riserve · S2d GO con riserve · S4 GO con riserve · S5 GO con riserve · S6 GO · S7 GO con riserve. Dettaglio in `docs/SPIKE-STEP1.md`; le riserve sono difetti aperti, tutti registrati in `docs/BUGS.md` e assegnati a uno step successivo.
+
+### Il difetto di fondo trovato durante il lavoro (e corretto)
+
+Gli step 4, 5 e 6 erano stati sviluppati «a componenti»: editor SQL, griglia di data-entry ed editor di tabelle avevano molti test, ma le loro interfacce verso il server (`SqlRunner`, `GridDataSource`, `TableApplier`, `CatalogTables`, `DataCheck`) erano implementate **solo da finte nei test**, e l'area di lavoro non apriva nessuna scheda: **nessun SQL nato da quei componenti aveva mai raggiunto un server**, e gli errori del server nelle prove erano stringhe scritte a mano. I test di tipo M, che per contratto (`.claude/goal.md`) devono «verificare sul server ciò che l'interfaccia dice di aver fatto», non erano quindi rispettati. È stato costruito il cablaggio di produzione (`ADR-019`) e **tutte** le righe M degli step 4–6 sono state riscritte in modo che piloti il **programma vero** contro MariaDB **e** MySQL, controllando gli esiti con una connessione separata. Da qui i difetti veri emersi (sotto) e il fatto che il programma adesso si può usare.
+
+### La revisione indipendente degli step 4-6, e cosa ha trovato
+
+Un sotto-agente revisore, diverso da chi ha scritto il codice, ha riletto tutto il cablaggio nuovo e i test nuovi contro `CLAUDE.md`, `DESIGN.md` e `ARCHITECTURE.md`. Ha trovato **un difetto bloccante, otto da correggere e sei debolezze nei test**: sono stati corretti tutti prima di chiudere lo Step 6.
+
+Il bloccante meritava di essere trovato: i valori **binari** (BINARY, VARBINARY, i BLOB, BIT) si rovinavano nell'andata e ritorno. La griglia li mostra come `0x48656C6C6F`, ma il generatore li riscriveva **fra apici**, cioè salvava il testo «0x48656C6C6F» al posto dei cinque byte; e, peggio, una condizione `WHERE` su una **chiave binaria** (una PK `BINARY(16)` con un UUID: caso normale in aula) non trovava nessuna riga, il server rispondeva **OK con zero righe** e il client marcava la riga «salvata» senza aver cambiato niente. Corretto su tre fronti (`BUG-019`, chiuso): letterale `X'…'`, celle binarie non modificabili in v1, e un `UPDATE`/`DELETE` riuscito che non tocca nessuna riga ora è un'anomalia da segnalare, non un successo — una rete di sicurezza che serve anche quando è un altro utente a cambiare la riga sotto il naso.
+
+Gli altri, tutti corretti: doppia *Conferma* mentre l'esecuzione era in corso (le stesse `INSERT` partivano due volte); `reload()`/cambio pagina che lanciavano un'eccezione sull'EDT se il server non rispondeva, lasciando l'interfaccia muta e il chiamante appeso; barra degli strumenti che non si aggiornava (*Interrompi* non si accendeva mai, *Nuova tabella* non si riabilitava) e che mentiva sui pulsanti spenti dicendo «Arriva in una prossima versione» per funzioni che invece esistono; chiusura della finestra che buttava via le modifiche in sospeso **senza chiedere niente**; `MetadataCatalogTables` che, ingoiando un errore di lettura, faceva sparire in silenzio il blocco della conversione a MyISAM (ora, se non si è potuto controllare, si blocca e si dice perché); «annullato dall'utente» e «fallito» indistinguibili a valle della pipeline; interruzione riportata come successo dall'editor di tabelle; chiusura di una scheda Query mentre gira, senza avviso.
+
+Sui test, il revisore ha trovato tre asserzioni che passavano anche a funzione rotta — la più grave verificava la «spiegazione in italiano» del 1062 accettando la parola «Duplicate», che è il messaggio grezzo del server — un aiutante che dichiarava «salvata» una riga **sparita** dalla griglia, due Javadoc che promettevano più di quanto il test dimostrasse (T6.7 vale in pieno solo su MySQL, per `BUG-018`) e la convenzione fragile per cui un test fallito lasciava comunque in `test-results/` file che sembravano evidenze valide. Ora l'evidenza di un test fallito dice «Esito: FALLITO» con il motivo.
+
+Restano aperti due punti segnalati e non ancora provati sui server: `BUG-020` (i `TIME` fuori dall'intervallo di un giorno, che MariaDB e MySQL ammettono) e `BUG-021` («Verifica dati» taglia a 200 righe senza dirlo).
+
+### Decisioni prese dall'agente, da rivedere
+
+| ADR | Cosa |
+|---|---|
+| `ADR-015` | Driver unico MariaDB Connector/J anche per MySQL |
+| `ADR-016` | Parametri di connessione e connessione di servizio |
+| `ADR-017` | Routine, trigger ed eventi in **sola lettura** (chiude D-06) |
+| `ADR-018` | Comportamenti della griglia di data-entry |
+| `ADR-019` | **Cablaggio delle schede e dei «porti» verso il server**: tutto passa dalla pipeline, anche le `SELECT` che riempiono la griglia (quindi si vedono nel registro); una sola regola di conversione dei valori in testo; finestre modali iniettabili; schede e domanda «Conferma, scarta o resta?» alla chiusura |
+
+Altre scelte minori, dichiarate dove servono: l'utente `ramasql_test_sha2` creato con `root` sul MySQL locale nello Step 1 (unica operazione fatta con `root`); il test d'architettura T3.9 ammette **tre** classi che eseguono SQL (`SqlExecutor`, `MetadataQueries`, `InternalQueries`) e non due come dice la riga della roadmap.
+
+### Difetti aperti (dettaglio in `docs/BUGS.md`)
+
+Chiusi durante questo lavoro: `BUG-001` (licenze e icone ereditate), `BUG-002` (a-capo verso Excel), `BUG-019` (valori binari rovinati e falso «salvata», trovato dalla revisione).
+Aperti e assegnati: `BUG-003` (Calc → client perde tab e a-capo in cella), `BUG-004` `BUG-006` `BUG-007` `BUG-011` (resa e facciata del query builder → Step 7), `BUG-005` (`SQLFormatter.sort` riordina i join → Step 7-8), `BUG-010` (normalizzatore delle viste → Step 8), `BUG-016` (le letture `DatabaseMetaData` del query builder non passano dal registro → Step 7), `BUG-017` (la griglia legge una pagina sull'EDT → Step 12), `BUG-021` («Verifica dati» taglia a 200 righe senza dirlo → Step 12), `BUG-020` (i `TIME` fuori dall'intervallo di un giorno, da provare sui server).
+Da sapere, non difetti del client: `BUG-008` (MySQL 8.0.40, non 8.4), `BUG-009` (la verifica richiede Excel e LibreOffice), `BUG-012` (AUTO_INCREMENT dopo la riesecuzione del registro), `BUG-013` (su MySQL `ramasql_test` non crea funzioni e trigger), `BUG-014` (RESTRICT vs NO ACTION), `BUG-015` (connessione di servizio condivisa), **`BUG-018`**.
+
+**`BUG-018` merita una riga a sé, perché cambia cosa si insegna in aula:** aggiungendo una chiave esterna a una tabella che ha **righe orfane**, MySQL rifiuta con l'errore 1452, **MariaDB la crea e le righe orfane restano**. Stesso client, stesso driver, stesso SQL (T6.7, provato su MariaDB 11.5.2 e MySQL 8.0.40). Su MariaDB l'unica difesa è il controllo **prima** del client («Verifica dati»), che su entrambi i server trova ed elenca le righe fuori posto.
+
+### Test N da fare con Navicat (tocca all'utente)
+
+I test automatici **distruggono i propri cataloghi** (`ramasql_test_*`) alla fine, quindi in Navicat non c'è nulla da guardare subito: la prova va **ricostruita a mano nel client**, che è anche il modo di provarlo. Il percorso più economico copre quasi tutti i controlli in una volta.
+
+**Preparazione (nel client, ~15 minuti).** Avvia con `avvia.cmd`, connettiti al server, poi:
+1. navigatore → tasto destro sul server → *Nuovo catalogo…* → `ramasql_test_navicat` (charset `utf8mb4`);
+2. *Nuova tabella…* → crea `editori` (id INT UNSIGNED PK AI, nome VARCHAR(80) NOT NULL con indice UNIQUE, citta VARCHAR(60));
+3. *Nuova tabella…* → `libri` (id PK AI, titolo VARCHAR(150) NOT NULL, isbn CHAR(13) con UNIQUE, anno SMALLINT UNSIGNED, prezzo DECIMAL(6,2) NOT NULL DEFAULT 0.00, id_editore INT UNSIGNED) con indice su `id_editore` e chiave esterna `fk_libri_editori` → `editori(id)` **ON DELETE RESTRICT ON UPDATE CASCADE**; commento della tabella «Catalogo dei libri»;
+4. *Nuova tabella…* → `ordine dettagli` con colonne `order` (INT NOT NULL) e `select` (VARCHAR(45) DEFAULT 'nuovo');
+5. *Apri tabella* su `editori` → inserisci 3 righe e premi **Conferma**; su `libri` → inserisci 2 righe, incollane altre da Excel, modificane una, eliminane una, **Conferma**;
+6. prova a eliminare dal data-entry un editore che ha libri (deve arrivare l'errore **1451** spiegato);
+7. *Esporta registro…* dal pannello SQL, per avere lo script di tutto ciò che hai fatto.
+
+**Poi, in Navicat:**
+
+| Test | Cosa guardare |
+|---|---|
+| **T3.10** | *Edit Database* su `ramasql_test_navicat`: charset e collation quelli scelti nel client. Rinomina, svuota ed elimina una tabella dal client e ricontrolla l'elenco in Navicat: deve corrispondere |
+| **T4.23** | Apri `editori` e `libri`: le righe inserite, modificate ed eliminate **esattamente** come nel client; accenti, apostrofi, emoji al loro posto; le celle vuote sono **NULL** e non la stringa «NULL» |
+| **T5.9** | *Design Table* su `editori`, `libri`, `ordine dettagli` → scheda **Fields**: nomi, tipi, lunghezze, Not Null, default, Auto Increment, Unsigned, commenti, chiave primaria identici a quanto impostato; scheda **Options**: engine, charset, collation, commento; **DDL** equivalente all'SQL mostrato dal client |
+| **T6.12** | *Design Table* → schede **Indexes** e **Foreign Keys**: per ogni indice nome, colonne **nell'ordine giusto** e tipo (Normal/Unique); per ogni chiave esterna nome, campi, tabella e campi riferiti, **On Delete / On Update** identici a quanto scelto nel client |
+| **T6.13** | Prova a violare l'integrità **da Navicat**: inserisci un libro con `id_editore` inesistente (atteso 1452) ed elimina un editore che ha libri (atteso 1451). Se Navicat riceve gli stessi errori, i vincoli sono veri sul server e non solo nel client |
+| **T6.14** | *Reverse Database to Model* (o ER Diagram) sul catalogo: la relazione `libri → editori` deve comparire nel diagramma |
+
+Se Navicat mostra qualcosa di diverso da ciò che il client dichiara, **è un difetto del client** (regola 2 di `CLAUDE.md`): va in `docs/BUGS.md`.
+
+### Prove d'uso da fare con una persona
+
+- **T2.9 «test dei 10 secondi»**: far connettere qualcuno che non ha mai visto il programma, senza istruzioni, entro 10 secondi. Procedura pronta in `test-results/step2/T2.9-procedura.md`.
+- **Ctrl+V letterale in LibreOffice Calc** di un blocco copiato dal client (l'incolla via motore d'importazione di Calc è già provato; manca il Ctrl+V «a mano», `BUG-003`).
+- **T7.11** (prova d'uso dell'editor visivo) arriverà con lo Step 7.
+
+### Come provarlo, e cosa si può fare adesso
+
+Doppio clic su **`avvia.cmd`** (compila e apre il programma; trova da sé il JDK 25). Oggi il client:
+
+- **si connette** a MariaDB e MySQL da tessere, senza salvare le password, con diagnosi degli errori in italiano;
+- **naviga** il server: cataloghi, tabelle con icona dell'engine, colonne, indici, chiavi esterne, viste, routine in sola lettura, filtro per nome;
+- **mostra sempre l'SQL**: ogni operazione passa dall'anteprima e finisce nel **registro**, che si può filtrare ed esportare come `.sql` rieseguibile (comprese le `SELECT` che riempiono la griglia);
+- **opera sull'albero**: crea/elimina cataloghi, rinomina/svuota/elimina tabelle, mostra l'SQL di creazione, con conferma rafforzata (riscrivere il nome) per `DROP` e `TRUNCATE`;
+- **editor SQL**: evidenziazione, completamento dai metadati, esecuzione al cursore/selezione/script con `DELIMITER`, risultati multipli, *Interrompi*, errori del server spiegati in italiano con la riga evidenziata, apri/salva `.sql`;
+- **data-entry**: griglia paginata e ordinabile (provata su **un milione di righe**), modifiche in sospeso con **Conferma**/**Scarta**, appunti su blocchi rettangolari compatibili con Excel, validazione per tipo, scheda record, esportazione CSV; nessuna scrittura implicita, mai;
+- **editor di tabelle**: colonne, opzioni, engine InnoDB/MyISAM con avvisi, indici e chiavi esterne con i controlli **prima** e la **verifica sul server dopo**; esito parziale leggibile quando il server si ferma a metà, con rilettura dello stato reale.
+
+Non c'è ancora (step successivi): editor visivo di query e viste, importazione CSV/JSON, dump, modello ER, installer. **Niente gestione delle transazioni** in v1: la connessione è sempre in autocommit (`ADR-010`).
+
+---
+
+## 2026-09-23 — Step 6: indici, chiavi esterne, integrità referenziale ✅ (esecuzione autonoma)
+
+Ultimo degli step ad avere solo prove «di componente» per le righe M: le schede Indici e Chiavi esterne c'erano, ma nessun indice e nessuna chiave esterna nata dall'editor era mai arrivata a un server, e gli errori 1451/1452/1062 erano stringhe scritte nei test. Ora tutte le righe M passano dal **programma vero** contro **MariaDB e MySQL**, e ogni affermazione è ricontrollata con una connessione separata del test su `information_schema` (`STATISTICS`, `KEY_COLUMN_USAGE`, `REFERENTIAL_CONSTRAINTS`) e con `CHECKSUM TABLE`.
+
+**Scoperta importante (differenza fra i due server, `BUG-018`).** Aggiungendo una chiave esterna a una tabella che ha **righe orfane**, MySQL 8.0.40 rifiuta con l'errore 1452, **MariaDB 11.5.2 la crea e le righe orfane restano**: il vincolo non protegge i dati già presenti. Stesso client, stesso driver, stesso SQL. Conseguenza didattica: su MariaDB l'unica difesa è il **controllo prima** del client («Verifica dati», `ADR-011`), che infatti trova ed elenca le righe orfane su entrambi i server. Da spiegare in aula; registrato in `docs/BUGS.md`.
+
+Validazione (test con `@Tag("step6")`; evidenze in `test-results/step6/`):
+
+| Test | Esito | Evidenza |
+|---|---|---|
+| T6.1 | ✅ | `TableDiffIndexTest` (21 test U): crea/elimina/rinomina INDEX, UNIQUE e PRIMARY, indici multi-colonna con l'ordine delle colonne, modifica delle colonne di un indice resa come `DROP` + `ADD` **nello stesso `ALTER`**; SQL atteso per entrambi i server, identificatori tra backtick |
+| T6.2 | ✅ | `TableDiffForeignKeyTest` (36 test U): creazione con **tutte le 16 combinazioni** di `ON DELETE` × `ON UPDATE` (RESTRICT, CASCADE, SET NULL, NO ACTION), FK composta, eliminazione, modifica resa come `DROP FOREIGN KEY` **e poi** `ADD CONSTRAINT` nell'ordine corretto, FK autoreferenziale; sintassi `DROP FOREIGN KEY` giusta per MariaDB e MySQL |
+| T6.3 | ✅ | `FkPrecheckTest` (33 U) + `T63PrecheckWarningsTest` (2 U): ogni caso produce il suo avviso **senza contattare il server** — INT vs INT UNSIGNED («Segno diverso: «id_socio» è INT UNSIGNED ma la colonna riferita «id» è INT…»), INT vs BIGINT, VARCHAR con collation diverse, colonna riferita senza indice, SET NULL su colonna NOT NULL, tabella MyISAM su uno dei due lati → `tableeditor-T6.3.txt` e 6 schermate `tableeditor-T6.3-*.png` |
+| T6.4 | ✅ | `T64VerificaDopoTest` (it, **110 test** = 55 casi × 2 server) + `SchemaVerifierTest` (17 U): per ogni indice di T6.1 (I01–I20) e ogni FK di T6.2 (F01–F32, di cui F01–F16 le 16 combinazioni) l'oggetto viene applicato e riletto da `information_schema`: **52 casi su 55 «conforme»** e **3 casi alterati ad arte** (FK creata con azione diversa) in cui il verificatore **dichiara la differenza** — che è esattamente ciò che la riga chiede → `T6.4-mariadb.txt`, `T6.4-mysql.txt` |
+| T6.5 | ✅ | `T65IntegritaRealeTest` (it, 8 test): struttura e FK generate dal client ed eseguite con `SqlExecutor`, poi il comportamento vero del server: con RESTRICT `DELETE` del padre → **1451**; `INSERT` del figlio orfano → **1452**; con CASCADE `DELETE` del padre → figli eliminati; con SET NULL → figli a NULL. Esiti presi da `StatementResult` e dal registro → `T6.5-mariadb.txt`, `T6.5-mysql.txt` |
+| T6.6 | ✅ | `T66T67SulServerTest` (it, ui, 2 server) + `T66VerificationTest` (3 U): partendo da tabelle **nude**, con l'editor si creano `uq_libri_isbn` (UNIQUE), `ix_libri_editore` (INDEX) e `fk_libri_editori` in un solo `ALTER`; l'esito dice «✔ verificato sul server» e la verifica è vera: `information_schema` riporta i due indici e la FK con nome, tabella riferita, colonne e azioni (`ON DELETE RESTRICT ON UPDATE CASCADE`) **identici a quanto chiesto**; indici e chiavi esterne compaiono nel navigatore → `T6.6-T6.7-server-*.txt`, `T6.6-server-*.png` |
+| T6.7 | ✅ | `T66T67SulServerTest` (it, ui, 2 server) + `T67T68DataCheckTest` (3 U): con 3 righe orfane, «Verifica dati» esegue davvero la query `SELECT figlia.* … LEFT JOIN … WHERE riferita.id IS NULL`, la mostra e elenca le **3 righe**, avvisando che il server rifiuterebbe con 1452. Eseguendo comunque: su **MySQL** errore **1452** spiegato e nessuna FK creata (come chiede la roadmap); su **MariaDB** il server **accetta** e le 3 righe orfane restano (`BUG-018`, verificato). Poi le 3 righe si correggono **dal data-entry del client** (eliminate con Conferma) e la chiave si crea e risulta «✔ verificato sul server» su **entrambi** i server → `T6.7-orfane-server-*.png`, `T6.7-creata-server-*.png` |
+| T6.8 | ✅ | `T68T69SulServerTest` (it, ui, 2 server): UNIQUE su `soci.email` con 2 valori duplicati (e un NULL) → la query di controllo con `GROUP BY … HAVING` viene eseguita e mostra **2 valori duplicati**, avvisando dell'errore 1062; procedendo, il server rifiuta con **1062** spiegato («Valore duplicato: esiste già una riga…») e l'indice **non** viene creato (verificato in `information_schema.STATISTICS`) → `T6.8-T6.9-server-*.txt`, `T6.8-duplicati-server-*.png` |
+| T6.9 | ✅ | `T68T69SulServerTest` (it, ui, 2 server) + `T69MyIsamTest` (1 U): su una tabella **MyISAM** la scheda Chiavi esterne mostra la spiegazione invece della tabella («La tabella … usa l'engine MyISAM, che non supporta le chiavi esterne… converti la tabella in InnoDB»), aggiungere una FK non fa niente, ed è offerto il pulsante di conversione; accettandolo la tabella diventa **InnoDB sul server** e la scheda torna utilizzabile → `T6.9-myisam-server-*.png`, `T6.9-convertita-server-*.png` |
+| T6.10 | ✅ | `T610T611SulServerTest` (it, ui, 2 server): dal **data-entry**, eliminare un editore che ha libri → «[1451] Cannot delete or update a parent row… — Non si può eliminare o modificare questa riga: altre righe la usano attraverso una chiave esterna», la riga resta in griglia e sul server l'editore c'è ancora; eliminare un libro che ha autori (FK CASCADE) → il libro sparisce **e con lui le righe di `libri_autori`**, verificato sul server e **riaprendo la tabella nel client** → `T6.10-server-*.txt`, `T6.10-restrict-*.png`, `T6.10-cascade-*.png` |
+| T6.11 | ✅ | `T610T611SulServerTest` (it, ui, 2 server) — **Tappa M1**: la biblioteca costruita **solo con il client** — catalogo creato dal navigatore, 4 tabelle (`editori`, `autori`, `libri`, `libri_autori`) con 2 indici UNIQUE e **3 chiavi esterne** (di cui 2 CASCADE su chiave primaria composta) dall'editor di struttura, dati dal data-entry: 3 editori e 3 libri digitati e **20 autori incollati a blocco** come da Excel — poi **registro esportato** come `.sql` (141 righe, `T6.11-registro-*.sql`), secondo catalogo creato dal client e script **rieseguito dall'editor SQL** (37 istruzioni, tutte OK). Confronto finale: per tutte e 4 le tabelle **metadati identici** (`TableDiff` = 0 istruzioni) e **`CHECKSUM TABLE` uguale** → `T6.11-server-*.txt`, `T6.11-server-*.png` |
+
+Test N dello Step 6: **T6.12**, **T6.13**, **T6.14** da fare con l'utente in Navicat; istruzioni nel resoconto finale.
+
 ## 2026-09-23 — Step 5: editor di tabelle ✅ (esecuzione autonoma)
 
 Anche qui la revisione ha trovato che l'editor di tabelle **non aveva mai parlato con un server**: `TableApplier`, `CatalogTables` e `DataCheck` erano implementati solo da finte nei test, gli errori del server (1265, 1050…) erano stringhe scritte a mano dentro i test, e l'editor non era raggiungibile dall'interfaccia. Aggiunto il cablaggio di produzione (nel commit dello Step 4 per la parte comune):
@@ -43,12 +178,12 @@ Validazione (test con `@Tag("step4")`; evidenze in `test-results/step4/`; i nume
 | Test | Esito | Evidenza |
 |---|---|---|
 | T4.1 | ✅ | `StatementSplitterTest` (33 test U): i 30 casi chiesti — `;` dentro stringhe e commenti, `DELIMITER //`, commenti `--`, `#`, `/* */`, backtick, script vuoto, ultima istruzione senza `;` — sul lessico di `SqlLexer`; il blocco `DELIMITER` con procedura è poi provato **sul server** in T4.2 |
-| T4.2 | ✅ | `T42T43T46EditorSulServerTest` (it, 2 server) + `T42ExecuteTest` (8 U): script di **50 istruzioni** (1 CREATE, 30 INSERT, 5 UPDATE, 1 ALTER, 3 SELECT, una procedura in blocco `DELIMITER`, una CALL, 8 SELECT) eseguite **tutte e in ordine** in 33 ms su MariaDB, 12 risultati tabellari, un esito per istruzione nella tabella dell'editor (righe lette / righe interessate / durata), procedura `conta_per_anno` verificata in `information_schema.ROUTINES` → `T4.2-T4.3-T4.6-server-*.txt`, `T4.2-server-*.png`, `editor-T4.2-script50*.png` |
-| T4.3 | ✅ | `T42T43T46EditorSulServerTest` (it, 2 server) + `T43CancelTest` (5 U): `SELECT SLEEP(30)` → *Interrompi* → interrotto in **15 ms** su MariaDB (limite 2000); subito dopo `SELECT COUNT(*) FROM soci` dà 100, uguale al server: la sessione resta utilizzabile → `T4.3-server-*.png` |
+| T4.2 | ✅ | `T42T43T46EditorSulServerTest` (it, 2 server) + `T42ExecuteTest` (8 U): script di **50 istruzioni** (1 CREATE, 30 INSERT, 5 UPDATE, 1 ALTER, 3 SELECT, una procedura in blocco `DELIMITER`, una CALL, 8 SELECT) eseguite **tutte e in ordine** in poche decine di millisecondi, 12 risultati tabellari, un esito per istruzione nella tabella dell'editor (righe lette / righe interessate / durata), procedura `conta_per_anno` verificata in `information_schema.ROUTINES` → `T4.2-T4.3-T4.6-server-*.txt`, `T4.2-server-*.png`, `editor-T4.2-script50*.png` |
+| T4.3 | ✅ | `T42T43T46EditorSulServerTest` (it, 2 server) + `T43CancelTest` (5 U): `SELECT SLEEP(30)` → *Interrompi* → interrotto in **meno di 20 ms** (limite 2000; la cifra esatta della corsa è nell'evidenza); subito dopo `SELECT COUNT(*) FROM soci` dà 100, uguale al server: la sessione resta utilizzabile → `T4.3-server-*.png` |
 | T4.4 | ✅ | `T44CompletionTest` (10 U): `SELECT * FROM li` + Ctrl+Spazio propone `libri` e `libri_autori`; `libri.` propone le colonne di `libri`; nessuna proposta dentro stringhe e commenti → `editor-T4.4-li.txt`, `editor-T4.4-libri-punto.txt` e le due PNG. Nel programma il completamento è alimentato da `MetadataCompletionSource` (canale metadati, non esegue SQL dell'utente) |
 | T4.5 | ✅ | `T45ConfirmDestructiveTest` (28 U): `UPDATE soci SET nome='x'` senza WHERE, `DELETE` senza WHERE, `DROP TABLE`, `DROP DATABASE`, `TRUNCATE`, `ALTER … DROP COLUMN` → conferma sempre chiesta e, se rifiutata, **0 istruzioni consegnate**; `DROP`/`TRUNCATE` chiedono di riscrivere il nome → `editor-T4.5-conferme.txt`, `editor-T4.5-conferma-rafforzata.txt` |
 | T4.6 | ✅ | `T42T43T46EditorSulServerTest` (it, 2 server) + `T46ErrorTest` (6 U) + `ErrorExplainerTest` (16 U): `SELEC * FROM …` → **errore 1064** del server riportato per intero, più «In parole semplici: l'SQL non è scritto correttamente…», più «alla riga 2» e il testo evidenziato nell'editor → `T4.2-T4.3-T4.6-server-*.txt`, `T4.6-server-*.png` |
-| T4.7 | ✅ | `T47GrandeTabellaTest` (it, 2 server): tabella da **1 000 000 di righe**; prima pagina in **5 ms** su entrambi i server (limite 1000 ms), pagina 2 in 2 ms, ordinamento su colonna **senza indice** 257 ms (MariaDB) e 200 ms (MySQL); memoria **58 MB** (limite 300); in griglia **1000 righe su 1 000 000** e `LIMIT 1001` nel registro → `T4.7-mariadb.txt`, `T4.7-mysql.txt`, `T4.7-*.png` |
+| T4.7 | ✅ | `T47GrandeTabellaTest` (it, 2 server): tabella da **1 000 000 di righe**; prima pagina in **meno di 10 ms** su entrambi i server (limite 1000 ms), pagina 2 in pochi millisecondi, ordinamento su colonna **senza indice** circa **200-260 ms**; memoria **57-58 MB** (limite 300); in griglia **1000 righe su 1 000 000** e `LIMIT 1001` nel registro → `T4.7-mariadb.txt`, `T4.7-mysql.txt`, `T4.7-*.png` |
 | T4.8 | ✅ | `DmlGeneratorTest` (21 U) e `SqlLiteralsTest` (21 U): INSERT con DEFAULT e AUTO_INCREMENT omessi, UPDATE delle sole colonne cambiate, WHERE su PK semplice e composta e su UNIQUE in assenza di PK, NULL, apostrofi, emoji, DECIMAL, DATE; un test controlla che **nessuna istruzione di transazione** venga mai generata (`ADR-010`) |
 | T4.9 | ✅ | `T49T412PendentiSulServerTest` (it, 2 server) + `T49NoImplicitWriteTest` (U): 3 inserimenti e 1 modifica, poi *ordina* e *cambia pagina* (entrambi **rifiutati** con l'avviso «Prima conferma o scarta le modifiche in sospeso…») → **0 istruzioni di scrittura nel registro**, sul server le righe sono ancora 100 e la prima riga è identica campo per campo; contatore «3 inserimenti · 1 modifica · 0 eliminazioni in sospeso» → `T4.9-T4.12-server-*.txt`, `T4.9-server-*.png` |
 | T4.10 | ✅ | `T410T411ConfermaSulServerTest` (it, 2 server) + `T410T411ConfirmFlowTest` (2 U): 3 modifiche + 1 inserimento + 1 eliminazione → anteprima con **esattamente 5 istruzioni** (1 DELETE, 3 UPDATE, 1 INSERT) e **nessuna** `START TRANSACTION`/`BEGIN`/`COMMIT`/`ROLLBACK`/`SAVEPOINT`; dopo l'esecuzione la riga eliminata non c'è più sul server, la nuova ha l'`id` assegnato dal server e il cognome modificato si rilegge; l'`id` AUTO_INCREMENT compare in griglia → `T4.10-T4.11-server-*.txt`, `T4.10-anteprima-*.png`, `T4.10-dopo-*.png` |

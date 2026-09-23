@@ -35,10 +35,17 @@ public final class MetadataCatalogTables implements CatalogTables {
 
     private final MetadataReader reader;
     private final String catalog;
+    /** Una lettura dei metadati non è riuscita: da qui in poi l'elenco non è più affidabile. */
+    private volatile boolean incomplete;
 
     public MetadataCatalogTables(MetadataReader reader, String catalog) {
         this.reader = Objects.requireNonNull(reader, "reader");
         this.catalog = Objects.requireNonNull(catalog, "catalog");
+    }
+
+    @Override
+    public boolean isComplete() {
+        return !incomplete;
     }
 
     @Override
@@ -53,6 +60,7 @@ public final class MetadataCatalogTables implements CatalogTables {
             names.sort(Comparator.naturalOrder());
             return List.copyOf(names);
         } catch (SQLException e) {
+            incomplete = true;
             return List.of();
         }
     }
@@ -62,6 +70,7 @@ public final class MetadataCatalogTables implements CatalogTables {
         try {
             return reader.table(catalog, name);
         } catch (SQLException e) {
+            incomplete = true;
             return Optional.empty();
         }
     }
@@ -82,6 +91,7 @@ public final class MetadataCatalogTables implements CatalogTables {
             }
             return List.copyOf(found);
         } catch (SQLException e) {
+            incomplete = true;
             return List.of();
         }
     }

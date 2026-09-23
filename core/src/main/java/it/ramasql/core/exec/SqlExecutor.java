@@ -315,7 +315,7 @@ public final class SqlExecutor implements AutoCloseable {
         long affected = 0;
         try (Statement st = con.createStatement()) {
             // lettura a flusso: oltre il limite le righe non si tengono in memoria
-            st.setFetchSize(Math.min(rowsToRead + 1, 1000));
+            st.setFetchSize(Math.min(rowsToRead, 999) + 1);   // niente overflow con limiti molto grandi
             boolean isResultSet = st.execute(statement.text());
             while (true) {
                 if (isResultSet) {

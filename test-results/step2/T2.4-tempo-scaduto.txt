@@ -1,5 +1,5 @@
 T2.4 (b) — host irraggiungibile 10.255.255.1:3306, senza annullare
-diagnosi dopo 8006 ms (limite 10000 ms)
+diagnosi dopo 8009 ms (limite 10000 ms)
 causa: TIMEOUT
 messaggio: Nessuna risposta da «10.255.255.1» (porta 3306) entro il tempo massimo di attesa. Controlla l'indirizzo nel campo Host, che quel computer sia acceso e raggiungibile dalla tua rete, e che un firewall non blocchi la porta.
 originale: Errore di rete: SQLSTATE 08000 · java.net.SocketTimeoutException: Connect timed out

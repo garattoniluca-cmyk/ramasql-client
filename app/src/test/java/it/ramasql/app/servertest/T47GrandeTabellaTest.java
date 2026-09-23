@@ -134,6 +134,10 @@ class T47GrandeTabellaTest {
                         "in memoria non deve esserci più di una pagina");
                 evidence.append("Esito: SUPERATO\n");
             }
+        } catch (Throwable t) {
+            // un test fallito non deve lasciare un file di evidenza che sembra valido
+            evidence.append("Esito: FALLITO - ").append(t).append('\n');
+            throw t;
         } finally {
             Probe.writeText("step4", "T4.7-" + server.id() + ".txt", evidence.toString());
             server.dropQuietly(catalog);

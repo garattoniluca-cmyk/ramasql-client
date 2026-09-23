@@ -1,0 +1,11 @@
+SQL:
+ALTER TABLE `ramasql_test_t66`.`libri`
+  ADD UNIQUE INDEX `uq_libri_isbn` (`isbn`),
+  ADD INDEX `ix_libri_editore` (`id_editore`),
+  ADD CONSTRAINT `fk_libri_editori` FOREIGN KEY (`id_editore`) REFERENCES `editori` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+
+ESITO:
+✔ Istruzione applicata.
+Applicata: ALTER TABLE `ramasql_test_t66`.`libri` ADD UNIQUE INDEX `uq_libri_isbn` (`isbn`), ADD INDEX `ix_libri_editore` (`id_editore`), ADD CONSTRAINT `fk_libri_edito…
+ℹ L'editor mostra ora la tabella com'è davvero sul server (riletta dopo l'esecuzione).
+✔ verificato sul server: indici e chiavi esterne di «libri» sono quelli chiesti

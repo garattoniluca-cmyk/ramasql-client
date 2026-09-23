@@ -1,0 +1,4 @@
+ORDINE CAMBIATO:
+ALTER TABLE `ramasql_test_idx`.`autori`
+  DROP INDEX `ix_autori_cognome`,
+  ADD INDEX `ix_autori_cognome` (`nome`, `cognome`)

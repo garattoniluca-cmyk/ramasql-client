@@ -136,8 +136,8 @@ class T55T56T57AlterSulServerTest {
                 a.waitIdle();
                 String esitoMultiplo = fromEdt(multiplo::outcomeText);
                 assertTrue(esitoMultiplo.contains("Errore"), "l'esito riporta l'errore del server: " + esitoMultiplo);
-                assertTrue(esitoMultiplo.contains("su " + piano.size()) || esitoMultiplo.contains("Applicata"),
-                        "l'esito dice quante istruzioni sono passate: " + esitoMultiplo);
+                assertTrue(esitoMultiplo.contains("su " + piano.size()),
+                        "l'esito dice quante istruzioni sono passate su quante: " + esitoMultiplo);
                 assertTrue(server.tableExists(catalog, "prestiti_storico"),
                         "la prima istruzione è stata applicata per davvero");
                 assertFalse(server.tableExists(catalog, "prestiti"), "il vecchio nome non c'è più");
@@ -204,6 +204,10 @@ class T55T56T57AlterSulServerTest {
                         .append("  note_libere (libera): InnoDB → MyISAM → InnoDB eseguite sul server, icona ")
                         .append("dell'albero aggiornata a ogni passaggio\nEsito: SUPERATO\n");
             }
+        } catch (Throwable t) {
+            // un test fallito non deve lasciare un file di evidenza che sembra valido
+            ev.append("Esito: FALLITO - ").append(t).append('\n');
+            throw t;
         } finally {
             Probe.writeText("step5", "T5.5-T5.6-T5.7-server-" + server.id() + ".txt", ev.toString());
             server.dropQuietly(catalog);

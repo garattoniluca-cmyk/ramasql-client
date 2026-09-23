@@ -81,12 +81,19 @@ public final class GridApplier {
             statements.add(SqlStatement.of(r.sql(), origin));
         }
         SqlScript script = new SqlScript(Texts.get("grid.confirm.title", table.name()), origin, statements);
-        pipeline.propose(script).whenComplete((result, error) ->
-                SwingUtilities.invokeLater(() -> apply(grid, rows, result)));
+        pipeline.propose(script).whenComplete((result, error) -> SwingUtilities.invokeLater(() -> {
+            if (error != null) {
+                grid.confirmFinished();   // non è stato annullato: si è rotto qualcosa, e l'ha già detto la pipeline
+                onDone.accept(null);
+            } else {
+                apply(grid, rows, result);
+            }
+        }));
     }
 
     /** Riporta l'esito sulle righe: riuscite salvate, la fallita marcata, le altre in sospeso. */
     private void apply(DataGrid grid, List<DmlGenerator.RowStatement> rows, ScriptResult result) {
+        grid.confirmFinished();
         if (result == null) {
             view.message(PipelineView.MessageKind.INFO, Texts.get("grid.confirm.cancelled"));
             onDone.accept(null);
@@ -98,20 +105,35 @@ public final class GridApplier {
                 continue;
             }
             RowChange change = rows.get(r.index()).change();
-            if (r.isOk()) {
+            if (!r.isOk()) {
+                grid.markError(change.rowId(), explain(r));
+            } else if (change.kind() != RowChange.Kind.INSERT && r.affectedRows() == 0) {
+                // il server ha detto OK ma non ha toccato nessuna riga: la condizione non ha trovato la riga
+                // (qualcuno l'ha cambiata o eliminata nel frattempo). Dire «salvata» sarebbe falso.
+                grid.markError(change.rowId(), Texts.get("grid.confirm.noRow"));
+            } else {
                 grid.markSaved(change.rowId(), refreshed(change));
                 saved++;
-            } else {
-                grid.markError(change.rowId(), explain(r));
             }
         }
-        if (saved == rows.size()) {
-            view.message(PipelineView.MessageKind.SUCCESS, Texts.get("grid.confirm.done", rows.size()));
-            grid.reload();   // i valori calcolati dal server (AUTO_INCREMENT, DEFAULT) si vedono in griglia
-        } else {
-            view.message(PipelineView.MessageKind.ERROR, Texts.get("grid.confirm.partial", saved, rows.size()));
+        try {
+            if (saved == rows.size()) {
+                view.message(PipelineView.MessageKind.SUCCESS, Texts.get("grid.confirm.done", rows.size()));
+                // i valori calcolati dal server (AUTO_INCREMENT, DEFAULT) si vedono in griglia
+                grid.reload();
+            } else {
+                view.message(PipelineView.MessageKind.ERROR, Texts.get("grid.confirm.partial", saved, rows.size()));
+            }
+        } catch (RuntimeException e) {
+            // le righe sono salvate: se la rilettura non riesce (connessione caduta) si dice e si va avanti
+            view.message(PipelineView.MessageKind.WARNING, Texts.get("grid.reload.failed", describe(e)));
+        } finally {
+            onDone.accept(result);
         }
-        onDone.accept(result);
+    }
+
+    private static String describe(RuntimeException e) {
+        return e.getMessage() == null ? e.getClass().getSimpleName() : e.getMessage();
     }
 
     /** I valori da mostrare dopo il salvataggio: quelli scritti (l'eventuale rilettura arriva dopo, col reload). */

@@ -159,6 +159,9 @@ public final class DataGrid extends JPanel {
     private boolean hasMore;
     private GridDataSource.SortOrder sortOrder;
     private String notice = "";
+    /** Vero da quando la Conferma parte a quando l'esito torna: un secondo clic non deve rimandare le stesse
+     * istruzioni (l'esecuzione dura, e il pulsante resterebbe acceso perché le righe sono ancora pendenti). */
+    private boolean confirming;
 
     // ---------------------------------------------------------------- creazione
 
@@ -521,7 +524,14 @@ public final class DataGrid extends JPanel {
 
     // ---------------------------------------------------------------- API per l'integrazione
 
-    /** Chi riceve le modifiche alla <i>Conferma</i> (DmlGenerator → anteprima → esecuzione). La griglia non scrive. */
+    /**
+     * Chi riceve le modifiche alla <i>Conferma</i> (DmlGenerator → anteprima → esecuzione). La griglia non scrive.
+     *
+     * <p><b>Contratto:</b> finché l'esito non torna la <i>Conferma</i> resta spenta, così un secondo clic non rimanda
+     * le stesse istruzioni. Chi riceve le modifiche deve quindi chiamare {@link #confirmFinished()} quando ha finito —
+     * sia che l'esecuzione sia andata, sia che l'utente abbia annullato dall'anteprima — altrimenti la Conferma resta
+     * spenta per sempre.
+     */
     public void setOnConfirm(Consumer<List<RowChange>> onConfirm) {
         this.onConfirm = onConfirm;
     }
@@ -624,15 +634,36 @@ public final class DataGrid extends JPanel {
     public void confirm() {
         stopEditing();
         PendingChanges pending = model.pending();
-        if (!pending.hasPending()) {
+        if (confirming || !pending.hasPending()) {
             return;
         }
         if (!pending.canConfirm()) {
             return;   // la spiegazione è già visibile sotto la barra (celle non valide) e sul pulsante
         }
         if (onConfirm != null) {
-            onConfirm.accept(pending.toRowChanges());
+            confirming = true;
+            refreshBar();
+            try {
+                onConfirm.accept(pending.toRowChanges());
+            } catch (RuntimeException e) {
+                confirmFinished();
+                throw e;
+            }
         }
+    }
+
+    /**
+     * Chi ha ricevuto le modifiche dichiara che ha finito (esito arrivato, o annullato dall'anteprima): la Conferma
+     * torna disponibile. Si chiama sull'EDT.
+     */
+    public void confirmFinished() {
+        confirming = false;
+        refreshBar();
+    }
+
+    /** Una Conferma è partita e non ha ancora riportato l'esito. */
+    public boolean isConfirming() {
+        return confirming;
     }
 
     /** <b>Scarta</b>, dopo averlo chiesto: operazione locale, sul server non è stato scritto nulla. */
@@ -670,9 +701,10 @@ public final class DataGrid extends JPanel {
             counter.setColors(Tokens.TEXT_SECONDARY, Tokens.BG_SUNKEN);
         }
         int invalid = anything ? pending.invalidCells().size() : 0;
-        discardButton.setEnabled(anything);
-        confirmButton.setEnabled(anything && invalid == 0);
-        confirmButton.setToolTipText(!anything ? Texts.get("grid.confirm.nothing")
+        discardButton.setEnabled(anything && !confirming);
+        confirmButton.setEnabled(anything && invalid == 0 && !confirming);
+        confirmButton.setToolTipText(confirming ? Texts.get("grid.confirm.running")
+                : !anything ? Texts.get("grid.confirm.nothing")
                 : invalid > 0 ? invalidText() : Texts.get("grid.confirm.tooltip"));
         invalidLabel.setText(invalid > 0 ? invalidText() : " ");
         invalidLabel.setIcon(invalid > 0 ? AppIcons.small(AppIcons.STATUS_ERROR) : null);
@@ -733,7 +765,15 @@ public final class DataGrid extends JPanel {
             setNotice(Texts.get("grid.blocked.pending"));
             return false;
         }
-        GridDataSource.Page loaded = source.load(page, pageSize, order);
+        GridDataSource.Page loaded;
+        try {
+            loaded = source.load(page, pageSize, order);
+        } catch (RuntimeException e) {
+            // il server non ha risposto (connessione caduta, tabella sparita, permessi): la pagina resta com'è
+            setNotice(Texts.get("grid.read.failed", table == null ? "" : table.name(),
+                    e.getMessage() == null ? e.getClass().getSimpleName() : e.getMessage()));
+            return false;
+        }
         pageIndex = page;
         sortOrder = order;
         hasMore = loaded.hasMore();

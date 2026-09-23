@@ -1,0 +1,122 @@
+# T6.5 — integrità referenziale reale su MariaDB
+# Classe: it.ramasql.it.step6.T65IntegritaRealeTest (step6, it)
+# Struttura e FK create dal generatore, eseguite con SqlExecutor; esiti da StatementResult e dal registro SqlLog.
+
+## 1 RESTRICT: DELETE del padre → 1451
+server: MariaDB 11.5.2
+struttura (generatore → SqlExecutor):
+    CREATE TABLE `editori` (
+      `id` INT UNSIGNED NOT NULL,
+      `nome` VARCHAR(50) NOT NULL,
+      PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB;
+    CREATE TABLE `libri` (
+      `id` INT UNSIGNED NOT NULL,
+      `titolo` VARCHAR(100) NOT NULL,
+      `id_editore` INT UNSIGNED NULL,
+      PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB;
+    ALTER TABLE `libri` ADD CONSTRAINT `fk_libri_editori` FOREIGN KEY (`id_editore`) REFERENCES `editori` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+verifica dopo: ✔ verificato sul server: indici e chiavi esterne di «libri» sono quelli chiesti
+dati:
+    INSERT INTO `editori` (`id`, `nome`) VALUES (1, 'Zanichelli'), (2, 'Hoepli');
+    INSERT INTO `libri` (`id`, `titolo`, `id_editore`) VALUES (10, 'Basi di dati', 1), (11, 'SQL per tutti', 1), (12, 'Reti', 2);
+> DELETE FROM `editori` WHERE `id` = 1;
+  → ERRORE 1451 (23000): (conn=6338) Cannot delete or update a parent row: a foreign key constraint fails (`ramasql_test_t65_mudqoxk84jwy`.`libri`, CONSTRAINT `fk_libri_editori` FOREIGN KEY (`id_editore`) REFERENCES `editori` (`id`))
+> SELECT `id`, `nome` FROM `editori` ORDER BY `id`;
+  → 1|Zanichelli; 2|Hoepli
+> UPDATE `editori` SET `id` = 5 WHERE `id` = 2;
+  → ERRORE 1451 (23000): (conn=6338) Cannot delete or update a parent row: a foreign key constraint fails (`ramasql_test_t65_mudqoxk84jwy`.`libri`, CONSTRAINT `fk_libri_editori` FOREIGN KEY (`id_editore`) REFERENCES `editori` (`id`))
+ESITO: comportamento del server = dichiarato dalla FK
+
+## 2 INSERT di un figlio orfano → 1452
+server: MariaDB 11.5.2
+struttura (generatore → SqlExecutor):
+    CREATE TABLE `editori` (
+      `id` INT UNSIGNED NOT NULL,
+      `nome` VARCHAR(50) NOT NULL,
+      PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB;
+    CREATE TABLE `libri` (
+      `id` INT UNSIGNED NOT NULL,
+      `titolo` VARCHAR(100) NOT NULL,
+      `id_editore` INT UNSIGNED NULL,
+      PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB;
+    ALTER TABLE `libri` ADD CONSTRAINT `fk_libri_editori` FOREIGN KEY (`id_editore`) REFERENCES `editori` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+verifica dopo: ✔ verificato sul server: indici e chiavi esterne di «libri» sono quelli chiesti
+dati:
+    INSERT INTO `editori` (`id`, `nome`) VALUES (1, 'Zanichelli'), (2, 'Hoepli');
+    INSERT INTO `libri` (`id`, `titolo`, `id_editore`) VALUES (10, 'Basi di dati', 1), (11, 'SQL per tutti', 1), (12, 'Reti', 2);
+> INSERT INTO `libri` (`id`, `titolo`, `id_editore`) VALUES (20, 'Orfano', 99);
+  → ERRORE 1452 (23000): (conn=6350) Cannot add or update a child row: a foreign key constraint fails (`ramasql_test_t65_mudqoxx0y8bo`.`libri`, CONSTRAINT `fk_libri_editori` FOREIGN KEY (`id_editore`) REFERENCES `editori` (`id`))
+> UPDATE `libri` SET `id_editore` = 98 WHERE `id` = 12;
+  → ERRORE 1452 (23000): (conn=6350) Cannot add or update a child row: a foreign key constraint fails (`ramasql_test_t65_mudqoxx0y8bo`.`libri`, CONSTRAINT `fk_libri_editori` FOREIGN KEY (`id_editore`) REFERENCES `editori` (`id`))
+> SELECT `id`, `id_editore` FROM `libri` ORDER BY `id`;
+  → 10|1; 11|1; 12|2
+> INSERT INTO `libri` (`id`, `titolo`, `id_editore`) VALUES (21, 'Senza editore', NULL);
+  → OK, righe 1
+ESITO: comportamento del server = dichiarato dalla FK
+
+## 3 CASCADE: DELETE del padre → figli eliminati; UPDATE → figli aggiornati
+server: MariaDB 11.5.2
+struttura (generatore → SqlExecutor):
+    CREATE TABLE `editori` (
+      `id` INT UNSIGNED NOT NULL,
+      `nome` VARCHAR(50) NOT NULL,
+      PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB;
+    CREATE TABLE `libri` (
+      `id` INT UNSIGNED NOT NULL,
+      `titolo` VARCHAR(100) NOT NULL,
+      `id_editore` INT UNSIGNED NULL,
+      PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB;
+    ALTER TABLE `libri` ADD CONSTRAINT `fk_libri_editori` FOREIGN KEY (`id_editore`) REFERENCES `editori` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+verifica dopo: ✔ verificato sul server: indici e chiavi esterne di «libri» sono quelli chiesti
+dati:
+    INSERT INTO `editori` (`id`, `nome`) VALUES (1, 'Zanichelli'), (2, 'Hoepli');
+    INSERT INTO `libri` (`id`, `titolo`, `id_editore`) VALUES (10, 'Basi di dati', 1), (11, 'SQL per tutti', 1), (12, 'Reti', 2);
+> DELETE FROM `editori` WHERE `id` = 1;
+  → OK, righe 1
+> SELECT `id`, `id_editore` FROM `libri` ORDER BY `id`;
+  → 12|2
+> UPDATE `editori` SET `id` = 7 WHERE `id` = 2;
+  → OK, righe 1
+> SELECT `id`, `id_editore` FROM `libri` ORDER BY `id`;
+  → 12|7
+ESITO: comportamento del server = dichiarato dalla FK
+
+## 4 SET NULL: DELETE del padre → figli a NULL
+server: MariaDB 11.5.2
+struttura (generatore → SqlExecutor):
+    CREATE TABLE `editori` (
+      `id` INT UNSIGNED NOT NULL,
+      `nome` VARCHAR(50) NOT NULL,
+      PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB;
+    CREATE TABLE `libri` (
+      `id` INT UNSIGNED NOT NULL,
+      `titolo` VARCHAR(100) NOT NULL,
+      `id_editore` INT UNSIGNED NULL,
+      PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB;
+    ALTER TABLE `libri` ADD CONSTRAINT `fk_libri_editori` FOREIGN KEY (`id_editore`) REFERENCES `editori` (`id`) ON DELETE SET NULL ON UPDATE SET NULL;
+verifica dopo: ✔ verificato sul server: indici e chiavi esterne di «libri» sono quelli chiesti
+dati:
+    INSERT INTO `editori` (`id`, `nome`) VALUES (1, 'Zanichelli'), (2, 'Hoepli');
+    INSERT INTO `libri` (`id`, `titolo`, `id_editore`) VALUES (10, 'Basi di dati', 1), (11, 'SQL per tutti', 1), (12, 'Reti', 2);
+> DELETE FROM `editori` WHERE `id` = 1;
+  → OK, righe 1
+> SELECT `id`, `id_editore` FROM `libri` ORDER BY `id`;
+  → 10|null; 11|null; 12|2
+> SELECT COUNT(*) FROM `libri` WHERE `id_editore` IS NULL;
+  → 2
+> UPDATE `editori` SET `id` = 8 WHERE `id` = 2;
+  → OK, righe 1
+> SELECT `id`, `id_editore` FROM `libri` ORDER BY `id`;
+  → 10|null; 11|null; 12|null
+> SELECT COUNT(*) FROM `libri`;
+  → 3
+ESITO: comportamento del server = dichiarato dalla FK
+

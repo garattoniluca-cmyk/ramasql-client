@@ -170,8 +170,8 @@ class T410T411ConfermaSulServerTest {
                 String errore = fromEdt(() -> grid.model().pending()
                         .errorMessage(grid.model().pending().indexOf(idErrore)).orElse(""));
                 assertTrue(errore.contains("1062"), "l'errore del server è il 1062: " + errore);
-                assertTrue(errore.contains("doppio") || errore.contains("duplicat") || errore.contains("Duplicate"),
-                        "con la spiegazione in italiano: " + errore);
+                // «Duplicate» è il messaggio grezzo del server: la spiegazione in italiano è un'altra cosa
+                assertTrue(errore.contains("Valore duplicato"), "con la spiegazione in italiano: " + errore);
                 assertEquals(righeT411 + 1, server.rowCount(catalog, "soci"), "sul server è entrata solo la 1ª");
                 Probe.paintWindow("step4", a.frame(), "T4.11-errore-" + server.id() + ".png");
                 ev.append("T4.11 — 1ª salvata, 2ª in errore «").append(errore).append("», 3ª in sospeso; ")
@@ -189,6 +189,10 @@ class T410T411ConfermaSulServerTest {
                 ev.append("  corretta la tessera del 2º → sul server ").append(server.rowCount(catalog, "soci"))
                         .append(" righe, le tre tessere T600001/T600002/T600003 presenti\nEsito: SUPERATO\n");
             }
+        } catch (Throwable t) {
+            // un test fallito non deve lasciare un file di evidenza che sembra valido
+            ev.append("Esito: FALLITO - ").append(t).append('\n');
+            throw t;
         } finally {
             Probe.writeText("step4", "T4.10-T4.11-server-" + server.id() + ".txt", ev.toString());
             server.dropQuietly(catalog);
@@ -211,7 +215,10 @@ class T410T411ConfermaSulServerTest {
     private static PendingChanges.State statoDi(DataGrid grid, long rowId) throws Exception {
         return fromEdt(() -> {
             int i = grid.model().pending().indexOf(rowId);
-            return i < 0 ? PendingChanges.State.SALVATA : grid.model().pending().state(i);
+            if (i < 0) {
+                throw new AssertionError("la riga " + rowId + " è sparita dalla griglia: non si può dire com'è finita");
+            }
+            return grid.model().pending().state(i);
         });
     }
 

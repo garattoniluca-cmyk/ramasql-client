@@ -115,6 +115,10 @@ class T417IncollaSulServerTest {
                         .append(scritte.size()).append(" con cognome «Incolla…»); esempi ")
                         .append(scritte.subList(0, 3)).append("\nEsito: SUPERATO\n");
             }
+        } catch (Throwable t) {
+            // un test fallito non deve lasciare un file di evidenza che sembra valido
+            ev.append("Esito: FALLITO - ").append(t).append('\n');
+            throw t;
         } finally {
             Probe.writeText("step4", "T4.17-server-" + server.id() + ".txt", ev.toString());
             server.dropQuietly(catalog);

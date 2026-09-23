@@ -3,5 +3,5 @@ Operazioni del navigatore su MySQL
 2. [Navigatore] OK 5 ms — RENAME TABLE `<catalogo>`.`vecchia` TO `<catalogo>`.`nuova`
 3. [Navigatore] OK 8 ms — TRUNCATE TABLE `<catalogo>`.`nuova`
 4. [Navigatore] OK 1 ms — DROP VIEW `<catalogo>`.`v_vecchia`
-5. [Navigatore] OK 5 ms — DROP TABLE `<catalogo>`.`eliminami`
+5. [Navigatore] OK 4 ms — DROP TABLE `<catalogo>`.`eliminami`
 6. [Navigatore] OK 1 ms — DROP DATABASE `<nuovo>`

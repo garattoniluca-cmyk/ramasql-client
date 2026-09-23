@@ -149,6 +149,10 @@ class T413T414VincoliESolaLetturaTest {
                 ev.append("T4.14 — vista v_prestiti_aperti: ").append(colonne.size())
                         .append(" colonne, sola lettura, «").append(spiegazioneVista).append("»\nEsito: SUPERATO\n");
             }
+        } catch (Throwable t) {
+            // un test fallito non deve lasciare un file di evidenza che sembra valido
+            ev.append("Esito: FALLITO - ").append(t).append('\n');
+            throw t;
         } finally {
             Probe.writeText("step4", "T4.13-T4.14-server-" + server.id() + ".txt", ev.toString());
             server.dropQuietly(catalog);

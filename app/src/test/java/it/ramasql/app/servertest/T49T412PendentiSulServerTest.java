@@ -144,6 +144,10 @@ class T49T412PendentiSulServerTest {
                         .append(scrittureNelRegistro(a)).append(" istruzioni nel registro, ")
                         .append(server.rowCount(catalog, "soci")).append(" righe sul server\nEsito: SUPERATO\n");
             }
+        } catch (Throwable t) {
+            // un test fallito non deve lasciare un file di evidenza che sembra valido
+            ev.append("Esito: FALLITO - ").append(t).append('\n');
+            throw t;
         } finally {
             Probe.writeText("step4", "T4.9-T4.12-server-" + server.id() + ".txt", ev.toString());
             server.dropQuietly(catalog);

@@ -1,0 +1,6 @@
+✔ Istruzione applicata.
+Applicata: ALTER TABLE `ramasql_test_t66`.`libri` ADD UNIQUE INDEX `uq_libri_isbn` (`isbn`), ADD INDEX `ix_libri_editore` (`id_editore`), ADD CONSTRAINT `fk_libri_edito…
+ℹ L'editor mostra ora la tabella com'è davvero sul server (riletta dopo l'esecuzione).
+✘ Il server non ha applicato esattamente ciò che è stato chiesto per «libri»: 2 differenze
+✘ L'indice «uq_libri_isbn» (isbn) non c'è sul server.
+✘ La chiave esterna «fk_libri_editori» ha un'altra azione ON DELETE: chiesta CASCADE, sul server SET NULL.

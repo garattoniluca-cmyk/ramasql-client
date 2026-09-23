@@ -1,0 +1,30 @@
+== 
+
+
+== T6.3-int-unsigned
+⚠ Segno diverso: «id_socio» è INT UNSIGNED ma la colonna riferita «id» è INT. Devono essere entrambe UNSIGNED o entrambe con segno.
+
+== T6.3-int-bigint
+⚠ Tipi diversi: «id_socio» è INT UNSIGNED ma la colonna riferita «id» è BIGINT UNSIGNED. Le due colonne devono avere lo stesso tipo.
+
+== 
+
+
+== T6.3-collation
+⚠ Charset o collation diversi: «tessera» usa utf8mb4_bin ma la colonna riferita «tessera» usa utf8mb4_unicode_ci. Per le colonne di testo devono coincidere.
+
+== 
+
+
+== T6.3-senza-indice
+⚠ Le colonne riferite (email) non sono le prime colonne di un indice o della chiave primaria di «soci»: crea prima l'indice.
+
+== T6.3-set-null
+⚠ SET NULL non è possibile: la colonna «id_socio» è NOT NULL. Rendila annullabile o scegli un'altra azione.
+
+== T6.3-riferita-myisam
+⚠ La tabella riferita «soci» usa l'engine MyISAM, che non supporta le chiavi esterne. Convertila in InnoDB.
+
+== 
+
+

@@ -131,7 +131,7 @@ public final class WorkTabs {
         String name;
         if (original == null) {
             newTableCounter++;
-            name = tabName("tableEditor", catalog, "nuova" + newTableCounter);
+            name = tabName("tableEditor", catalog, "#nuova" + newTableCounter);   // «#» non è un nome di tabella
         } else {
             name = tabName("tableEditor", catalog, original.name());
             TableEditor existing = (TableEditor) find(name);
@@ -178,6 +178,10 @@ public final class WorkTabs {
             }
         }
         if (tab instanceof SqlEditor editor) {
+            if (editor.isRunning() && prompts.askPendingOnClose(Texts.get("tabs.close.running"))
+                    == WorkspacePrompts.PendingChoice.STAY) {
+                return false;   // c'è una query in corso: chiudere la interromperebbe
+            }
             if (!editor.canClose()) {
                 return false;
             }
@@ -198,6 +202,36 @@ public final class WorkTabs {
         titles.remove(tab);
         tabs.remove(index);
         return true;
+    }
+
+    /**
+     * Da chiamare prima di chiudere il programma o la connessione: se qualche scheda ha lavoro non salvato — modifiche
+     * in sospeso nel data-entry, un file {@code .sql} modificato, una tabella con modifiche non applicate — lo dice e
+     * chiede se chiudere lo stesso.
+     *
+     * @return {@code false} se l'utente ha scelto di restare (chi chiama deve annullare la chiusura)
+     */
+    public boolean confirmCloseAll() {
+        List<String> conLavoro = new ArrayList<>();
+        for (Component c : tabs.getComponents()) {
+            if (c instanceof DataGrid g && g.hasPending()) {
+                conLavoro.add(titleOf(c));
+            } else if (c instanceof SqlEditor e && e.isModified()) {
+                conLavoro.add(titleOf(c));
+            } else if (c instanceof TableEditor e && e.isModified()) {
+                conLavoro.add(titleOf(c));
+            }
+        }
+        if (conLavoro.isEmpty()) {
+            return true;
+        }
+        return prompts.askPendingOnClose(Texts.get("tabs.close.pendingWork", String.join(", ", conLavoro)))
+                != WorkspacePrompts.PendingChoice.STAY;
+    }
+
+    private String titleOf(Component tab) {
+        JLabel label = titles.get(tab);
+        return label == null ? String.valueOf(tab.getName()) : label.getText();
     }
 
     /** Chiude tutte le schede senza chiedere nulla: la connessione è finita, le schede non hanno più un server. */
@@ -283,7 +317,7 @@ public final class WorkTabs {
         label.setToolTipText(tooltip);
         titles.put(tab, label);
         panel.add(label);
-        JButton close = new JButton("×");
+        JButton close = new JButton(Texts.get("tabs.close.symbol"));
         close.setName("tabs.close." + tab.getName());
         close.setToolTipText(Texts.get("tabs.close"));
         close.setFocusable(false);

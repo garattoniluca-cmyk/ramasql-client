@@ -1,0 +1,10 @@
+SPIEGAZIONE:
+ℹ La tabella «libri» usa l'engine MyISAM, che non supporta le chiavi esterne: il server accetterebbe l'istruzione ma non controllerebbe mai il vincolo. Per usare le chiavi esterne converti la tabella in InnoDB (lo trovi anche nella scheda Opzioni).
+
+DOPO «Converti in InnoDB»:
+ALTER TABLE `ramasql_test_biblioteca_myisam`.`libri`
+  ADD CONSTRAINT `fk_libri_1` FOREIGN KEY (`id_editore`) REFERENCES `editori` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT,
+  ENGINE=InnoDB
+
+AVVISO FK:
+⚠ La tabella riferita «editori» usa l'engine MyISAM, che non supporta le chiavi esterne. Convertila in InnoDB.

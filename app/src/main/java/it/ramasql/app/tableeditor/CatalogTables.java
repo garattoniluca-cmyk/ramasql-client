@@ -26,6 +26,15 @@ public interface CatalogTables {
     record IncomingReference(String table, String constraint) {
     }
 
+    /**
+     * Vero se quanto risponde questo elenco è completo. Falso quando una lettura dei metadati <b>non è riuscita</b>:
+     * in quel caso un elenco vuoto non significa «non c'è nessuno», e chi decide in base a quell'elenco (per esempio
+     * il blocco della conversione a MyISAM) non deve lasciar passare l'operazione come se fosse sicura.
+     */
+    default boolean isComplete() {
+        return true;
+    }
+
     /** Nomi delle tabelle del catalogo (senza viste), in ordine alfabetico. */
     List<String> tableNames();
 

@@ -1,0 +1,2 @@
+ALTER TABLE `ramasql_test_fk`.`libri` DROP FOREIGN KEY `fk_libri_editori`;
+ALTER TABLE `ramasql_test_fk`.`libri` ADD CONSTRAINT `fk_libri_editori` FOREIGN KEY (`id_editore`) REFERENCES `editori` (`id`) ON DELETE SET NULL ON UPDATE RESTRICT;

@@ -31,6 +31,7 @@ public final class SqlLiterals {
     public static final String NULL = "NULL";
 
     private static final Pattern NUMBER = Pattern.compile("[+-]?(\\d+(\\.\\d*)?|\\.\\d+)([eE][+-]?\\d+)?");
+    private static final java.util.regex.Pattern HEX = java.util.regex.Pattern.compile("[0-9a-fA-F]+");
     private static final DateTimeFormatter DATE = DateTimeFormatter.ofPattern("uuuu-MM-dd", Locale.ROOT);
     private static final DateTimeFormatter TIME = DateTimeFormatter.ofPattern("HH:mm:ss", Locale.ROOT);
 
@@ -139,7 +140,29 @@ public final class SqlLiterals {
         if (column != null && SqlTypes.isNumeric(column.dataType()) && isNumber(text)) {
             return text.trim();
         }
+        if (column != null && SqlTypes.isBinary(column.dataType())) {
+            return hexLiteral(text);
+        }
         return string(text);
+    }
+
+    /**
+     * Il testo di una cella binaria — come lo scrive la griglia, {@code 0x48656C6C6F} — torna al letterale
+     * {@code X'48656C6C6F'}. Un testo che non è esadecimale valido si scrive fra apici: sarà il server a rifiutarlo,
+     * con il suo messaggio, invece di finire scritto come byte sbagliati.
+     */
+    static String hexLiteral(String text) {
+        String t = text.trim();
+        if (t.regionMatches(true, 0, "0x", 0, 2)) {
+            t = t.substring(2);
+        } else if (t.regionMatches(true, 0, "X'", 0, 2) && t.endsWith("'")) {
+            t = t.substring(2, t.length() - 1);
+        }
+        if (t.isEmpty()) {
+            return "X''";
+        }
+        return t.length() % 2 == 0 && HEX.matcher(t).matches() ? "X'" + t.toUpperCase(java.util.Locale.ROOT) + "'"
+                : string(text);
     }
 
     /** Vero se il testo è un numero SQL valido (intero, decimale con il punto, esponenziale). */

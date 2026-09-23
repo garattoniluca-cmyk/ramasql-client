@@ -16,6 +16,7 @@ import javax.swing.table.AbstractTableModel;
 
 import it.ramasql.core.data.PendingChanges;
 import it.ramasql.core.metadata.ColumnDef;
+import it.ramasql.core.metadata.SqlTypes;
 
 /**
  * {@code TableModel} sopra {@link PendingChanges}: le righe della pagina più, se la griglia è modificabile, la
@@ -96,10 +97,14 @@ public final class DataGridModel extends AbstractTableModel {
         return !isInsertRow(row) && pending.isSet(row, column);
     }
 
-    /** Colonna che il client non scrive mai: AUTO_INCREMENT o generata. */
+    /**
+     * Colonna che il client non scrive mai: AUTO_INCREMENT, generata, oppure <b>binaria</b>. Il contenuto binario
+     * (BINARY, VARBINARY, i BLOB, BIT) si vede come {@code 0x…} e si copia, ma in v1 non si modifica: servirebbe un
+     * editor dedicato (`IDEA-011`), e lasciarlo scrivere a mano significherebbe salvare testo al posto dei byte.
+     */
     public boolean isReadOnlyColumn(int column) {
         ColumnDef c = pending.column(column);
-        return c.autoIncrement() || c.generated();
+        return c.autoIncrement() || c.generated() || SqlTypes.isBinary(c.dataType());
     }
 
     @Override

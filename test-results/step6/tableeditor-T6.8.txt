@@ -1,0 +1,12 @@
+QUERY:
+SELECT `email`, COUNT(*) AS `occorrenze` FROM `ramasql_test_t67`.`soci` WHERE `email` IS NOT NULL GROUP BY `email` HAVING COUNT(*) > 1
+
+ESITO VERIFICA:
+⚠ Trovati 2 valori ripetuti: con questi dati il server rifiuterà l'indice (errore 1062). Correggi i doppioni prima.
+
+ESECUZIONE COMUNQUE:
+✘ Istruzioni applicate: 0 su 1; il server si è fermato alla n. 1. Le istruzioni DDL non si annullano: ciò che è stato applicato resta.
+✘ Errore 1062: Duplicate entry 'rossi@example.org' for key 'email_UNIQUE'
+Un valore è ripetuto dove non può esserlo (chiave primaria o UNIQUE).
+Non riuscita: ALTER TABLE `ramasql_test_t67`.`soci` ADD UNIQUE INDEX `email_UNIQUE` (`email`)
+ℹ L'editor mostra ora la tabella com'è davvero sul server (riletta dopo l'esecuzione).
