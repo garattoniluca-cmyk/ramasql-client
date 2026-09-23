@@ -17,20 +17,27 @@ import java.awt.Window;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
+import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextArea;
-import javax.swing.UIManager;
+import javax.swing.SwingConstants;
 
 import it.ramasql.app.DialogButtons;
 import it.ramasql.app.Texts;
+import it.ramasql.app.theme.AppIcons;
+import it.ramasql.app.theme.Styles;
+import it.ramasql.app.theme.Tokens;
 import it.ramasql.core.connection.ConnectionFailure;
 import it.ramasql.core.connection.ConnectionProfile;
 
 /**
- * Connessione non riuscita: in alto la spiegazione in italiano (<em>che cosa correggere</em>), sotto — sempre —
- * il messaggio originale del server con il suo codice, selezionabile per copiarlo.
+ * Connessione non riuscita ({@code DESIGN-SYSTEM.md} §3.7): un titolo umano («Non riesco a connettermi a …») con
+ * l'icona d'errore, <em>che cosa correggere</em> in italiano e, sotto, il <strong>messaggio originale</strong> del
+ * server con il suo codice, in un riquadro monospaziato selezionabile (per copiarlo) che si può ripiegare.
+ * Aperto all'inizio: il messaggio del server si mostra sempre.
  */
 public final class ConnectionErrorDialog extends JDialog {
 
@@ -38,47 +45,83 @@ public final class ConnectionErrorDialog extends JDialog {
 
     private final JTextArea explanation;
     private final JTextArea original;
+    private final JPanel originalBox;
+    private final JButton toggle;
 
     public ConnectionErrorDialog(Window owner, ConnectionProfile profile, ConnectionFailure failure) {
         super(owner, Texts.get("connect.error.title"), ModalityType.APPLICATION_MODAL);
-        int em = getFontMetrics(UIManager.getFont("Label.font")).getHeight();
-        int width = em * 30;
+        int width = Tokens.px(440);
 
-        JLabel heading = new JLabel(Texts.get("connect.error.heading", profile.name()));
-        heading.putClientProperty("FlatLaf.styleClass", "h3");
-        explanation = wrapped(failure.message(), width);
+        JLabel heading = Styles.text(new JLabel(Texts.get("connect.error.heading", profile.name())), "heading",
+                Tokens.TEXT_PRIMARY);
+        heading.setIcon(AppIcons.get(AppIcons.STATUS_ERROR, 24));
+        heading.setIconTextGap(Tokens.px(Tokens.SPACE_12));
+        explanation = wrapped(failure.message(), width, false);
         explanation.setName("connect.error.explanation");
-        JLabel originalTitle = new JLabel(Texts.get("connect.error.original"));
-        originalTitle.setForeground(UIManager.getColor("Label.disabledForeground"));
-        original = wrapped(failure.originalDetail(), width);
+
+        toggle = new JButton(Texts.get("connect.error.original"), AppIcons.small(AppIcons.CHEVRON_DOWN));
+        toggle.setName("connect.error.toggle");
+        toggle.setToolTipText(Texts.get("connect.error.original.hide"));
+        Styles.toolbarButton(toggle);
+        toggle.setFocusable(true);
+        toggle.setHorizontalAlignment(SwingConstants.LEFT);
+        toggle.setForeground(Tokens.TEXT_SECONDARY);
+        Styles.text(toggle, "emphasis");
+        original = wrapped(failure.originalDetail(), width - 2 * Tokens.px(Tokens.SPACE_12), true);
         original.setName("connect.error.original");
+        originalBox = new JPanel(new BorderLayout());
+        originalBox.setBackground(Tokens.BG_SUNKEN);
+        originalBox.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(Tokens.BORDER_SUBTLE),
+                BorderFactory.createEmptyBorder(Tokens.px(Tokens.SPACE_8), Tokens.px(Tokens.SPACE_12),
+                        Tokens.px(Tokens.SPACE_8), Tokens.px(Tokens.SPACE_12))));
+        originalBox.add(original, BorderLayout.CENTER);
+        toggle.addActionListener(e -> setOriginalShown(!originalBox.isVisible()));
 
         JPanel body = new JPanel();
         body.setLayout(new BoxLayout(body, BoxLayout.Y_AXIS));
-        body.setBorder(BorderFactory.createEmptyBorder(24, 28, 16, 28));
-        for (Component c : new Component[] {heading, Box.createVerticalStrut(12), explanation, Box.createVerticalStrut(20),
-                originalTitle, Box.createVerticalStrut(6), original}) {
-            if (c instanceof javax.swing.JComponent jc) {
+        body.setBorder(BorderFactory.createEmptyBorder(Tokens.px(Tokens.SPACE_24), Tokens.px(Tokens.SPACE_24),
+                Tokens.px(Tokens.SPACE_8), Tokens.px(Tokens.SPACE_24)));
+        for (Component c : new Component[] {heading, Box.createVerticalStrut(Tokens.px(Tokens.SPACE_12)), explanation,
+                Box.createVerticalStrut(Tokens.px(Tokens.SPACE_16)), toggle,
+                Box.createVerticalStrut(Tokens.px(Tokens.SPACE_4)), originalBox}) {
+            if (c instanceof JComponent jc) {
                 jc.setAlignmentX(Component.LEFT_ALIGNMENT);
             }
             body.add(c);
         }
         add(body, BorderLayout.CENTER);
-        add(new DialogButtons(this, Texts.get("dialog.ok"), null, null, this::dispose), BorderLayout.SOUTH);
+        DialogButtons buttons = new DialogButtons(this, Texts.get("dialog.ok"), null, null, this::dispose);
+        buttons.setBorder(BorderFactory.createEmptyBorder(Tokens.px(Tokens.SPACE_8), Tokens.px(Tokens.SPACE_24),
+                Tokens.px(Tokens.SPACE_24), Tokens.px(Tokens.SPACE_24)));
+        add(buttons, BorderLayout.SOUTH);
         setResizable(false);
         pack();
         setLocationRelativeTo(owner);
     }
 
+    /** Apre o ripiega il riquadro del messaggio originale (la freccia gira di conseguenza). */
+    public void setOriginalShown(boolean shown) {
+        originalBox.setVisible(shown);
+        toggle.setIcon(AppIcons.small(shown ? AppIcons.CHEVRON_DOWN : AppIcons.PAGE_NEXT));
+        toggle.setToolTipText(Texts.get(shown ? "connect.error.original.hide" : "connect.error.original.show"));
+        pack();
+    }
+
+    public boolean isOriginalShown() {
+        return originalBox.isVisible();
+    }
+
     /** Testo su più righe, selezionabile, largo {@code width} pixel e alto quanto serve. */
-    private static JTextArea wrapped(String text, int width) {
+    private static JTextArea wrapped(String text, int width, boolean mono) {
         JTextArea area = new JTextArea(text);
         area.setEditable(false);
         area.setLineWrap(true);
-        area.setWrapStyleWord(true);
+        area.setWrapStyleWord(!mono);
         area.setOpaque(false);
         area.setBorder(null);
-        area.setFont(UIManager.getFont("Label.font"));
+        area.setForeground(Tokens.TEXT_PRIMARY);
+        area.setFont(mono ? Tokens.mono(Tokens.SMALL) : Tokens.font(Tokens.BODY, java.awt.Font.PLAIN));
         area.setSize(width, Short.MAX_VALUE);
         area.setPreferredSize(new Dimension(width, area.getPreferredSize().height));
         return area;

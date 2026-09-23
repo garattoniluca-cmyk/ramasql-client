@@ -1,0 +1,121 @@
+{
+  "tables": [
+    {
+      "name": "autori", "engine": "InnoDB", "charset": "utf8mb4", "collation": "utf8mb4_unicode_ci",
+      "comment": "", "autoIncrement": 51,
+      "columns": [
+        {"name": "id", "type": "INT UNSIGNED", "nullable": false, "default": "NONE", "autoIncrement": true, "comment": ""},
+        {"name": "cognome", "type": "VARCHAR(60)", "nullable": false, "default": "NONE", "autoIncrement": false, "comment": ""},
+        {"name": "nome", "type": "VARCHAR(60)", "nullable": false, "default": "NONE", "autoIncrement": false, "comment": ""},
+        {"name": "nazionalita", "type": "VARCHAR(40)", "nullable": false, "default": "LITERAL:italiana", "autoIncrement": false, "comment": ""}
+      ],
+      "indexes": [
+        {"name": "PRIMARY", "kind": "PRIMARY", "columns": ["id"]},
+        {"name": "ix_autori_cognome", "kind": "INDEX", "columns": ["cognome", "nome"]}
+      ],
+      "foreignKeys": [],
+      "advanced": []
+    },
+    {
+      "name": "editori", "engine": "InnoDB", "charset": "utf8mb4", "collation": "utf8mb4_unicode_ci",
+      "comment": "", "autoIncrement": 21,
+      "columns": [
+        {"name": "id", "type": "INT UNSIGNED", "nullable": false, "default": "NONE", "autoIncrement": true, "comment": ""},
+        {"name": "nome", "type": "VARCHAR(80)", "nullable": false, "default": "NONE", "autoIncrement": false, "comment": ""},
+        {"name": "citta", "type": "VARCHAR(60)", "nullable": true, "default": "NULL", "autoIncrement": false, "comment": ""}
+      ],
+      "indexes": [
+        {"name": "PRIMARY", "kind": "PRIMARY", "columns": ["id"]},
+        {"name": "uq_editori_nome", "kind": "UNIQUE", "columns": ["nome"]}
+      ],
+      "foreignKeys": [],
+      "advanced": []
+    },
+    {
+      "name": "libri", "engine": "InnoDB", "charset": "utf8mb4", "collation": "utf8mb4_unicode_ci",
+      "comment": "Catalogo dei libri", "autoIncrement": 201,
+      "columns": [
+        {"name": "id", "type": "INT UNSIGNED", "nullable": false, "default": "NONE", "autoIncrement": true, "comment": ""},
+        {"name": "titolo", "type": "VARCHAR(150)", "nullable": false, "default": "NONE", "autoIncrement": false, "comment": ""},
+        {"name": "isbn", "type": "CHAR(13)", "nullable": true, "default": "NULL", "autoIncrement": false, "comment": ""},
+        {"name": "anno", "type": "SMALLINT UNSIGNED", "nullable": true, "default": "NULL", "autoIncrement": false, "comment": ""},
+        {"name": "prezzo", "type": "DECIMAL(6,2)", "nullable": false, "default": "LITERAL:0.00", "autoIncrement": false, "comment": ""},
+        {"name": "id_editore", "type": "INT UNSIGNED", "nullable": true, "default": "NULL", "autoIncrement": false, "comment": ""}
+      ],
+      "indexes": [
+        {"name": "PRIMARY", "kind": "PRIMARY", "columns": ["id"]},
+        {"name": "ix_libri_editore", "kind": "INDEX", "columns": ["id_editore"]},
+        {"name": "uq_libri_isbn", "kind": "UNIQUE", "columns": ["isbn"]}
+      ],
+      "foreignKeys": [
+        {"name": "fk_libri_editori", "columns": ["id_editore"], "refTable": "editori", "refColumns": ["id"],
+         "onDelete": "RESTRICT", "onUpdate": "RESTRICT"}
+      ],
+      "advanced": []
+    },
+    {
+      "name": "libri_autori", "engine": "InnoDB", "charset": "utf8mb4", "collation": "utf8mb4_unicode_ci",
+      "comment": "", "autoIncrement": null,
+      "columns": [
+        {"name": "id_libro", "type": "INT UNSIGNED", "nullable": false, "default": "NONE", "autoIncrement": false, "comment": ""},
+        {"name": "id_autore", "type": "INT UNSIGNED", "nullable": false, "default": "NONE", "autoIncrement": false, "comment": ""}
+      ],
+      "indexes": [
+        {"name": "PRIMARY", "kind": "PRIMARY", "columns": ["id_libro", "id_autore"]},
+        {"name": "ix_libri_autori_autore", "kind": "INDEX", "columns": ["id_autore"]}
+      ],
+      "foreignKeys": [
+        {"name": "fk_libri_autori_autori", "columns": ["id_autore"], "refTable": "autori", "refColumns": ["id"],
+         "onDelete": "CASCADE", "onUpdate": "CASCADE"},
+        {"name": "fk_libri_autori_libri", "columns": ["id_libro"], "refTable": "libri", "refColumns": ["id"],
+         "onDelete": "CASCADE", "onUpdate": "CASCADE"}
+      ],
+      "advanced": []
+    },
+    {
+      "name": "prestiti", "engine": "InnoDB", "charset": "utf8mb4", "collation": "utf8mb4_unicode_ci",
+      "comment": "", "autoIncrement": 501,
+      "columns": [
+        {"name": "id", "type": "INT UNSIGNED", "nullable": false, "default": "NONE", "autoIncrement": true, "comment": ""},
+        {"name": "id_libro", "type": "INT UNSIGNED", "nullable": false, "default": "NONE", "autoIncrement": false, "comment": ""},
+        {"name": "id_socio", "type": "INT UNSIGNED", "nullable": false, "default": "NONE", "autoIncrement": false, "comment": ""},
+        {"name": "data_prestito", "type": "DATE", "nullable": false, "default": "NONE", "autoIncrement": false, "comment": ""},
+        {"name": "data_reso", "type": "DATE", "nullable": true, "default": "NULL", "autoIncrement": false, "comment": ""}
+      ],
+      "indexes": [
+        {"name": "PRIMARY", "kind": "PRIMARY", "columns": ["id"]},
+        {"name": "ix_prestiti_libro", "kind": "INDEX", "columns": ["id_libro"]},
+        {"name": "ix_prestiti_socio", "kind": "INDEX", "columns": ["id_socio"]}
+      ],
+      "foreignKeys": [
+        {"name": "fk_prestiti_libri", "columns": ["id_libro"], "refTable": "libri", "refColumns": ["id"],
+         "onDelete": "RESTRICT", "onUpdate": "RESTRICT"},
+        {"name": "fk_prestiti_soci", "columns": ["id_socio"], "refTable": "soci", "refColumns": ["id"],
+         "onDelete": "RESTRICT", "onUpdate": "RESTRICT"}
+      ],
+      "advanced": []
+    },
+    {
+      "name": "soci", "engine": "InnoDB", "charset": "utf8mb4", "collation": "utf8mb4_unicode_ci",
+      "comment": "", "autoIncrement": 101,
+      "columns": [
+        {"name": "id", "type": "INT UNSIGNED", "nullable": false, "default": "NONE", "autoIncrement": true, "comment": ""},
+        {"name": "tessera", "type": "CHAR(8)", "nullable": false, "default": "NONE", "autoIncrement": false, "comment": "numero della tessera (T e 7 cifre)"},
+        {"name": "cognome", "type": "VARCHAR(60)", "nullable": false, "default": "NONE", "autoIncrement": false, "comment": ""},
+        {"name": "nome", "type": "VARCHAR(60)", "nullable": false, "default": "NONE", "autoIncrement": false, "comment": ""},
+        {"name": "email", "type": "VARCHAR(120)", "nullable": true, "default": "NULL", "autoIncrement": false, "comment": ""},
+        {"name": "nato_il", "type": "DATE", "nullable": true, "default": "NULL", "autoIncrement": false, "comment": ""}
+      ],
+      "indexes": [
+        {"name": "PRIMARY", "kind": "PRIMARY", "columns": ["id"]},
+        {"name": "uq_soci_tessera", "kind": "UNIQUE", "columns": ["tessera"]}
+      ],
+      "foreignKeys": [],
+      "advanced": []
+    }
+  ],
+  "views": [
+    {"name": "v_libri_editori", "checkOption": "NONE", "columns": ["id", "titolo", "anno", "editore"]},
+    {"name": "v_prestiti_aperti", "checkOption": "NONE", "columns": ["id", "cognome", "nome", "titolo", "data_prestito"]}
+  ]
+}

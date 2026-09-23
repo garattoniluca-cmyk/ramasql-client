@@ -1,0 +1,8 @@
+T3.8 (lato core) su MySQL
+registro: 25 istruzioni (24 riuscite e rieseguite, le altre commentate)
+tabelle: [autori, editori, libri, libri_autori, note, prestiti, soci] — TableDef identici (colonne, indici, FK, engine, charset, commenti)
+AUTO_INCREMENT: uguali tranne soci (origine 102, copia 101): l'INSERT fallito per chiave duplicata consuma un valore in InnoDB, e nello script è commentato
+viste: [v_prestiti_aperti]
+CHECKSUM TABLE origine: {autori=3672474074, editori=710156757, libri=1572190157, libri_autori=1457383748, note=1902830926, prestiti=3373225420, soci=2319128424}
+CHECKSUM TABLE copia:   {autori=3672474074, editori=710156757, libri=1572190157, libri_autori=1457383748, note=1902830926, prestiti=3373225420, soci=2319128424}
+esito: STESSO RISULTATO

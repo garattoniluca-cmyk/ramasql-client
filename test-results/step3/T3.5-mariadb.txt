@@ -1,0 +1,7 @@
+T3.5 — Elimina tabella → Annulla, su MariaDB
+Catalogo di test: ramasql_test_s3_annulla_bverrb (fixture biblioteca.sql)
+Anteprima mostrata (T3.5-mariadb.png): «DROP TABLE `ramasql_test_s3_annulla_bverrb`.`libri`;», conferma STRONG (riscrivere «libri»)
+Scelta: CANCEL
+Server (connessione separata): tabella libri presente = true, righe 200 (prima 200)
+Registro: 0 istruzioni
+Messaggi: Elimina la tabella «libri»: annullato, nulla è stato eseguito.

@@ -174,3 +174,25 @@ Data: 2026-09-22 · Stato: accettata — decisa dall'agente, da rivedere (Step 2
 **Motivi:** in aula i server sono quasi sempre locali o in rete di laboratorio senza TLS; `allowPublicKeyRetrieval` è il compromesso che fa funzionare MySQL 8.4 «di serie» senza configurare certificati. La connessione di servizio senza catalogo resta valida anche se il catalogo corrente viene eliminato.
 
 **Conseguenze:** `allowPublicKeyRetrieval` espone a un attacco man-in-the-middle sulla rete del laboratorio: accettabile per un client didattico, da rivalutare con le opzioni SSL (**[dopo]**, `IDEA-012`). Limite noto: il driver vuole la password come `String` nelle proprietà durante l'apertura.
+
+---
+
+## ADR-017 — Routine, trigger ed eventi in sola lettura (D-06)
+Data: 2026-09-22 · Stato: accettata — decisa dall'agente, da rivedere (Step 3, chiude D-06 di `ANALYSIS.md` §8)
+
+**Contesto:** il navigatore mostra anche procedure, funzioni, trigger ed eventi (`DESIGN.md` §3.2). Scriverne un editor dedicato non è nella colonna «v1» di `DESIGN.md` §1-bis; l'utente ha indicato «sola lettura» come orientamento (D-06).
+
+**Decisione:** in v1 procedure, funzioni, trigger ed eventi sono **solo elencati** (`MetadataReader.routines`: nome, tipo, per i trigger tabella e momento, per le funzioni il tipo restituito, per gli eventi lo stato) e il loro **testo si mostra a richiesta** con `SHOW CREATE PROCEDURE|FUNCTION|TRIGGER|EVENT` (`MetadataReader.showCreate`), letto dal canale interno dei metadati (non va nel registro). Nessun generatore, nessuna finestra di modifica, nessuna voce «Nuova…/Elimina» specifica: chi vuole crearli o cambiarli usa l'**editor SQL**, che passa comunque da `SqlExecutor` (anteprima dei rischi, registro, `DELIMITER` gestito dal separatore). Se il server non restituisce il testo (oggetto sparito, permesso mancante) il client lo dice invece di fallire.
+
+**Motivi:** in un corso di basi di dati questi oggetti si leggono più di quanto si scrivano; un editor dedicato (parametri, corpo, `DEFINER`, `SQL SECURITY`, pianificazione degli eventi) sarebbe la parte più complessa del client per la parte meno usata. Il testo di `SHOW CREATE` è già l'SQL che lo studente deve imparare a scrivere.
+
+**Conseguenze:** nessun rischio di modifiche involontarie a oggetti scritti da altri. Limite osservato sui server di sviluppo: su **MySQL 8 con il log binario attivo** un utente senza `SUPER` non può creare funzioni né trigger (errore 1419, `log_bin_trust_function_creators`): il client li mostra se esistono, ma i test automatici con l'utente di prova li coprono solo su MariaDB (su MySQL: procedura ed evento). La modifica dedicata resta tra le idee (`IDEA-020`).
+
+---
+
+## ADR-018 — Griglia di data-entry: comportamenti scelti
+Data: 2026-09-22 · Stato: accettata — decisa dall'agente, da rivedere (Step 4, `DESIGN.md` §3.3)
+
+**Decisione:** (1) con modifiche in sospeso **paginazione e ordinamento sono bloccati** (pulsanti disabilitati con la spiegazione «conferma o scarta prima»): così nulla si perde e nulla si scrive di nascosto; (2) il clic sull'intestazione **seleziona la colonna** (DESIGN §3.3), l'ordinamento è nel menu del tasto destro sull'intestazione; (3) l'esportazione CSV usa **UTF-8 con BOM, separatore `;` e virgola decimale** (Excel italiano); le righe marcate da eliminare non si esportano, le modifiche in sospeso sì, come si vedono; (4) *Scarta* chiede conferma; (5) colonne AUTO_INCREMENT e generate non modificabili in cella (coerente con l'incolla, che le salta); (6) un editor aperto su NULL e chiuso vuoto lascia NULL (per la stringa vuota: «Modifica in una finestra…»). Dopo una Conferma l'integrazione **rilegge la riga** dal server, così i DEFAULT e gli AUTO_INCREMENT compaiono come li ha scritti il server.
+
+**Motivi:** la regola «nessuna scrittura implicita» è più semplice da spiegare se la griglia non permette di «andare altrove» con lavoro in sospeso; il resto segue le abitudini dell'aula (Excel italiano) e Workbench.

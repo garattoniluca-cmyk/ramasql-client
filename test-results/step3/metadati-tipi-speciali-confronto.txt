@@ -1,0 +1,7 @@
+Tipi speciali: confronto dei TableDef letti da MariaDB e MySQL
+categorie: identica (equals)
+articoli: colonne, indici modificabili, indici in sola lettura (nome, motivo, colonne), opzioni: identici
+differenza reale 1: FK senza ON DELETE/ON UPDATE → MariaDB riporta RESTRICT/RESTRICT, MySQL NO_ACTION/NO_ACTION (information_schema.REFERENTIAL_CONSTRAINTS); in InnoDB le due azioni si comportano allo stesso modo, il lettore riporta ciò che dice il server
+differenza reale 2: il testo delle righe avanzate di SHOW CREATE TABLE
+  MariaDB: [FULLTEXT KEY `ft_testo` (`titolo`,`testo`), KEY `ix_anno_desc` (`anno` DESC), KEY `ix_titolo_prefisso` (`titolo`(20))]
+  MySQL:   [FULLTEXT KEY `ft_testo` (`titolo`,`testo`), KEY `ix_anno_desc` (`anno` DESC), KEY `ix_titolo_prefisso` (`titolo`(20))]

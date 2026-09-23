@@ -1,3 +1,3 @@
-Osservato il 2026-09-22T14:31:04
+Osservato il 2026-09-23T07:00:13
 utente = ramasql_test_sha2, sslMode=disable, allowPublicKeyRetrieval assente
 esito = FALLITO (cache fredda: serve l'autenticazione «completa») con [0/S1009] RSA public key is not available client side (option serverRsaPublicKeyFile not set)

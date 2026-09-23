@@ -1,0 +1,4 @@
+Su MariaDB: registro con CREATE/ALTER/DROP DATABASE dell'origine, USE, nome qualificato con spazi → esportato «senza catalogo» e rieseguito su un altro catalogo:
+origine prima  = utf8mb4_bin t u t=1:spazi,2:corrente
+origine dopo   = utf8mb4_bin t u t=1:spazi,2:corrente
+esito: ORIGINE MAI TOCCATA (catalogo, collation, tabelle, righe identici)

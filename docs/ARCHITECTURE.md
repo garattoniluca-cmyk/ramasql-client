@@ -49,9 +49,9 @@ ramaSQLClient/
 | Pacchetto | Responsabilità |
 |---|---|
 | `core.connection` | **(Step 2)** `ConnectionProfile` (senza password), `ProfileStore` (JSON in `%APPDATA%\RamaSQL\connessioni.json`, import/export con `formatVersion`), `AppData` (cartella dati; proprietà `ramasql.appdata` per i test), `AppSettings` (4 voci), `JsonFiles` (scrittura atomica), `ConnectionErrorClassifier` → `ConnectionFailure` (causa + messaggio italiano + originale del server), `Session` sempre in **autocommit** (principale + di servizio, `ServerInfo`, catalogo letto all'apertura), `ConnectionAttempt` (asincrono, annullabile, scadenza 10 s), `InternalQueries` (unico punto con SQL interno: `VERSION()`, `CONNECTION_ID()`, `DATABASE()`, `KILL QUERY`). Parametri JDBC: `ADR-016` |
-| `core.metadata` | Lettura del catalogo da `information_schema` + `SHOW CREATE`: `Catalog`, `Table`, `Column`, `Index`, `ForeignKey`, `View`, `Routine`… come **record immutabili**. Cache per sessione con invalidazione esplicita dopo ogni DDL |
-| `core.sqlgen` | **Generatori SQL puri** (nessun accesso al DB): `TableDiff(original, edited) → List<SqlStatement>`, `CREATE/ALTER/DROP`, indici, FK, viste, DML della griglia, quoting degli identificatori, differenze MariaDB/MySQL guidate da `ServerInfo`. È il cuore collaudabile a tappeto |
-| `core.exec` | **Pipeline SQL** (§4): `SqlScript`, `SqlExecutor`, `SqlLog`, politiche di conferma, separatore di istruzioni (gestisce `DELIMITER`, commenti, stringhe) |
+| `core.metadata` | **(Step 3)** `MetadataReader` (canale interno `MetadataQueries`): cataloghi (`CatalogInfo`, flag di sistema), elenco tabelle senza colonne (`TableSummary`, veloce), `TableDef` completo a richiesta, viste, routine/trigger/eventi in sola lettura (`RoutineInfo`, `ADR-017`), `showCreate*`, collation. `MetadataNormalizer` rende **identici** i `TableDef` letti da MariaDB e MySQL (larghezza degli interi, default tra apici, `NULL` testuale, `current_timestamp()`, JSON). Cache per sessione con `invalidate*` e `MetadataListener` |
+| `core.sqlgen` | **Generatori SQL puri** (Step 3: `ObjectDdl`, `TreeScripts` per le operazioni del navigatore) (nessun accesso al DB): `TableDiff(original, edited) → List<SqlStatement>`, `CREATE/ALTER/DROP`, indici, FK, viste, DML della griglia, quoting degli identificatori, differenze MariaDB/MySQL guidate da `ServerInfo`. È il cuore collaudabile a tappeto |
+| `core.exec` | **(Step 3)** Pipeline (§4): `SqlScript`, `SqlOrigin`, `SqlExecutor` (unico esecutore dell'utente: thread dedicato, una istruzione alla volta, arresto al primo errore, `KILL QUERY` dalla connessione di servizio, limite righe, invalidazione dei metadati dopo DDL, **mai transazioni**), `ScriptResult`/`StatementResult`/`ResultTable`, `SqlLog` (registro con origine/esito/durata/righe; esportazione `.sql` rieseguibile con le istruzioni fallite commentate), `ConfirmationPolicy` (conferma rafforzata con nome da riscrivere), `RiskClassifier`, `StatementSplitter` |
 | `core.data` | Lettura paginata/streaming dei risultati; **modello a modifiche pendenti** del data-entry (`RowChange` inserita/modificata/eliminata → DML, stato salvata/pendente/in errore); codifica e decodifica degli **appunti a blocchi** (testo tabulato, convenzione Excel) e validazione per tipo — tutto senza Swing, quindi collaudabile |
 | `core.verify` | **Verifica dopo l'applicazione**: confronta indici e FK richiesti con quelli riletti dal server e produce l'elenco delle differenze |
 | `core.importer` | Lettori CSV/JSON in streaming, deduzione dei tipi, mappatura, inserimento a lotti, rapporto scarti |
@@ -131,7 +131,8 @@ Niente rifattorizzazioni «estetiche»: il modulo resta il più vicino possibile
 |---|---|---|---|
 | SQLeo (codice incorporato) | query builder | GPL-2.0-or-later | ✅ (si esercita «or later») |
 | FlatLaf (+ extras per SVG) | aspetto | Apache-2.0 | ✅ |
-| RSyntaxTextArea, AutoComplete | editor SQL | BSD-3 | ✅ |
+| FlatLaf Extras (stessa versione di FlatLaf) | icone SVG disegnate da noi (`FlatSVGIcon`), sistema visivo `docs/DESIGN-SYSTEM.md` | Apache-2.0 | ✅ |
+| RSyntaxTextArea 4.0.1, AutoComplete 4.0.0 | editor SQL (Step 4) | BSD-3-Clause | ✅ |
 | MariaDB Connector/J 3.5.10 | driver **unico**, anche per MySQL (`ADR-015`) | LGPL-2.1+ | ✅ |
 | Jackson databind 2.22.2 | JSON (profili, impostazioni) | Apache-2.0 | ✅ |
 | Apache Commons CSV | CSV | Apache-2.0 | ✅ |

@@ -1,0 +1,10 @@
+Colori fissi fuori da it/ramasql/app/theme/ (DESIGN-SYSTEM §1) — scansione di 77 sorgenti di app/src/main + messages.properties
+
+Pacchetti della shell e del tema (severi: devono essere zero): 0
+
+Pacchetti in lavorazione in parallelo (navigator, pipeline, sqlpanel, workspace, editor), solo elencati: 3
+  editor/ResultsPanel.java:85: errorArea.setForeground(new Color(0xB00020));
+  editor/SqlEditor.java:113: private static final Color ERROR_LINE = new Color(255, 224, 224);
+  editor/SqlEditor.java:114: private static final Color ERROR_TEXT = new Color(255, 160, 160);
+
+Da sostituire con le costanti di it.ramasql.app.theme.Tokens (o con le chiavi del tema FlatLaf).

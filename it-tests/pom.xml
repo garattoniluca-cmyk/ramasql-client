@@ -31,4 +31,17 @@
     </dependency>
   </dependencies>
 
+  <build>
+    <testResources>
+      <testResource>
+        <directory>src/test/resources</directory>
+      </testResource>
+      <!-- Step 3: fixture dello schema canonico «biblioteca» e metadati attesi, nel classpath sotto /fixtures -->
+      <testResource>
+        <directory>fixtures</directory>
+        <targetPath>fixtures</targetPath>
+      </testResource>
+    </testResources>
+  </build>
+
 </project>

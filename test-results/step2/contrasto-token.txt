@@ -1,0 +1,53 @@
+Contrasto dei token (WCAG 2.x) — DESIGN-SYSTEM §5
+soglie: testo 4,5:1 · bordi di controlli e icone 3:1 · «—» = solo riportato
+
+text.primary su bg.surface                                             #101828 su #ffffff  17,75:1  OK (≥ 4.5)
+text.secondary su bg.surface                                           #475467 su #ffffff   7,69:1  OK (≥ 4.5)
+icone (tratto text.secondary) su bg.surface                            #475467 su #ffffff   7,69:1  OK (≥ 3.0)
+text.primary su bg.window                                              #101828 su #f6f7f9  16,56:1  OK (≥ 4.5)
+text.secondary su bg.window                                            #475467 su #f6f7f9   7,17:1  OK (≥ 4.5)
+icone (tratto text.secondary) su bg.window                             #475467 su #f6f7f9   7,17:1  OK (≥ 3.0)
+text.primary su bg.sunken                                              #101828 su #eef1f5  15,66:1  OK (≥ 4.5)
+text.secondary su bg.sunken                                            #475467 su #eef1f5   6,79:1  OK (≥ 4.5)
+icone (tratto text.secondary) su bg.sunken                             #475467 su #eef1f5   6,79:1  OK (≥ 3.0)
+text.primary su zebra                                                  #101828 su #fafbfc  17,13:1  OK (≥ 4.5)
+text.secondary su zebra                                                #475467 su #fafbfc   7,42:1  OK (≥ 4.5)
+icone (tratto text.secondary) su zebra                                 #475467 su #fafbfc   7,42:1  OK (≥ 3.0)
+text.primary su tinta #eaf1ff                                          #101828 su #eaf1ff  15,65:1  OK (≥ 4.5)
+text.secondary su tinta #eaf1ff                                        #475467 su #eaf1ff   6,78:1  OK (≥ 4.5)
+text.primary su tinta #eaf7ee                                          #101828 su #eaf7ee  16,09:1  OK (≥ 4.5)
+text.secondary su tinta #eaf7ee                                        #475467 su #eaf7ee   6,97:1  OK (≥ 4.5)
+text.primary su tinta #fff4db                                          #101828 su #fff4db  16,24:1  OK (≥ 4.5)
+text.secondary su tinta #fff4db                                        #475467 su #fff4db   7,03:1  OK (≥ 4.5)
+text.primary su tinta #fdecec                                          #101828 su #fdecec  15,54:1  OK (≥ 4.5)
+text.secondary su tinta #fdecec                                        #475467 su #fdecec   6,73:1  OK (≥ 4.5)
+accent (collegamenti, testo) su bg.surface                             #2563eb su #ffffff   5,17:1  OK (≥ 4.5)
+accent pressed su accent.tint (toggle attivo)                          #1e40af su #eaf1ff   7,69:1  OK (≥ 4.5)
+danger (testo d'errore, righe da eliminare) su bg.surface              #dc2626 su #ffffff   4,83:1  OK (≥ 4.5)
+danger forte su danger.tint (testo barrato, «−»)                       #a92327 su #fdecec   6,22:1  OK (≥ 4.5)
+bianco su accent (pulsante primario)                                   #ffffff su #2563eb   5,17:1  OK (≥ 4.5)
+bianco su accent.hover                                                 #ffffff su #1d4ed8   6,70:1  OK (≥ 4.5)
+bianco su danger (pulsante distruttivo)                                #ffffff su #dc2626   4,83:1  OK (≥ 4.5)
+bianco su text.primary (suggerimenti)                                  #ffffff su #101828  17,75:1  OK (≥ 4.5)
+anello di focus accent su bg.surface                                   #2563eb su #ffffff   5,17:1  OK (≥ 3.0)
+anello di focus accent su bg.window                                    #2563eb su #f6f7f9   4,82:1  OK (≥ 3.0)
+icona successo su bg.surface                                           #16a34a su #ffffff   3,30:1  OK (≥ 3.0)
+icona avviso su bg.surface                                             #d97706 su #ffffff   3,19:1  OK (≥ 3.0)
+icona errore su bg.surface                                             #dc2626 su #ffffff   4,83:1  OK (≥ 3.0)
+tabella MyISAM (viola) su bg.window                                    #8b5cf6 su #f6f7f9   3,95:1  OK (≥ 3.0)
+punto MariaDB su bg.surface                                            #0e7490 su #ffffff   5,36:1  OK (≥ 3.0)
+punto MySQL su bg.surface                                              #ea580c su #ffffff   3,56:1  OK (≥ 3.0)
+barra e «+» riga nuova (success forte) su success.tint                 #158042 su #eaf7ee   4,53:1  OK (≥ 3.0)
+barra riga modificata (warning forte) su warning.tint                  #a75f0f su #fff4db   4,48:1  OK (≥ 3.0)
+triangolino cella modificata (warning forte) su warning.tint           #a75f0f su #fff4db   4,48:1  OK (≥ 3.0)
+bordo cella non valida (danger) su danger.tint                         #dc2626 su #fdecec   4,23:1  OK (≥ 3.0)
+bordo del blocco selezionato (accent) su accent.tint                   #2563eb su #eaf1ff   4,56:1  OK (≥ 3.0)
+danger puro su danger.tint (per questo si usa la versione forte)       #dc2626 su #fdecec   4,23:1  —
+success puro su success.tint (idem)                                    #16a34a su #eaf7ee   2,99:1  —
+warning puro su warning.tint (idem)                                    #d97706 su #fff4db   2,92:1  —
+text.tertiary su bg.surface (segnaposti, numeri di riga)               #98a2b3 su #ffffff   2,58:1  —
+text.tertiary su bg.window                                             #98a2b3 su #f6f7f9   2,40:1  —
+border.default su bg.surface (bordo dei campi)                         #d0d5dd su #ffffff   1,47:1  —
+border.subtle su bg.surface (divisori)                                 #e4e7ec su #ffffff   1,24:1  —
+chiave oro su bg.window (icona PK, con forma di chiave)                #ca8a04 su #f6f7f9   2,74:1  —
+bianco su MySQL arancio (NON usato: la pillola ha testo text.primary)  #ffffff su #ea580c   3,56:1  —

@@ -85,6 +85,15 @@ public record TableDef(
         return foreignKeys.stream().filter(f -> f.name() != null && f.name().equalsIgnoreCase(fkName)).findFirst();
     }
 
+    /**
+     * Gli indici che v1 non modifica (FULLTEXT, SPATIAL, su prefisso, su espressione, DESC), ricavati dagli
+     * {@link #advancedElements()}: da mostrare in sola lettura accanto a {@link #indexes()}. I generatori non li
+     * toccano (restano elementi avanzati).
+     */
+    public List<ReadOnlyIndex> readOnlyIndexes() {
+        return advancedElements.stream().map(ReadOnlyIndex::fromCreateLine).flatMap(Optional::stream).toList();
+    }
+
     public boolean isInnoDb() {
         return engine == null || engine.equalsIgnoreCase("InnoDB");
     }

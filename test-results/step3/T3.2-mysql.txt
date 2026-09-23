@@ -1,0 +1,4 @@
+T3.2 — MySQL (8.0.40)
+catalogo ramasql_test_t32_grande_mudmxecgjwy8 con 500 tabelle (generate in 8377 ms)
+MetadataReader.tables(): 500 righe in 2 ms (1 lettura di information_schema.TABLES; limite 2000 ms)
+esito: SUPERATO

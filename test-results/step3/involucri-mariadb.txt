@@ -1,0 +1,4 @@
+Involucri che eseguono un'altra istruzione, su MariaDB
+SET STATEMENT max_statement_time=1 FOR DELETE FROM t → rischio DESTRUCTIVE, da riscrivere «t»; esito OK; righe rimaste: 0 su 3, somma di x: 0
+ANALYZE DELETE FROM t → rischio DESTRUCTIVE, da riscrivere «t»; esito OK; righe rimaste: 0 su 3, somma di x: 0
+ANALYZE FORMAT=JSON UPDATE t SET x = 0 → rischio DESTRUCTIVE, da riscrivere «t»; esito OK; righe rimaste: 3 su 3, somma di x: 0

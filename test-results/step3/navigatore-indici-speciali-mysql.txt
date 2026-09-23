@@ -1,0 +1,17 @@
+Navigatore sui tipi speciali, MySQL
+  indice PRIMARY  (id) PRIMARY
+  indice ft_testo  (titolo,testo) FULLTEXT
+  indice ix_anno_desc  (anno DESC) decrescente
+  indice ix_categoria  (id_categoria)
+  indice ix_titolo_prefisso  (titolo(20)) prefisso
+  indice uq_codice  (codice) UNIQUE
+  colonna anno  SMALLINT NOT NULL
+  colonna attivo  TINYINT(1) NOT NULL
+  colonna codice  INT(6) unsigned zerofill NOT NULL
+  colonna dati  JSON
+  colonna id  INT unsigned NOT NULL AI
+  colonna id_categoria  INT unsigned
+  colonna modificato  TIMESTAMP NOT NULL
+  colonna stato  ENUM('bozza','pubblicato','l''archivio') NOT NULL
+  colonna testo  TEXT
+  colonna titolo  VARCHAR(200) NOT NULL

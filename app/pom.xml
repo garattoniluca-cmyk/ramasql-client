@@ -15,6 +15,9 @@
     <dependency><groupId>it.ramasql</groupId><artifactId>ramasql-model</artifactId></dependency>
     <dependency><groupId>it.ramasql</groupId><artifactId>ramasql-sqleo-qb</artifactId></dependency>
     <dependency><groupId>com.formdev</groupId><artifactId>flatlaf</artifactId></dependency>
+    <dependency><groupId>com.formdev</groupId><artifactId>flatlaf-extras</artifactId></dependency>
+    <dependency><groupId>com.fifesoft</groupId><artifactId>rsyntaxtextarea</artifactId></dependency>
+    <dependency><groupId>com.fifesoft</groupId><artifactId>autocomplete</artifactId></dependency>
   </dependencies>
   <build>
     <plugins>

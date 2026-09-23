@@ -35,6 +35,8 @@ import javax.swing.SpinnerNumberModel;
 
 import it.ramasql.app.DialogButtons;
 import it.ramasql.app.Texts;
+import it.ramasql.app.theme.Styles;
+import it.ramasql.app.theme.Tokens;
 import it.ramasql.core.connection.AppSettings;
 
 /**
@@ -77,7 +79,8 @@ public final class SettingsDialog extends JDialog {
         workDirectory.setText(current.workDirectory());
         JButton browse = new JButton(Texts.get("settings.workDirectory.browse"));
         browse.addActionListener(e -> browse());
-        JPanel directoryRow = new JPanel(new BorderLayout(8, 0));
+        JPanel directoryRow = new JPanel(new BorderLayout(Tokens.px(Tokens.SPACE_8), 0));
+        directoryRow.setOpaque(false);
         directoryRow.add(workDirectory, BorderLayout.CENTER);
         directoryRow.add(browse, BorderLayout.EAST);
 
@@ -90,23 +93,36 @@ public final class SettingsDialog extends JDialog {
         addSetting("settings.fontSize", fontSize, false);
         addSetting("settings.rowLimit", rowLimit, false);
         addSetting("settings.workDirectory", directoryRow, true);
-        fields.setBorder(BorderFactory.createEmptyBorder(24, 28, 12, 28));
+        // una riga di spiegazione sotto ogni voce (dopo le etichette: l'ordine di lettura resta voce → valore)
+        String[] hints = {"settings.language.hint", "settings.fontSize.hint", "settings.rowLimit.hint",
+                "settings.workDirectory.hint"};
+        for (int i = 0; i < hints.length; i++) {
+            addHint(i, Texts.get(hints[i]));
+        }
+        fields.setBorder(BorderFactory.createEmptyBorder(Tokens.px(Tokens.SPACE_24), Tokens.px(Tokens.SPACE_24),
+                Tokens.px(Tokens.SPACE_8), Tokens.px(Tokens.SPACE_24)));
 
         add(fields, BorderLayout.CENTER);
-        add(new DialogButtons(this, Texts.get("settings.save"), error, this::save), BorderLayout.SOUTH);
+        DialogButtons buttons = new DialogButtons(this, Texts.get("settings.save"), error, this::save);
+        buttons.setBorder(BorderFactory.createEmptyBorder(Tokens.px(Tokens.SPACE_8), Tokens.px(Tokens.SPACE_24),
+                Tokens.px(Tokens.SPACE_24), Tokens.px(Tokens.SPACE_24)));
+        add(buttons, BorderLayout.SOUTH);
         setResizable(false);
         pack();
         setLocationRelativeTo(owner);
     }
 
+    /** Una voce: etichetta a destra nella prima colonna, controllo nella seconda (righe 0, 2, 4, 6). */
     private void addSetting(String labelKey, JComponent editor, boolean fill) {
-        int row = settingEditors.size();
+        int row = settingEditors.size() * 2;
         GridBagConstraints l = new GridBagConstraints();
         l.gridx = 0;
         l.gridy = row;
         l.anchor = GridBagConstraints.LINE_END;
-        l.insets = new Insets(8, 0, 8, 12);
-        fields.add(new JLabel(Texts.get(labelKey)), l);
+        l.insets = new Insets(Tokens.px(Tokens.SPACE_8), 0, Tokens.px(2), Tokens.px(Tokens.SPACE_12));
+        JLabel label = Styles.text(new JLabel(Texts.get(labelKey)), "emphasis", Tokens.TEXT_PRIMARY);
+        label.setLabelFor(editor);
+        fields.add(label, l);
 
         GridBagConstraints f = new GridBagConstraints();
         f.gridx = 1;
@@ -114,9 +130,20 @@ public final class SettingsDialog extends JDialog {
         f.weightx = 1;
         f.anchor = GridBagConstraints.LINE_START;
         f.fill = fill ? GridBagConstraints.HORIZONTAL : GridBagConstraints.NONE;
-        f.insets = new Insets(8, 0, 8, 0);
+        f.insets = new Insets(Tokens.px(Tokens.SPACE_8), 0, Tokens.px(2), 0);
         fields.add(editor, f);
         settingEditors.add(editor);
+    }
+
+    /** La spiegazione della voce {@code index}, in {@code text.secondary} sotto il controllo. */
+    private void addHint(int index, String text) {
+        GridBagConstraints h = new GridBagConstraints();
+        h.gridx = 1;
+        h.gridy = index * 2 + 1;
+        h.anchor = GridBagConstraints.LINE_START;
+        h.insets = new Insets(0, Tokens.px(2), Tokens.px(Tokens.SPACE_8), 0);
+        JLabel hint = Styles.text(new JLabel(text), "smallText", Tokens.TEXT_SECONDARY);
+        fields.add(hint, h);
     }
 
     /** Italiano sempre; le altre lingue compaiono solo se esiste il loro file di testi. */

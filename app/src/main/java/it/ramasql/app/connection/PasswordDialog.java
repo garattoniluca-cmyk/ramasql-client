@@ -20,10 +20,12 @@ import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
-import javax.swing.UIManager;
 
 import it.ramasql.app.DialogButtons;
 import it.ramasql.app.Texts;
+import it.ramasql.app.theme.AppIcons;
+import it.ramasql.app.theme.Styles;
+import it.ramasql.app.theme.Tokens;
 import it.ramasql.core.connection.ConnectionProfile;
 
 /** Richiesta della password: si digita a ogni connessione e non viene salvata da nessuna parte. */
@@ -37,9 +39,14 @@ public final class PasswordDialog extends JDialog {
     public PasswordDialog(Window owner, ConnectionProfile profile) {
         super(owner, Texts.get("password.title"), ModalityType.APPLICATION_MODAL);
         JLabel heading = new JLabel(Texts.get("password.heading", profile.name().isEmpty() ? profile.host() : profile.name()));
-        heading.putClientProperty("FlatLaf.styleClass", "h3");
+        Styles.text(heading, "heading", Tokens.TEXT_PRIMARY);
+        heading.setIcon(AppIcons.get(AppIcons.CONNECT, 24));
+        heading.setIconTextGap(Tokens.px(Tokens.SPACE_12));
         JLabel address = new JLabel(profile.address());
-        address.setForeground(UIManager.getColor("Label.disabledForeground"));
+        address.setForeground(Tokens.TEXT_SECONDARY);
+        address.setBorder(BorderFactory.createEmptyBorder(0, Tokens.px(24 + Tokens.SPACE_12), 0, 0));
+        JLabel hint = new JLabel(Texts.get("password.hint"));
+        hint.setForeground(Tokens.TEXT_SECONDARY);
         JLabel label = new JLabel(Texts.get("password.label", profile.user()));
         label.setLabelFor(password);
         password.setName("password.field");
@@ -47,16 +54,21 @@ public final class PasswordDialog extends JDialog {
 
         JPanel body = new JPanel();
         body.setLayout(new BoxLayout(body, BoxLayout.Y_AXIS));
-        body.setBorder(BorderFactory.createEmptyBorder(24, 28, 16, 28));
-        for (Component c : new Component[] {heading, Box.createVerticalStrut(4), address, Box.createVerticalStrut(20), label,
-                Box.createVerticalStrut(6), password}) {
+        body.setBorder(BorderFactory.createEmptyBorder(Tokens.px(Tokens.SPACE_24), Tokens.px(Tokens.SPACE_24),
+                Tokens.px(Tokens.SPACE_8), Tokens.px(Tokens.SPACE_24)));
+        for (Component c : new Component[] {heading, Box.createVerticalStrut(Tokens.px(2)), address,
+                Box.createVerticalStrut(Tokens.px(Tokens.SPACE_24)), label, Box.createVerticalStrut(Tokens.px(6)),
+                password, Box.createVerticalStrut(Tokens.px(Tokens.SPACE_8)), hint}) {
             if (c instanceof javax.swing.JComponent jc) {
                 jc.setAlignmentX(Component.LEFT_ALIGNMENT);
             }
             body.add(c);
         }
         add(body, BorderLayout.CENTER);
-        add(new DialogButtons(this, Texts.get("password.connect"), null, this::confirm), BorderLayout.SOUTH);
+        DialogButtons buttons = new DialogButtons(this, Texts.get("password.connect"), null, this::confirm);
+        buttons.setBorder(BorderFactory.createEmptyBorder(Tokens.px(Tokens.SPACE_8), Tokens.px(Tokens.SPACE_24),
+                Tokens.px(Tokens.SPACE_24), Tokens.px(Tokens.SPACE_24)));
+        add(buttons, BorderLayout.SOUTH);
         setResizable(false);
         pack();
         setLocationRelativeTo(owner);

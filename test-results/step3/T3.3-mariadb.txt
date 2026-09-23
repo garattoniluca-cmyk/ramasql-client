@@ -1,0 +1,29 @@
+T3.3 — navigatore su MariaDB
+Cataloghi di test: ramasql_test_s3_nav_er8ti0 (fixture biblioteca.sql), ramasql_test_s3_nav_er8ti0_myisam (fixture biblioteca_myisam.sql), procedura conta_libri
+
+Cataloghi di sistema: nascosti di default [information_schema, mysql, performance_schema, sys]; «Mostra cataloghi di sistema» li mostra (icona grigia) e li rinasconde
+
+Catalogo ramasql_test_s3_nav_er8ti0 (InnoDB)
+  autori        engine InnoDB icona table.innodb   colonne 4, indici [PRIMARY, ix_autori_cognome], FK []
+  editori       engine InnoDB icona table.innodb   colonne 3, indici [PRIMARY, uq_editori_nome], FK []
+  libri         engine InnoDB icona table.innodb   colonne 6, indici [PRIMARY, ix_libri_editore, uq_libri_isbn], FK [fk_libri_editori]
+  libri_autori  engine InnoDB icona table.innodb   colonne 2, indici [PRIMARY, ix_libri_autori_autore], FK [fk_libri_autori_autori, fk_libri_autori_libri]
+  prestiti      engine InnoDB icona table.innodb   colonne 5, indici [PRIMARY, ix_prestiti_libro, ix_prestiti_socio], FK [fk_prestiti_libri, fk_prestiti_soci]
+  soci          engine InnoDB icona table.innodb   colonne 6, indici [PRIMARY, uq_soci_tessera], FK []
+  viste: [v_libri_editori, v_prestiti_aperti]
+
+Catalogo ramasql_test_s3_nav_er8ti0_myisam (MyISAM)
+  autori        engine MyISAM icona table.myisam   colonne 4, indici [PRIMARY, ix_autori_cognome], FK []
+  editori       engine MyISAM icona table.myisam   colonne 3, indici [PRIMARY, uq_editori_nome], FK []
+  libri         engine MyISAM icona table.myisam   colonne 6, indici [PRIMARY, ix_libri_editore, uq_libri_isbn], FK []
+  libri_autori  engine MyISAM icona table.myisam   colonne 2, indici [PRIMARY, ix_libri_autori_autore], FK []
+  prestiti      engine MyISAM icona table.myisam   colonne 5, indici [PRIMARY, ix_prestiti_libro, ix_prestiti_socio], FK []
+  soci          engine MyISAM icona table.myisam   colonne 6, indici [PRIMARY, uq_soci_tessera], FK []
+  viste: [v_libri_editori, v_prestiti_aperti]
+Routine di ramasql_test_s3_nav_er8ti0: [conta_libri] (sola lettura)
+
+Filtro «libri»: tabelle visibili [ramasql_test_s3_nav_er8ti0.libri, ramasql_test_s3_nav_er8ti0.libri_autori, ramasql_test_s3_nav_er8ti0_myisam.libri, ramasql_test_s3_nav_er8ti0_myisam.libri_autori]; nessuna tabella o catalogo senza corrispondenze
+Filtro «ER8TI0»: solo [ramasql_test_s3_nav_er8ti0, ramasql_test_s3_nav_er8ti0_myisam]; filtro senza corrispondenze: messaggio; filtro vuoto: albero com'era
+Mostra SQL di creazione: tabella («CREATE TABLE `libri` (…»), vista, procedura; Copia nome → «libri»
+Registro dopo la navigazione: 0 istruzioni (letture sul canale interno)
+Schermate: T3.3-mariadb.png, T3.3-filtro-mariadb.png, navigatore.png, mostra-sql.png

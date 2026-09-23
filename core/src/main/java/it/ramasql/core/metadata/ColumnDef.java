@@ -33,6 +33,8 @@ import java.util.Objects;
  * @param ordinalPosition posizione sul server (1…n), {@code 0} per una colonna nuova
  * @param onUpdate        espressione di {@code ON UPDATE} (in pratica {@code CURRENT_TIMESTAMP}), {@code null} se assente
  * @param generated       colonna generata: elemento avanzato, conservato e mai toccato dai generatori
+ * @param zerofill        {@code ZEROFILL} (interi e decimali mostrati con zeri a sinistra, fino alla larghezza
+ *                        {@code typeArgs}; implica {@code UNSIGNED}): si legge, si mostra e un {@code MODIFY} lo conserva
  */
 public record ColumnDef(
         String name,
@@ -47,7 +49,8 @@ public record ColumnDef(
         String collation,
         int ordinalPosition,
         String onUpdate,
-        boolean generated) {
+        boolean generated,
+        boolean zerofill) {
 
     public ColumnDef {
         Objects.requireNonNull(name, "name");
@@ -61,6 +64,14 @@ public record ColumnDef(
         onUpdate = blankToNull(onUpdate);
     }
 
+    /** Come il costruttore canonico, senza {@code ZEROFILL} (il caso di ogni colonna creata dal client). */
+    public ColumnDef(String name, String dataType, String typeArgs, boolean unsigned, boolean nullable,
+            ColumnDefault defaultValue, boolean autoIncrement, String comment, String charset, String collation,
+            int ordinalPosition, String onUpdate, boolean generated) {
+        this(name, dataType, typeArgs, unsigned, nullable, defaultValue, autoIncrement, comment, charset, collation,
+                ordinalPosition, onUpdate, generated, false);
+    }
+
     private static String blankToNull(String s) {
         return s == null || s.isBlank() ? null : s.trim();
     }
@@ -68,7 +79,7 @@ public record ColumnDef(
     /** Colonna nuova, annullabile, senza default: {@code of("titolo", "VARCHAR", "100")}. */
     public static ColumnDef of(String name, String dataType, String typeArgs) {
         return new ColumnDef(name, dataType, typeArgs, false, true, ColumnDefault.NONE, false, "", null, null, 0, null,
-                false);
+                false, false);
     }
 
     /** Colonna nuova senza argomenti di tipo: {@code of("nato_il", "DATE")}. */
@@ -83,13 +94,13 @@ public record ColumnDef(
 
     public ColumnDef withName(String v) {
         return new ColumnDef(v, dataType, typeArgs, unsigned, nullable, defaultValue, autoIncrement, comment, charset,
-                collation, ordinalPosition, onUpdate, generated);
+                collation, ordinalPosition, onUpdate, generated, zerofill);
     }
 
     /** Cambia tipo e argomenti insieme: {@code withType("DECIMAL", "10,2")}. */
     public ColumnDef withType(String newDataType, String newTypeArgs) {
         return new ColumnDef(name, newDataType, newTypeArgs, unsigned, nullable, defaultValue, autoIncrement, comment,
-                charset, collation, ordinalPosition, onUpdate, generated);
+                charset, collation, ordinalPosition, onUpdate, generated, zerofill);
     }
 
     public ColumnDef withTypeArgs(String v) {
@@ -98,12 +109,12 @@ public record ColumnDef(
 
     public ColumnDef withUnsigned(boolean v) {
         return new ColumnDef(name, dataType, typeArgs, v, nullable, defaultValue, autoIncrement, comment, charset,
-                collation, ordinalPosition, onUpdate, generated);
+                collation, ordinalPosition, onUpdate, generated, zerofill);
     }
 
     public ColumnDef withNullable(boolean v) {
         return new ColumnDef(name, dataType, typeArgs, unsigned, v, defaultValue, autoIncrement, comment, charset,
-                collation, ordinalPosition, onUpdate, generated);
+                collation, ordinalPosition, onUpdate, generated, zerofill);
     }
 
     /** Scorciatoia per {@code withNullable(false)}. */
@@ -113,27 +124,27 @@ public record ColumnDef(
 
     public ColumnDef withDefault(ColumnDefault v) {
         return new ColumnDef(name, dataType, typeArgs, unsigned, nullable, v, autoIncrement, comment, charset,
-                collation, ordinalPosition, onUpdate, generated);
+                collation, ordinalPosition, onUpdate, generated, zerofill);
     }
 
     public ColumnDef withAutoIncrement(boolean v) {
         return new ColumnDef(name, dataType, typeArgs, unsigned, nullable, defaultValue, v, comment, charset,
-                collation, ordinalPosition, onUpdate, generated);
+                collation, ordinalPosition, onUpdate, generated, zerofill);
     }
 
     public ColumnDef withComment(String v) {
         return new ColumnDef(name, dataType, typeArgs, unsigned, nullable, defaultValue, autoIncrement, v, charset,
-                collation, ordinalPosition, onUpdate, generated);
+                collation, ordinalPosition, onUpdate, generated, zerofill);
     }
 
     public ColumnDef withCharset(String newCharset, String newCollation) {
         return new ColumnDef(name, dataType, typeArgs, unsigned, nullable, defaultValue, autoIncrement, comment,
-                newCharset, newCollation, ordinalPosition, onUpdate, generated);
+                newCharset, newCollation, ordinalPosition, onUpdate, generated, zerofill);
     }
 
     public ColumnDef withOrdinalPosition(int v) {
         return new ColumnDef(name, dataType, typeArgs, unsigned, nullable, defaultValue, autoIncrement, comment,
-                charset, collation, v, onUpdate, generated);
+                charset, collation, v, onUpdate, generated, zerofill);
     }
 
     /** La stessa definizione come colonna nuova (posizione 0): utile per «duplica colonna». */
@@ -143,11 +154,16 @@ public record ColumnDef(
 
     public ColumnDef withOnUpdate(String v) {
         return new ColumnDef(name, dataType, typeArgs, unsigned, nullable, defaultValue, autoIncrement, comment,
-                charset, collation, ordinalPosition, v, generated);
+                charset, collation, ordinalPosition, v, generated, zerofill);
+    }
+
+    public ColumnDef withZerofill(boolean v) {
+        return new ColumnDef(name, dataType, typeArgs, unsigned, nullable, defaultValue, autoIncrement, comment,
+                charset, collation, ordinalPosition, onUpdate, generated, v);
     }
 
     public ColumnDef withGenerated(boolean v) {
         return new ColumnDef(name, dataType, typeArgs, unsigned, nullable, defaultValue, autoIncrement, comment,
-                charset, collation, ordinalPosition, onUpdate, v);
+                charset, collation, ordinalPosition, onUpdate, v, zerofill);
     }
 }

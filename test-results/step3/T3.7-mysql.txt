@@ -1,0 +1,23 @@
+T3.7 — conferma rafforzata, su MySQL
+DROP TABLE `ramasql_test_s3_forte_0lqjyt`.`libri`; → livello STRONG, da riscrivere «libri»
+   «libr» → Esegui disabilitato, clic ignorato
+   «LIBRI» → Esegui disabilitato, clic ignorato
+   «librix» → Esegui disabilitato, clic ignorato
+   «CONFERMO» → Esegui disabilitato, clic ignorato
+   «libri» → Esegui abilitato; l'utente preme comunque Annulla
+TRUNCATE TABLE `ramasql_test_s3_forte_0lqjyt`.`prestiti`; → livello STRONG, da riscrivere «prestiti»
+   «prestit» → Esegui disabilitato, clic ignorato
+   «PRESTITI» → Esegui disabilitato, clic ignorato
+   «prestitix» → Esegui disabilitato, clic ignorato
+   «CONFERMO» → Esegui disabilitato, clic ignorato
+   «prestiti» → Esegui abilitato; l'utente preme comunque Annulla
+DROP DATABASE `ramasql_test_s3_forte_0lqjyt`; → livello STRONG, da riscrivere «ramasql_test_s3_forte_0lqjyt»
+   «ramasql_test_s3_forte_0lqjy» → Esegui disabilitato, clic ignorato
+   «RAMASQL_TEST_S3_FORTE_0LQJYT» → Esegui disabilitato, clic ignorato
+   «ramasql_test_s3_forte_0lqjytx» → Esegui disabilitato, clic ignorato
+   «CONFERMO» → Esegui disabilitato, clic ignorato
+   «ramasql_test_s3_forte_0lqjyt» → Esegui abilitato; l'utente preme comunque Annulla
+Dopo tre anteprime annullate: registro 0 istruzioni; server: catalogo e libri presenti, prestiti 500 righe (invariato)
+Rinomina (non distruttiva): livello CONFIRM, nessun nome da riscrivere, Esegui predefinito
+Svuota prestiti con «prestiti» riscritto: eseguito, registro 1 istruzione, server 0 righe
+Schermate: T3.7-libri/prestiti/catalogo-mysql.png

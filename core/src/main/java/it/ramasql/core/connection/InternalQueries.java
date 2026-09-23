@@ -16,7 +16,8 @@ import java.sql.Statement;
 
 /**
  * Le <strong>query interne</strong> della sessione: le poche letture di servizio che il client fa per conto
- * proprio (versione del server, identificativo della connessione, catalogo corrente) e {@code KILL QUERY}.
+ * proprio (versione del server, identificativo della connessione, catalogo corrente), {@code KILL QUERY} e le due
+ * impostazioni di connessione dell'apertura (autocommit acceso, tempo massimo di rete).
  * <p>È l'unico punto di {@code core.connection} che esegue SQL: tutto ciò che l'utente chiede passa invece da
  * {@code SqlExecutor} ({@code ARCHITECTURE.md} §4). Sono tutte istruzioni fisse, senza testo dell'utente, e
  * nessuna modifica dati o apre transazioni.
@@ -44,9 +45,24 @@ final class InternalQueries {
         return singleValue(connection, SELECT_DATABASE);
     }
 
+    /**
+     * Autocommit acceso (se il driver l'avesse spento): è l'unica impostazione di sessione che il client tocca, e
+     * solo per rimetterla com'è sempre (nessuna gestione delle transazioni).
+     */
+    static void ensureAutocommit(Connection connection) throws SQLException {
+        if (!connection.getAutoCommit()) {
+            connection.setAutoCommit(true);
+        }
+    }
+
+    /** Tempo massimo di rete del driver per le letture di servizio all'apertura ({@code 0} = nessuno). */
+    static void networkTimeout(Connection connection, int millis) throws SQLException {
+        connection.setNetworkTimeout(Runnable::run, millis);
+    }
+
     /** Interrompe l'istruzione in corso sulla connessione indicata (l'identificativo è un numero: niente testo libero). */
-    static void killQuery(Connection serviceConnection, long connectionId) throws SQLException {
-        try (Statement st = serviceConnection.createStatement()) {
+    static void killQuery(Connection killConnection, long connectionId) throws SQLException {
+        try (Statement st = killConnection.createStatement()) {
             st.execute(KILL_QUERY + connectionId);
         }
     }

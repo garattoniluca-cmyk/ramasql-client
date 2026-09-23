@@ -23,9 +23,9 @@ import javax.swing.JSpinner;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.SpinnerNumberModel;
-import javax.swing.UIManager;
-
 import it.ramasql.app.Texts;
+import it.ramasql.app.theme.AppIcons;
+import it.ramasql.app.theme.Tokens;
 import it.ramasql.core.connection.ConnectionProfile;
 
 /**
@@ -81,15 +81,19 @@ public final class ProfileForm extends JPanel {
         row = addRow(row, "profile.port", port);
         row = addRow(row, "profile.user", user);
         row = addRow(row, "profile.catalog", catalog);
-        row = addRow(row, "profile.note", new JScrollPane(note));
+        JScrollPane noteScroll = new JScrollPane(note);
+        noteScroll.putClientProperty("FlatLaf.style", "arc: " + Tokens.RADIUS_CONTROL * 2);
+        row = addRow(row, "profile.note", noteScroll);
 
-        JLabel passwordHint = new JLabel(Texts.get("profile.passwordHint"));
-        passwordHint.setForeground(UIManager.getColor("Label.disabledForeground"));
+        JLabel passwordHint = new JLabel(Texts.get("profile.passwordHint"), AppIcons.small(AppIcons.STATUS_INFO),
+                JLabel.LEADING);
+        passwordHint.setIconTextGap(Tokens.px(6));
+        passwordHint.setForeground(Tokens.TEXT_SECONDARY);
         GridBagConstraints c = new GridBagConstraints();
         c.gridx = 1;
         c.gridy = row++;
         c.anchor = GridBagConstraints.LINE_START;
-        c.insets = new Insets(2, 0, 14, 0);
+        c.insets = new Insets(Tokens.px(2), 0, Tokens.px(Tokens.SPACE_16), 0);
         add(passwordHint, c);
 
         c = new GridBagConstraints();
@@ -103,11 +107,14 @@ public final class ProfileForm extends JPanel {
         c.gridy = row;
         c.anchor = GridBagConstraints.LINE_START;
         c.fill = GridBagConstraints.HORIZONTAL;
-        c.insets = new Insets(8, 0, 0, 0);
+        c.insets = new Insets(Tokens.px(Tokens.SPACE_8), 0, 0, 0);
         add(testStatus, c);
 
+        test.setIcon(AppIcons.small(AppIcons.CONNECT));
+        testStatus.setIconTextGap(Tokens.px(6));
         test.addActionListener(e -> toggleTest());
-        setBorder(BorderFactory.createEmptyBorder(24, 28, 12, 28));
+        setBorder(BorderFactory.createEmptyBorder(Tokens.px(Tokens.SPACE_16), Tokens.px(Tokens.SPACE_24),
+                Tokens.px(Tokens.SPACE_12), Tokens.px(Tokens.SPACE_24)));
     }
 
     private int addRow(int row, String labelKey, JComponent field) {
@@ -115,8 +122,11 @@ public final class ProfileForm extends JPanel {
         l.gridx = 0;
         l.gridy = row;
         l.anchor = field instanceof JScrollPane ? GridBagConstraints.FIRST_LINE_END : GridBagConstraints.LINE_END;
-        l.insets = new Insets(field instanceof JScrollPane ? 10 : 6, 0, 6, 12);
-        add(new JLabel(Texts.get(labelKey)), l);
+        l.insets = new Insets(Tokens.px(field instanceof JScrollPane ? 10 : 6), 0, Tokens.px(6), Tokens.px(Tokens.SPACE_12));
+        JLabel label = new JLabel(Texts.get(labelKey));
+        label.setForeground(Tokens.TEXT_SECONDARY);
+        label.setLabelFor(field instanceof JScrollPane s ? s.getViewport().getView() : field);
+        add(label, l);
 
         GridBagConstraints f = new GridBagConstraints();
         f.gridx = 1;
@@ -124,7 +134,7 @@ public final class ProfileForm extends JPanel {
         f.weightx = 1;
         f.fill = field instanceof JSpinner ? GridBagConstraints.NONE : GridBagConstraints.HORIZONTAL;
         f.anchor = GridBagConstraints.LINE_START;
-        f.insets = new Insets(6, 0, 6, 0);
+        f.insets = new Insets(Tokens.px(6), 0, Tokens.px(6), 0);
         add(field, f);
         return row + 1;
     }
@@ -205,9 +215,12 @@ public final class ProfileForm extends JPanel {
         return runningTest != null;
     }
 
+    /** Esito della prova: testo e icona (lo stato non è affidato al solo colore). */
     private void showStatus(String text, boolean ok) {
         testStatus.setText(text);
-        testStatus.setForeground(ok ? UIManager.getColor("Label.foreground") : UIManager.getColor("Component.error.focusedBorderColor"));
+        boolean running = isTesting();
+        testStatus.setIcon(running ? null : AppIcons.small(ok ? AppIcons.STATUS_SUCCESS : AppIcons.STATUS_ERROR));
+        testStatus.setForeground(running ? Tokens.TEXT_SECONDARY : ok ? Tokens.TEXT_PRIMARY : Tokens.DANGER);
     }
 
     public JTextField nameField() {

@@ -61,13 +61,53 @@ final class JsonFiles {
                 }
                 channel.force(true);
             }
-            try {
-                Files.move(temp, file, StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING);
-            } catch (AtomicMoveNotSupportedException e) {
-                Files.move(temp, file, StandardCopyOption.REPLACE_EXISTING);
-            }
+            replace(temp, file, REPLACE_ATTEMPTS);
         } finally {
             Files.deleteIfExists(temp);
+        }
+    }
+
+    /** Tentativi di sostituzione del file (Windows: un antivirus o l'indicizzatore possono tenerlo aperto un attimo). */
+    static final int REPLACE_ATTEMPTS = 10;
+
+    /**
+     * Sostituisce {@code file} con {@code temp}. Su Windows un altro programma (antivirus, indicizzatore, Esplora
+     * risorse) può tenere aperto il file per qualche millisecondo e lo spostamento fallisce con «accesso negato»: si
+     * riprova per circa un secondo prima di arrendersi, così il salvataggio non fallisce per un motivo passeggero.
+     */
+    static void replace(Path temp, Path file, int attempts) throws IOException {
+        replace(temp, file, attempts, JsonFiles::moveReplacing);
+    }
+
+    /** Lo spostamento vero e proprio; separato perché i test possano simulare un file bloccato. */
+    interface Mover {
+        void move(Path from, Path to) throws IOException;
+    }
+
+    static void moveReplacing(Path from, Path to) throws IOException {
+        try {
+            Files.move(from, to, StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING);
+        } catch (AtomicMoveNotSupportedException e) {
+            Files.move(from, to, StandardCopyOption.REPLACE_EXISTING);
+        }
+    }
+
+    static void replace(Path temp, Path file, int attempts, Mover mover) throws IOException {
+        for (int attempt = 1; ; attempt++) {
+            try {
+                mover.move(temp, file);
+                return;
+            } catch (java.nio.file.AccessDeniedException e) {
+                if (attempt >= attempts) {
+                    throw e;
+                }
+                try {
+                    Thread.sleep(50L * attempt / 2 + 10);
+                } catch (InterruptedException ie) {
+                    Thread.currentThread().interrupt();
+                    throw e;
+                }
+            }
         }
     }
 

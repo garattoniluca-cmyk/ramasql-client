@@ -1,0 +1,4 @@
+Cablaggio della sessione su MySQL
+Connessione: SessionWorkspace creato (lettore + esecutore sullo stesso registro della finestra), limite righe 1000 → 250 dopo le impostazioni
+Disconnessione: esecutore chiuso (submit rifiutato), navigatore vuoto, sessione chiusa
+Riconnessione: nuovo SessionWorkspace, stesso registro (1 riga conservata), limite 250

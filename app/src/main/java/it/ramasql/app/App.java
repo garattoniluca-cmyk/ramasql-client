@@ -13,6 +13,7 @@ import java.nio.file.Path;
 
 import it.ramasql.app.connection.ConnectionController;
 import it.ramasql.app.settings.SettingsController;
+import it.ramasql.app.workspace.WorkspacePrompts;
 import it.ramasql.core.connection.AppSettings;
 import it.ramasql.core.connection.ProfileStore;
 
@@ -35,12 +36,22 @@ public final class App {
         this.settings = settings;
     }
 
+    /** Con le finestre vere dell'area di lavoro (navigatore, anteprima, pannello SQL). */
     public static App create(Path dataDirectory, Prompts prompts) {
+        return create(dataDirectory, prompts, null);
+    }
+
+    /**
+     * Con le finestre dell'area di lavoro date (i test ne passano una finta).
+     *
+     * @param workspacePrompts {@code null} = quelle vere ({@code SwingWorkspacePrompts})
+     */
+    public static App create(Path dataDirectory, Prompts prompts, WorkspacePrompts workspacePrompts) {
         SettingsController settings = new SettingsController(dataDirectory, prompts);
         settings.applyFont();
         ProfileStore.Opening opening = ProfileStore.openRecovering(dataDirectory);
         ConnectionController connections = new ConnectionController(opening.store(), prompts);
-        MainFrame frame = new MainFrame(connections, settings, prompts);
+        MainFrame frame = new MainFrame(connections, settings, prompts, workspacePrompts);
         connections.attach(frame);
         AppSettings.Loading loading = settings.loading();
         if (loading.hasProblem()) {

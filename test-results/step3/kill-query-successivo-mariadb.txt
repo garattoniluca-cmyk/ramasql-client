@@ -1,0 +1,2 @@
+Su MariaDB: KILL QUERY a connessione ferma → l'istruzione dopo riesce;
+25 volte: interruzione chiesta alla fine di A con B in coda → B mai colpito (0 volte), A completato; poi SELECT SLEEP(30) interrotta → INTERRUPTED

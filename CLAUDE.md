@@ -28,6 +28,7 @@ Elenco completo in `docs/CONSOLE.md`. Su questo PC i comandi nella cartella corr
 | `docs/ANALYSIS.md` | scelta dello stack (Java vs C# vs C++), analisi di SQLeo, rischi, **decisioni aperte (§8)** |
 | `docs/FEASIBILITY.md` | fattibilità **punto per punto** di ogni requisito, con limiti e alternative |
 | `docs/DESIGN.md` | **documento di design del prodotto**: funzionalità, schermate, comportamento, fuori perimetro |
+| `docs/DESIGN-SYSTEM.md` | **prima di toccare l'interfaccia**: token di colore, tipografia, icone, specifiche di ogni componente (obiettivo dell'utente: grafica nettamente superiore a Navicat) |
 | `docs/ARCHITECTURE.md` | prima di scrivere codice: moduli, pacchetti, pipeline SQL, integrazione SQLeo |
 | `docs/GLOSSARY.md` | termini di dominio (modello logico vs fisico, relazione logica, anteprima SQL…) |
 | `docs/CONSOLE.md` | comandi di build, test, packaging |
@@ -53,4 +54,4 @@ Elenco completo in `docs/CONSOLE.md`. Su questo PC i comandi nella cartella corr
 
 **Step 0 — Fondamenta: completato** (2026-09-21): progetto Maven a 5 moduli, finestra vuota con FlatLaf, `avvia.cmd`. Database locali pronti (MariaDB :3306, MySQL :3307, utente `ramasql_test`; credenziali solo in `docs/local DBs.txt`). **Installer solo a fine progetto** (Step 13).
 
-**Step 1 — Spike: completato, GO** (2026-09-22, `docs/SPIKE-STEP1.md`): query builder di SQLeo estratto in `sqleo-qb` e funzionante su JDK 25 con i due server; query nidificate grafiche (CTE solo testo); driver unico MariaDB Connector/J (`ADR-015`). **Step 2 — Shell e connessioni: completato** (2026-09-22): finestra a tre zone, tessere, profili senza password, diagnosi degli errori in italiano. **In corso:** esecuzione autonoma degli step 3–6 (`ADR-014`); stato per step: `scripts\verify.ps1`.
+**Step 1 — Spike: completato, GO** (2026-09-22, `docs/SPIKE-STEP1.md`): query builder di SQLeo estratto in `sqleo-qb` e funzionante su JDK 25 con i due server; query nidificate grafiche (CTE solo testo); driver unico MariaDB Connector/J (`ADR-015`). **Step 2 — Shell e connessioni: completato** (2026-09-22): finestra a tre zone, tessere, profili senza password, diagnosi degli errori in italiano. **Step 3 — Navigatore, pipeline SQL, pannello SQL: completato** (2026-09-23): metadati, albero con caricamento pigro, pipeline «anteprima SQL» (`SqlScript`/`SqlExecutor`/`SqlLog`), pannello Registro/Anteprima/Messaggi, operazioni sull'albero, fixture `biblioteca`; 196 test (61 di integrazione). **In corso:** esecuzione autonoma degli step 4–6 (`ADR-014`); stato per step: `scriptserify.ps1`.

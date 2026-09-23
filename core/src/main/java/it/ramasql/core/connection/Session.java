@@ -18,8 +18,11 @@ import java.util.concurrent.TimeUnit;
 import it.ramasql.core.CoreMessages;
 
 /**
- * Sessione di lavoro su un server: la <strong>connessione principale</strong>, su cui gira l'SQL dell'utente, e
- * una <strong>connessione di servizio</strong> distinta, per {@code KILL QUERY} e per la lettura dei metadati.
+ * Sessione di lavoro su un server: la <strong>connessione principale</strong>, su cui gira l'SQL dell'utente, una
+ * <strong>connessione di servizio</strong> distinta per la lettura dei metadati e una terza connessione, usata
+ * <strong>solo per {@code KILL QUERY}</strong>: così l'interruzione non aspetta mai la fine di una lettura di metadati
+ * lunga in corso sulla connessione di servizio (il driver serve una richiesta alla volta per connessione). Le tre si
+ * aprono con gli stessi parametri e si chiudono insieme.
  * <p><strong>Sempre in autocommit, nessuna gestione delle transazioni</strong> (regola 5 di {@code CLAUDE.md}):
  * qui non si disattiva mai l'autocommit e non si emettono mai istruzioni di transazione.
  * <p><strong>Password:</strong> arriva come {@code char[]} e questa classe non la conserva in nessun campo proprio:
@@ -41,16 +44,19 @@ public final class Session implements AutoCloseable {
     private final ConnectionProfile profile;
     private final Connection main;
     private final Connection service;
+    /** Solo per {@code KILL QUERY}: mai usata per altro, quindi sempre libera quando serve. */
+    private final Connection killer;
     private final ServerInfo serverInfo;
     private final long mainConnectionId;
     private final String openedCatalog;
     private volatile boolean closed;
 
-    private Session(ConnectionProfile profile, Connection main, Connection service, ServerInfo serverInfo,
-            long mainConnectionId, String openedCatalog) {
+    private Session(ConnectionProfile profile, Connection main, Connection service, Connection killer,
+            ServerInfo serverInfo, long mainConnectionId, String openedCatalog) {
         this.profile = profile;
         this.main = main;
         this.service = service;
+        this.killer = killer;
         this.serverInfo = serverInfo;
         this.mainConnectionId = mainConnectionId;
         this.openedCatalog = openedCatalog;
@@ -61,7 +67,7 @@ public final class Session implements AutoCloseable {
      * come una vera e non parla con nessuno.
      */
     static Session detached(ConnectionProfile profile, ServerInfo serverInfo, String catalog) {
-        return new Session(profile, null, null, serverInfo, 0, catalog);
+        return new Session(profile, null, null, null, serverInfo, 0, catalog);
     }
 
     /**
@@ -87,24 +93,27 @@ public final class Session implements AutoCloseable {
             throws ConnectionFailedException {
         Connection main = null;
         Connection service = null;
+        Connection killer = null;
         try {
             main = connect(profile, password, profile.defaultCatalog(), deadlineNanos);
-            if (!main.getAutoCommit()) {
-                main.setAutoCommit(true);
-            }
+            InternalQueries.ensureAutocommit(main);
             // la connessione di servizio non sceglie un catalogo: legge i metadati di tutti
             service = connect(profile, password, "", deadlineNanos);
-            main.setNetworkTimeout(Runnable::run, remainingMillis(deadlineNanos, System.nanoTime()));
+            // e quella del KILL QUERY nemmeno: non esegue altro
+            killer = connect(profile, password, "", deadlineNanos);
+            InternalQueries.networkTimeout(main, remainingMillis(deadlineNanos, System.nanoTime()));
             ServerInfo info = ServerInfo.parse(InternalQueries.version(main));
             long id = InternalQueries.connectionId(main);
             String catalog = InternalQueries.currentCatalog(main);
-            main.setNetworkTimeout(Runnable::run, 0); // le istruzioni dell'utente non hanno un limite di rete
-            return new Session(profile, main, service, info, id, catalog);
+            InternalQueries.networkTimeout(main, 0); // le istruzioni dell'utente non hanno un limite di rete
+            return new Session(profile, main, service, killer, info, id, catalog);
         } catch (SQLException | RuntimeException e) {
+            closeQuietly(killer);
             closeQuietly(service);
             closeQuietly(main);
             throw new ConnectionFailedException(ConnectionErrorClassifier.classify(e, profile), e);
         } catch (DeadlineExpired e) {
+            closeQuietly(killer);
             closeQuietly(service);
             closeQuietly(main);
             throw new ConnectionFailedException(new ConnectionFailure(ConnectionErrorCause.TIMEOUT,
@@ -148,7 +157,7 @@ public final class Session implements AutoCloseable {
         return main;
     }
 
-    /** Connessione di servizio: metadati e {@code KILL QUERY}. */
+    /** Connessione di servizio: metadati (il {@code KILL QUERY} ha una connessione sua). */
     public Connection serviceConnection() {
         return service;
     }
@@ -166,9 +175,12 @@ public final class Session implements AutoCloseable {
         return InternalQueries.currentCatalog(main);
     }
 
-    /** Interrompe l'istruzione in corso sulla connessione principale, passando dalla connessione di servizio. */
+    /**
+     * Interrompe l'istruzione in corso sulla connessione principale con {@code KILL QUERY}, dalla connessione dedicata:
+     * non aspetta le letture di metadati in corso sulla connessione di servizio.
+     */
     public void interruptRunningStatement() throws SQLException {
-        InternalQueries.killQuery(service, mainConnectionId);
+        InternalQueries.killQuery(killer, mainConnectionId);
     }
 
     public boolean isClosed() {
@@ -178,6 +190,7 @@ public final class Session implements AutoCloseable {
     @Override
     public void close() {
         closed = true;
+        closeQuietly(killer);
         closeQuietly(service);
         closeQuietly(main);
     }

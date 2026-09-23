@@ -1,0 +1,21 @@
+T3.9 — controllo del bytecode (436 classi di [core, app, model, sqleo-qb]; 165 riferimenti a java.sql.* / org.mariadb.*: chiamate invoke*, riferimenti a metodo dei bootstrap di invokedynamic, costanti MethodHandle)
+Classi ammesse (possono eseguire SQL): [it/ramasql/core/exec/SqlExecutor, it/ramasql/core/metadata/MetadataQueries, it/ramasql/core/connection/InternalQueries]
+Chiamate che creano o eseguono istruzioni SQL:
+  it/ramasql/core/connection/InternalQueries → [Connection.createStatement, Statement.execute, Statement.executeQuery]
+  it/ramasql/core/exec/SqlExecutor → [Connection.createStatement, Statement.execute]
+  it/ramasql/core/metadata/MetadataQueries → [Connection.createStatement, Connection.prepareStatement, PreparedStatement.executeQuery, Statement.executeQuery]
+Fuori dalle classi ammesse, riferimenti JDBC consentiti (solo letture, chiusure, valori, e l'apertura delle connessioni in Session):
+  app: it/ramasql/app/navigator/NavigatorPanel → [SQLException.getErrorCode, SQLException.getMessage]
+  core: it/ramasql/core/connection/ConnectionErrorClassifier → [SQLException.getErrorCode, SQLException.getSQLState]
+  core: it/ramasql/core/connection/Session → [Connection.close, Driver.connect, SQLException.<init>]
+  core: it/ramasql/core/metadata/MetadataReader → [SQLException.getErrorCode]
+  sqleo-qb: com/sqleo/querybuilder/DiagramLoader → [Connection.getMetaData, DatabaseMetaData.getColumns, DatabaseMetaData.getExportedKeys, DatabaseMetaData.getImportedKeys, DatabaseMetaData.getPrimaryKeys, DatabaseMetaData.getTables, DatabaseMetaData.storesLowerCaseIdentifiers, DatabaseMetaData.storesUpperCaseIdentifiers, ResultSet.close, ResultSet.getInt, ResultSet.getString, ResultSet.next]
+  sqleo-qb: com/sqleo/querybuilder/MaskReferences → [Connection.getMetaData, DatabaseMetaData.getExportedKeys, DatabaseMetaData.getImportedKeys, ResultSet.close, ResultSet.getString, ResultSet.next]
+  sqleo-qb: com/sqleo/querybuilder/QueryBuilder → [Connection.getMetaData, Connection.isClosed, DatabaseMetaData.getIdentifierQuoteString, DatabaseMetaData.getMaxColumnNameLength]
+  sqleo-qb: com/sqleo/querybuilder/ViewObjects → [Connection.getCatalog, Connection.getMetaData, DatabaseMetaData.getConnection, DatabaseMetaData.getSchemas, DatabaseMetaData.getTableTypes, DatabaseMetaData.getTables, DatabaseMetaData.supportsSchemasInTableDefinitions, ResultSet.close, ResultSet.getString, ResultSet.next, SQLException.printStackTrace]
+Letture di java.sql.DatabaseMetaData (solo metadati, SQL composto dal driver):
+  sqleo-qb: com/sqleo/querybuilder/DiagramLoader → [getColumns, getExportedKeys, getImportedKeys, getPrimaryKeys, getTables, storesLowerCaseIdentifiers, storesUpperCaseIdentifiers]
+  sqleo-qb: com/sqleo/querybuilder/MaskReferences → [getExportedKeys, getImportedKeys]
+  sqleo-qb: com/sqleo/querybuilder/QueryBuilder → [getIdentifierQuoteString, getMaxColumnNameLength]
+  sqleo-qb: com/sqleo/querybuilder/ViewObjects → [getConnection, getSchemas, getTableTypes, getTables, supportsSchemasInTableDefinitions]
+VIOLAZIONI (riferimenti JDBC fuori dall'elenco delle letture): nessuna

@@ -17,6 +17,7 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.MethodSource;
 
 /** T3.4 — classificazione di rischio di 30 istruzioni. */
@@ -92,5 +93,41 @@ class RiskClassifierTest {
         assertEquals(RiskLevel.DESTRUCTIVE, RiskClassifier.classify("UPDATE soci SET n = @where"));
         assertEquals(RiskLevel.MODIFIES, RiskClassifier.classify("/*!40101 SET NAMES utf8 */; INSERT INTO t VALUES (1)"));
         assertEquals(RiskLevel.MODIFIES, RiskClassifier.classify("CALL ricalcola()"));
+    }
+
+    /**
+     * Oltre T3.4: gli involucri che eseguono un'altra istruzione (MariaDB {@code SET STATEMENT … FOR}, {@code ANALYZE},
+     * MySQL {@code EXPLAIN ANALYZE}) valgono quanto l'istruzione avvolta: la conferma rafforzata non si aggira.
+     */
+    @ParameterizedTest(name = "[{index}] {1}: {0}")
+    @CsvSource(delimiter = '|', quoteCharacter = '"', value = {
+        "SET STATEMENT max_statement_time=1 FOR DELETE FROM t                          | DESTRUCTIVE",
+        "set statement max_statement_time = 1, sql_mode = '' for delete from t         | DESTRUCTIVE",
+        "SET STATEMENT sql_mode=(SELECT 'x') FOR DROP TABLE t                          | DESTRUCTIVE",
+        "SET STATEMENT max_statement_time=1 FOR TRUNCATE TABLE t                       | DESTRUCTIVE",
+        "SET STATEMENT max_statement_time=1 FOR UPDATE t SET a = 1                     | DESTRUCTIVE",
+        "SET STATEMENT max_statement_time=1 FOR UPDATE t SET a = 1 WHERE id = 2        | MODIFIES",
+        "SET STATEMENT max_statement_time=1 FOR INSERT INTO t VALUES (1)               | MODIFIES",
+        "SET STATEMENT max_statement_time=1 FOR SELECT * FROM t                        | SAFE",
+        "/* commento */ SET STATEMENT a=1 FOR SET STATEMENT b=2 FOR DELETE FROM t      | DESTRUCTIVE",
+        "ANALYZE DELETE FROM t                                                         | DESTRUCTIVE",
+        "ANALYZE FORMAT=JSON DELETE FROM t                                             | DESTRUCTIVE",
+        "analyze update t set a = 1                                                    | DESTRUCTIVE",
+        "ANALYZE UPDATE t SET a = 1 WHERE id = 1                                       | MODIFIES",
+        "ANALYZE INSERT INTO t VALUES (1)                                              | MODIFIES",
+        "ANALYZE REPLACE INTO t VALUES (1)                                             | MODIFIES",
+        "ANALYZE SELECT * FROM t                                                       | SAFE",
+        "EXPLAIN ANALYZE DELETE FROM t                                                 | DESTRUCTIVE",
+        "EXPLAIN FORMAT=TREE ANALYZE UPDATE t SET a = 1                                | DESTRUCTIVE",
+        "EXPLAIN ANALYZE FORMAT=TREE DELETE t FROM t JOIN u ON u.id = t.id             | DESTRUCTIVE",
+        "DESCRIBE ANALYZE DELETE FROM t                                                | DESTRUCTIVE",
+        "EXPLAIN ANALYZE SELECT * FROM t                                               | SAFE",
+        // non sono involucri: EXPLAIN senza ANALYZE non esegue; ANALYZE TABLE aggiorna le statistiche
+        "EXPLAIN DELETE FROM t                                                         | SAFE",
+        "ANALYZE TABLE t                                                               | MODIFIES",
+        "SET max_statement_time = 1                                                    | SAFE"})
+    void involucri(String sql, RiskLevel expected) {
+        assertEquals(expected, RiskClassifier.classify(sql));
+        assertEquals(expected, SqlStatement.of(sql, "o").risk());
     }
 }

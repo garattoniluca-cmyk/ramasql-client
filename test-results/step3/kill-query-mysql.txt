@@ -1,0 +1,1 @@
+SELECT SLEEP(30) interrotta con KILL QUERY in 0 ms su MySQL; esito: INTERRUPTED (ServerError[code=0, sqlState=, message=Interrotta dall'utente.]); poi SELECT 42 → 42 sulla stessa sessione

@@ -1,0 +1,17 @@
+ADR-017 — oggetti programmabili in sola lettura su MariaDB
+-- PROCEDURE p_conta ()
+CREATE DEFINER=`ramasql_test`@`localhost` PROCEDURE `p_conta`()
+BEGIN SELECT COUNT(*) FROM t; END
+
+-- FUNCTION f_doppio (int(11))
+CREATE DEFINER=`ramasql_test`@`localhost` FUNCTION `f_doppio`(x INT) RETURNS int(11)
+    NO SQL
+    DETERMINISTIC
+RETURN x * 2
+
+-- TRIGGER tr_t (BEFORE INSERT)
+CREATE DEFINER=`ramasql_test`@`localhost` TRIGGER tr_t BEFORE INSERT ON t FOR EACH ROW SET NEW.n = NEW.n + 1
+
+-- EVENT ev_pulizia (DISABLED)
+CREATE DEFINER=`ramasql_test`@`localhost` EVENT `ev_pulizia` ON SCHEDULE EVERY 1 DAY STARTS '2026-09-23 07:00:16' ON COMPLETION NOT PRESERVE DISABLE DO DELETE FROM t WHERE id < 0
+

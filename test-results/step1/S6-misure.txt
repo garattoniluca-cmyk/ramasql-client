@@ -1,5 +1,5 @@
 S6 - tempo di paint su BufferedImage 1600x1000 (30 entita', 40 relazioni, antialias attivo), 100 ridisegni dopo 30 di riscaldamento
-zoom 100%: media 2.64 ms, massimo 12.98 ms
-zoom  50%: media 1.68 ms, massimo 3.67 ms
-zoom 200%: media 1.31 ms, massimo 2.13 ms
+zoom 100%: media 1.70 ms, massimo 2.58 ms
+zoom  50%: media 1.04 ms, massimo 1.64 ms
+zoom 200%: media 1.24 ms, massimo 2.01 ms
 java 25.0.4.1, 12 processori logici

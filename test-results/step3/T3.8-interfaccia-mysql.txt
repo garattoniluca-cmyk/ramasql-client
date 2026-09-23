@@ -1,0 +1,17 @@
+T3.8 — registro esportato e rieseguito, su MySQL
+Origine: ramasql_test_s3_reg_a_65gt4j · copia (vuota): ramasql_test_s3_reg_b_fperj6
+
+1) fixture biblioteca.sql caricata con l'esecutore del client: 15 istruzioni nel registro
+2) dal navigatore: rinomina autori→scrittori, svuota prestiti, elimina libri_autori (OK), elimina editori (rifiutata: ERRORE 3730)
+3) Esporta… → T3.8-registro-interfaccia-mysql.sql (1224 righe; USE e DROP TABLE editori commentati)
+4) rieseguito con l'esecutore su ramasql_test_s3_reg_b_fperj6: 17 istruzioni, tutte OK
+
+   editori: TableDef uguali (colonne 3, indici 2, FK 0, AUTO_INCREMENT 21)
+   libri: TableDef uguali (colonne 6, indici 3, FK 1, AUTO_INCREMENT 201)
+   prestiti: TableDef uguali (colonne 5, indici 3, FK 2, AUTO_INCREMENT null)
+   scrittori: TableDef uguali (colonne 4, indici 2, FK 0, AUTO_INCREMENT 51)
+   soci: TableDef uguali (colonne 6, indici 2, FK 0, AUTO_INCREMENT 101)
+   viste: [v_libri_editori, v_prestiti_aperti] in entrambi
+   CHECKSUM TABLE origine: {editori=710156757, libri=1572190157, prestiti=0, scrittori=3672474074, soci=1398722941}
+   CHECKSUM TABLE copia:   {editori=710156757, libri=1572190157, prestiti=0, scrittori=3672474074, soci=1398722941}
+Esito: stesso risultato finale (nessuna differenza, AUTO_INCREMENT compreso)

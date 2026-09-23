@@ -15,6 +15,9 @@ import java.awt.Toolkit;
 import java.awt.event.MouseWheelEvent;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.function.Consumer;
 
 import javax.swing.UIManager;
 
@@ -34,6 +37,7 @@ public final class SettingsController {
     private final Prompts prompts;
     private final AppSettings.Loading loading;
     private AppSettings settings;
+    private final List<Consumer<AppSettings>> listeners = new CopyOnWriteArrayList<>();
 
     /** Legge le impostazioni; un file rovinato si mette da parte (il problema resta in {@link #loading()}). */
     public SettingsController(Path dataDirectory, Prompts prompts) {
@@ -60,6 +64,11 @@ public final class SettingsController {
         }
     }
 
+    /** Chi usa le impostazioni (es. il limite di righe dell'esecutore) viene avvisato quando cambiano. */
+    public void addListener(Consumer<AppSettings> listener) {
+        listeners.add(listener);
+    }
+
     /** Ctrl+rotella: un punto in più o in meno, entro i limiti. */
     public void changeFontSize(int delta) {
         AppSettings changed = settings.withFontSize(settings.fontSize() + delta);
@@ -79,6 +88,7 @@ public final class SettingsController {
         if (fontChanged) {
             applyFont();
         }
+        listeners.forEach(l -> l.accept(settings));
     }
 
     /** Applica la dimensione del carattere a tutte le finestre aperte e a quelle future. */

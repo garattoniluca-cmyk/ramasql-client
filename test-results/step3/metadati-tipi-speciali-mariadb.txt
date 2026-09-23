@@ -1,0 +1,9 @@
+Metadati dei tipi speciali su MariaDB
+server: 11.5.2-MariaDB
+colonne: id INT UNSIGNED; codice INT(6) UNSIGNED ZEROFILL; attivo TINYINT(1); stato ENUM('bozza','pubblicato','l''archivio'); dati JSON; titolo VARCHAR(200); testo TEXT; anno SMALLINT; id_categoria INT UNSIGNED; modificato TIMESTAMP ON UPDATE CURRENT_TIMESTAMP; 
+indici modificabili: [IndexDef[name=PRIMARY, kind=PRIMARY, columns=[id]], IndexDef[name=ix_categoria, kind=INDEX, columns=[id_categoria]], IndexDef[name=uq_codice, kind=UNIQUE, columns=[codice]]]
+indici in sola lettura (navigatore): ft_testo [FULLTEXT] (titolo,testo); ix_anno_desc [DESCENDING] (anno DESC); ix_titolo_prefisso [PREFIX] (titolo(20)); 
+elementi avanzati (testo del server): [FULLTEXT KEY `ft_testo` (`titolo`,`testo`), KEY `ix_anno_desc` (`anno` DESC), KEY `ix_titolo_prefisso` (`titolo`(20))]
+FK con azioni omesse: ON DELETE RESTRICT, ON UPDATE RESTRICT
+ALTER generato: ALTER TABLE `<catalogo>`.`articoli` MODIFY COLUMN `codice` INT(6) UNSIGNED ZEROFILL NOT NULL COMMENT 'codice di magazzino'
+dopo l'ALTER: ZEROFILL true, indici speciali invariati, codice 42 letto dal server come «000042» (INT(6) ZEROFILL)

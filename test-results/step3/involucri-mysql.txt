@@ -1,0 +1,4 @@
+Involucri che eseguono un'altra istruzione, su MySQL
+SET STATEMENT max_statement_time=1 FOR DELETE FROM t → rischio DESTRUCTIVE, da riscrivere «t»; esito ERRORE 1064; righe rimaste: 3 su 3, somma di x: 6
+EXPLAIN ANALYZE DELETE t FROM t JOIN t AS u ON u.id = t.id → rischio DESTRUCTIVE, da riscrivere «t»; esito OK; righe rimaste: 3 su 3, somma di x: 6
+EXPLAIN ANALYZE DELETE FROM t → rischio DESTRUCTIVE, da riscrivere «t»; esito OK; righe rimaste: 3 su 3, somma di x: 6

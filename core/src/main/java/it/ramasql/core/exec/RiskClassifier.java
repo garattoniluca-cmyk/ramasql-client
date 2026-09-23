@@ -22,7 +22,9 @@ import java.util.Set;
  * UPDATE/DELETE <b>senza</b> WHERE, {@code ALTER … DROP COLUMN/PARTITION}, {@code CREATE OR REPLACE TABLE}
  * → {@link RiskLevel#DESTRUCTIVE}. Stringhe, identificatori tra backtick e commenti sono ignorati: un
  * {@code WHERE} scritto lì dentro, o dentro una sottoquery, non conta. Un'istruzione non riconosciuta vale
- * MODIFIES (prudenza); un testo con più istruzioni prende il rischio più alto.
+ * MODIFIES (prudenza); un testo con più istruzioni prende il rischio più alto. Gli involucri che eseguono
+ * un'altra istruzione (MariaDB {@code SET STATEMENT … FOR}, {@code ANALYZE <DML>}, MySQL {@code EXPLAIN ANALYZE})
+ * valgono quanto l'istruzione che contengono ({@link SqlLexer#innermost}).
  */
 public final class RiskClassifier {
 
@@ -46,6 +48,11 @@ public final class RiskClassifier {
     }
 
     private static RiskLevel classifyOne(String statement) {
+        // SET STATEMENT … FOR x, ANALYZE x, EXPLAIN ANALYZE x eseguono x: conta il rischio di x
+        String inner = SqlLexer.innermost(statement);
+        if (inner.length() != statement.length()) {
+            return classifyOne(inner);
+        }
         List<Token> tokens = tokenize(statement);
         int first = 0;
         while (first < tokens.size() && tokens.get(first).isOpenParen()) {

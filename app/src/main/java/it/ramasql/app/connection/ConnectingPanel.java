@@ -16,40 +16,50 @@ import java.awt.GridBagLayout;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
-import javax.swing.UIManager;
 
 import it.ramasql.app.Texts;
+import it.ramasql.app.theme.AppIcons;
+import it.ramasql.app.theme.Styles;
+import it.ramasql.app.theme.Tokens;
 import it.ramasql.core.connection.ConnectionProfile;
 
-/** Attesa della connessione: a chi ci si sta collegando, un indicatore che si muove e il pulsante <em>Annulla</em>. */
+/**
+ * Attesa della connessione: il cilindro del database, a chi ci si sta collegando, un indicatore sottile che si muove
+ * e il pulsante <em>Annulla</em>. Tutto al centro, su {@code bg.window}.
+ */
 public final class ConnectingPanel extends JPanel {
 
     private static final long serialVersionUID = 1L;
 
-    private final JLabel title = new JLabel();
+    private final JLabel title = Styles.text(new JLabel(), "heading", Tokens.TEXT_PRIMARY);
     private final JLabel address = new JLabel();
     private final JButton cancel = new JButton(Texts.get("connecting.cancel"));
 
     public ConnectingPanel(ConnectionController controller) {
         super(new GridBagLayout());
-        title.putClientProperty("FlatLaf.styleClass", "h2");
-        address.setForeground(UIManager.getColor("Label.disabledForeground"));
+        setBackground(Tokens.BG_WINDOW);
+        address.setForeground(Tokens.TEXT_SECONDARY);
+        JLabel image = new JLabel(AppIcons.get(AppIcons.TREE_CATALOG, 48));
         JProgressBar progress = new JProgressBar();
         progress.setIndeterminate(true);
-        progress.setMaximumSize(new Dimension(320, 6));
-        progress.setPreferredSize(new Dimension(320, 6));
+        Dimension bar = new Dimension(Tokens.px(280), Tokens.px(6));
+        progress.setMaximumSize(bar);
+        progress.setPreferredSize(bar);
         cancel.setName("connecting.cancel");
         cancel.addActionListener(e -> controller.cancelConnecting());
 
         JPanel box = new JPanel();
         box.setLayout(new BoxLayout(box, BoxLayout.Y_AXIS));
         box.setOpaque(false);
-        for (Component c : new Component[] {title, Box.createVerticalStrut(6), address, Box.createVerticalStrut(24),
-                progress, Box.createVerticalStrut(24), cancel}) {
-            if (c instanceof javax.swing.JComponent jc) {
+        for (Component c : new Component[] {image, Box.createVerticalStrut(Tokens.px(Tokens.SPACE_16)), title,
+                Box.createVerticalStrut(Tokens.px(Tokens.SPACE_4)), address,
+                Box.createVerticalStrut(Tokens.px(Tokens.SPACE_24)), progress,
+                Box.createVerticalStrut(Tokens.px(Tokens.SPACE_24)), cancel}) {
+            if (c instanceof JComponent jc) {
                 jc.setAlignmentX(Component.CENTER_ALIGNMENT);
             }
             box.add(c);

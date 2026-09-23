@@ -5,9 +5,9 @@ TLS della sessione JDBC (Ssl_cipher) = <nessuno: connessione in chiaro>
 caching_sha2_password esercitato da questo test = NO
 
 --- caching_sha2_password: utente ramasql_test_sha2 (solo MySQL), driver MariaDB Connector/J ---
-(e) senza allowPublicKeyRetrieval e senza TLS, primo tentativo = RIUSCITO (cache del server calda: percorso «veloce»)
-(e) subito dopo, con allowPublicKeyRetrieval=true senza TLS = RIUSCITO: percorso «veloce» (la cache era già calda: il percorso completo NON è stato esercitato ora)
-(e) senza parametri, di nuovo (cache già calda: nessuna autenticazione completa in questa esecuzione) = RIUSCITO (percorso «veloce» dalla cache)
+(e) senza allowPublicKeyRetrieval e senza TLS, primo tentativo = FALLITO (cache fredda: serve l'autenticazione «completa») con [0/S1009] RSA public key is not available client side (option serverRsaPublicKeyFile not set)
+(e) subito dopo, con allowPublicKeyRetrieval=true senza TLS = RIUSCITO: percorso «completo» con scambio della chiave RSA (la cache era fredda)
+(e) senza parametri, DOPO un'autenticazione completa riuscita = RIUSCITO (percorso «veloce» dalla cache)
 plugin dell'utente sha2 (da SHOW CREATE USER) = caching_sha2_password
 (a) allowPublicKeyRetrieval=true, senza TLS = RIUSCITO, Ssl_cipher vuoto
 (b) sslMode=trust = RIUSCITO, Ssl_cipher=TLS_AES_256_GCM_SHA384

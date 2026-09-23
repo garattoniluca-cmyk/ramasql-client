@@ -1,0 +1,23 @@
+T3.7 — conferma rafforzata, su MariaDB
+DROP TABLE `ramasql_test_s3_forte_q66q5i`.`libri`; → livello STRONG, da riscrivere «libri»
+   «libr» → Esegui disabilitato, clic ignorato
+   «LIBRI» → Esegui disabilitato, clic ignorato
+   «librix» → Esegui disabilitato, clic ignorato
+   «CONFERMO» → Esegui disabilitato, clic ignorato
+   «libri» → Esegui abilitato; l'utente preme comunque Annulla
+TRUNCATE TABLE `ramasql_test_s3_forte_q66q5i`.`prestiti`; → livello STRONG, da riscrivere «prestiti»
+   «prestit» → Esegui disabilitato, clic ignorato
+   «PRESTITI» → Esegui disabilitato, clic ignorato
+   «prestitix» → Esegui disabilitato, clic ignorato
+   «CONFERMO» → Esegui disabilitato, clic ignorato
+   «prestiti» → Esegui abilitato; l'utente preme comunque Annulla
+DROP DATABASE `ramasql_test_s3_forte_q66q5i`; → livello STRONG, da riscrivere «ramasql_test_s3_forte_q66q5i»
+   «ramasql_test_s3_forte_q66q5» → Esegui disabilitato, clic ignorato
+   «RAMASQL_TEST_S3_FORTE_Q66Q5I» → Esegui disabilitato, clic ignorato
+   «ramasql_test_s3_forte_q66q5ix» → Esegui disabilitato, clic ignorato
+   «CONFERMO» → Esegui disabilitato, clic ignorato
+   «ramasql_test_s3_forte_q66q5i» → Esegui abilitato; l'utente preme comunque Annulla
+Dopo tre anteprime annullate: registro 0 istruzioni; server: catalogo e libri presenti, prestiti 500 righe (invariato)
+Rinomina (non distruttiva): livello CONFIRM, nessun nome da riscrivere, Esegui predefinito
+Svuota prestiti con «prestiti» riscritto: eseguito, registro 1 istruzione, server 0 righe
+Schermate: T3.7-libri/prestiti/catalogo-mariadb.png, conferma-rafforzata.png

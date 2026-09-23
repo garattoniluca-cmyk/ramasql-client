@@ -1,0 +1,7 @@
+T3.8 con fallimento parziale su MySQL
+DROP TABLE x, manca → errore 1051; x nell'origine dopo l'errore: presente (DDL atomico)
+registro esportato: istruzione commentata con «(non riuscita: può essere stata applicata in parte: verifica sul server prima di rieseguire lo script)»
+tabelle origine: [x, y] · copia rieseguita: [x, y]
+CHECKSUM origine: {x=1531596814, y=2442201128}
+CHECKSUM copia:   {x=1531596814, y=2442201128}
+esito: STESSO RISULTATO

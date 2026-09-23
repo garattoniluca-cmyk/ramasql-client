@@ -1,0 +1,8 @@
+T3.8 (lato core) su MariaDB
+registro: 25 istruzioni (24 riuscite e rieseguite, le altre commentate)
+tabelle: [autori, editori, libri, libri_autori, note, prestiti, soci] — TableDef identici (colonne, indici, FK, engine, charset, commenti)
+AUTO_INCREMENT: uguali tranne soci (origine 102, copia 101): l'INSERT fallito per chiave duplicata consuma un valore in InnoDB, e nello script è commentato
+viste: [v_prestiti_aperti]
+CHECKSUM TABLE origine: {autori=3672474074, editori=710156757, libri=3628497162, libri_autori=1457383748, note=1902830926, prestiti=4231633484, soci=1016731636}
+CHECKSUM TABLE copia:   {autori=3672474074, editori=710156757, libri=3628497162, libri_autori=1457383748, note=1902830926, prestiti=4231633484, soci=1016731636}
+esito: STESSO RISULTATO

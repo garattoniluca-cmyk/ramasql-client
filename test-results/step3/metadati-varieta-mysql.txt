@@ -1,0 +1,228 @@
+{
+  "name" : "varieta",
+  "engine" : "InnoDB",
+  "charset" : "utf8mb4",
+  "collation" : "utf8mb4_unicode_ci",
+  "comment" : "prova",
+  "autoIncrement" : 5,
+  "columns" : [ {
+    "name" : "id",
+    "type" : "INT UNSIGNED",
+    "nullable" : false,
+    "default" : "NONE",
+    "autoIncrement" : true,
+    "comment" : ""
+  }, {
+    "name" : "a",
+    "type" : "VARCHAR(10)",
+    "nullable" : false,
+    "default" : "LITERAL:IT",
+    "autoIncrement" : false,
+    "comment" : ""
+  }, {
+    "name" : "b",
+    "type" : "VARCHAR(10)",
+    "nullable" : true,
+    "default" : "NULL",
+    "autoIncrement" : false,
+    "comment" : ""
+  }, {
+    "name" : "c",
+    "type" : "VARCHAR(10)",
+    "nullable" : false,
+    "default" : "NONE",
+    "autoIncrement" : false,
+    "comment" : ""
+  }, {
+    "name" : "d",
+    "type" : "TIMESTAMP",
+    "nullable" : false,
+    "default" : "EXPRESSION:CURRENT_TIMESTAMP",
+    "autoIncrement" : false,
+    "comment" : "",
+    "onUpdate" : "CURRENT_TIMESTAMP"
+  }, {
+    "name" : "e",
+    "type" : "DECIMAL(6,2)",
+    "nullable" : false,
+    "default" : "LITERAL:0.00",
+    "autoIncrement" : false,
+    "comment" : ""
+  }, {
+    "name" : "f",
+    "type" : "DATETIME(3)",
+    "nullable" : true,
+    "default" : "EXPRESSION:CURRENT_TIMESTAMP(3)",
+    "autoIncrement" : false,
+    "comment" : ""
+  }, {
+    "name" : "g",
+    "type" : "ENUM('a','b''c')",
+    "nullable" : false,
+    "default" : "LITERAL:a",
+    "autoIncrement" : false,
+    "comment" : ""
+  }, {
+    "name" : "h",
+    "type" : "TINYINT(1)",
+    "nullable" : false,
+    "default" : "LITERAL:1",
+    "autoIncrement" : false,
+    "comment" : ""
+  }, {
+    "name" : "i",
+    "type" : "INT",
+    "nullable" : true,
+    "default" : "NONE",
+    "autoIncrement" : false,
+    "comment" : "",
+    "generated" : true
+  }, {
+    "name" : "j",
+    "type" : "VARCHAR(5)",
+    "nullable" : false,
+    "default" : "LITERAL:",
+    "autoIncrement" : false,
+    "comment" : ""
+  }, {
+    "name" : "k",
+    "type" : "TEXT",
+    "nullable" : true,
+    "default" : "NULL",
+    "autoIncrement" : false,
+    "comment" : ""
+  }, {
+    "name" : "l",
+    "type" : "BIGINT",
+    "nullable" : true,
+    "default" : "NULL",
+    "autoIncrement" : false,
+    "comment" : ""
+  }, {
+    "name" : "m",
+    "type" : "CHAR(3)",
+    "nullable" : true,
+    "default" : "NULL",
+    "autoIncrement" : false,
+    "comment" : "commento l'x",
+    "charset" : "latin1",
+    "collation" : "latin1_swedish_ci"
+  }, {
+    "name" : "n",
+    "type" : "JSON",
+    "nullable" : true,
+    "default" : "NULL",
+    "autoIncrement" : false,
+    "comment" : ""
+  }, {
+    "name" : "o",
+    "type" : "VARCHAR(20)",
+    "nullable" : true,
+    "default" : "LITERAL:NULL",
+    "autoIncrement" : false,
+    "comment" : ""
+  }, {
+    "name" : "p",
+    "type" : "DATE",
+    "nullable" : true,
+    "default" : "LITERAL:2020-01-01",
+    "autoIncrement" : false,
+    "comment" : ""
+  }, {
+    "name" : "q",
+    "type" : "INT",
+    "nullable" : true,
+    "default" : "EXPRESSION:1 + 1",
+    "autoIncrement" : false,
+    "comment" : ""
+  }, {
+    "name" : "r",
+    "type" : "YEAR",
+    "nullable" : true,
+    "default" : "NULL",
+    "autoIncrement" : false,
+    "comment" : ""
+  }, {
+    "name" : "s",
+    "type" : "BIT(1)",
+    "nullable" : false,
+    "default" : "LITERAL:b'1'",
+    "autoIncrement" : false,
+    "comment" : ""
+  } ],
+  "indexes" : [ {
+    "name" : "PRIMARY",
+    "kind" : "PRIMARY",
+    "columns" : [ "id" ]
+  }, {
+    "name" : "ix",
+    "kind" : "INDEX",
+    "columns" : [ "c" ]
+  }, {
+    "name" : "uq",
+    "kind" : "UNIQUE",
+    "columns" : [ "a", "b" ]
+  } ],
+  "foreignKeys" : [ ],
+  "advanced" : [ "`i` int GENERATED ALWAYS AS ((`h` * 2)) VIRTUAL", "CONSTRAINT `chk` CHECK ((`e` >= 0))" ]
+}
+{
+  "name" : "partizionata",
+  "engine" : "InnoDB",
+  "charset" : "utf8mb4",
+  "collation" : "utf8mb4_unicode_ci",
+  "comment" : "",
+  "autoIncrement" : null,
+  "columns" : [ {
+    "name" : "id",
+    "type" : "INT",
+    "nullable" : false,
+    "default" : "NONE",
+    "autoIncrement" : false,
+    "comment" : ""
+  } ],
+  "indexes" : [ {
+    "name" : "PRIMARY",
+    "kind" : "PRIMARY",
+    "columns" : [ "id" ]
+  } ],
+  "foreignKeys" : [ ],
+  "advanced" : [ "/*!50100 PARTITION BY RANGE (`id`)\n(PARTITION p0 VALUES LESS THAN (10) ENGINE = InnoDB,\nPARTITION p1 VALUES LESS THAN MAXVALUE ENGINE = InnoDB) */" ]
+}
+{
+  "name" : "testi",
+  "engine" : "InnoDB",
+  "charset" : "utf8mb4",
+  "collation" : "utf8mb4_unicode_ci",
+  "comment" : "",
+  "autoIncrement" : null,
+  "columns" : [ {
+    "name" : "id",
+    "type" : "INT",
+    "nullable" : false,
+    "default" : "NONE",
+    "autoIncrement" : false,
+    "comment" : ""
+  }, {
+    "name" : "testo",
+    "type" : "TEXT",
+    "nullable" : true,
+    "default" : "NULL",
+    "autoIncrement" : false,
+    "comment" : ""
+  }, {
+    "name" : "titolo",
+    "type" : "VARCHAR(200)",
+    "nullable" : true,
+    "default" : "NULL",
+    "autoIncrement" : false,
+    "comment" : ""
+  } ],
+  "indexes" : [ {
+    "name" : "PRIMARY",
+    "kind" : "PRIMARY",
+    "columns" : [ "id" ]
+  } ],
+  "foreignKeys" : [ ],
+  "advanced" : [ "FULLTEXT KEY `ft_testo` (`testo`)", "KEY `ix_pref` (`titolo`(10))" ]
+}

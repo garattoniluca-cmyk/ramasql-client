@@ -30,7 +30,7 @@ import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 
-import com.formdev.flatlaf.FlatLightLaf;
+import it.ramasql.app.theme.RamaSqlLaf;
 
 import it.ramasql.core.connection.AppData;
 
@@ -47,7 +47,7 @@ final class UiTestSupport {
     /** Aspetto e lingua come nel programma vero. */
     static void setupLookAndFeel() {
         Locale.setDefault(Locale.ITALIAN);
-        onEdt(FlatLightLaf::setup);
+        onEdt(RamaSqlLaf::setup);
     }
 
     /** Sicurezza: i test non devono mai poter scrivere nella vera cartella dei dati dell'utente. */

@@ -1,0 +1,1 @@
+Esporta… con il registro ordinato per SQL (crescente; poi decrescente con il filtro « si'»): istruzioni esportate nell'ordine di esecuzione [SELECT 'c3 si', SELECT 'a1 si', SELECT 'b2 si']

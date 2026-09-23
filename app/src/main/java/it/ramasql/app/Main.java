@@ -12,7 +12,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import javax.swing.SwingUtilities;
 
-import com.formdev.flatlaf.FlatLightLaf;
+import it.ramasql.app.theme.RamaSqlLaf;
 
 import it.ramasql.core.connection.AppData;
 import it.ramasql.core.connection.AppSettings;
@@ -26,7 +26,7 @@ public final class Main {
         Path dataDirectory = AppData.directory();
         // la lingua vale anche per i testi di Swing (Sì/No/Annulla, finestre dei file)
         Locale.setDefault(Locale.forLanguageTag(AppSettings.load(dataDirectory).language()));
-        FlatLightLaf.setup();
+        RamaSqlLaf.setup();
         SwingUtilities.invokeLater(() -> {
             AtomicReference<App> app = new AtomicReference<>();
             Prompts prompts = new SwingPrompts(

@@ -40,6 +40,9 @@
     <mariadb-jdbc.version>3.5.10</mariadb-jdbc.version>
     <!-- Apache-2.0: JSON di profili e impostazioni (docs/ARCHITECTURE.md §7) -->
     <jackson.version>2.22.2</jackson.version>
+    <!-- BSD-3-Clause: editor SQL (evidenziazione e completamento, docs/ARCHITECTURE.md §7) -->
+    <rsyntaxtextarea.version>4.0.1</rsyntaxtextarea.version>
+    <autocomplete.version>4.0.0</autocomplete.version>
   </properties>
 
   <dependencyManagement>
@@ -63,6 +66,21 @@
         <groupId>com.formdev</groupId>
         <artifactId>flatlaf</artifactId>
         <version>${flatlaf.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.formdev</groupId>
+        <artifactId>flatlaf-extras</artifactId>
+        <version>${flatlaf.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.fifesoft</groupId>
+        <artifactId>rsyntaxtextarea</artifactId>
+        <version>${rsyntaxtextarea.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.fifesoft</groupId>
+        <artifactId>autocomplete</artifactId>
+        <version>${autocomplete.version}</version>
       </dependency>
       <dependency>
         <groupId>org.mariadb.jdbc</groupId>

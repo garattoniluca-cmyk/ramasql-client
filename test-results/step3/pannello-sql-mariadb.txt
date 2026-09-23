@@ -1,0 +1,12 @@
+Pannello SQL su MariaDB
+Script: SELECT 1; SELECT da catalogo inesistente; SELECT 2 → Registro: 2 righe (OK, Errore 1146 evidenziata), terza non tentata
+Messaggi:
+Prova del registro: non riuscito.
+Errore 1146 (SQLSTATE 42S02) dal server: (conn=44) Table 'ramasql_test_s3_inesistente.t' doesn't exist
+Cosa significa: La tabella indicata non esiste nel catalogo in uso: controlla il nome o il catalogo (USE).
+Istruzioni applicate: 1 su 3 (senza transazioni: quelle applicate restano).
+applicata: SELECT 1
+non riuscita: SELECT * FROM `ramasql_test_s3_inesistente`.`t`
+non eseguita: SELECT 2
+Filtro «select 1» → 1 riga; «errore» → 1 riga; doppio clic → appunti «SELECT 1»
+Esporta… con filtro → solo SELECT 1; senza filtro → istruzione fallita commentata
