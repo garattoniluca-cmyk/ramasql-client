@@ -28,30 +28,30 @@ import it.ramasql.core.metadata.CollationInfo;
  * creazione) senza mostrarle, le passa al test che le pilota via API (scrive, preme i pulsanti, le disegna) e
  * restituisce ciò che la finestra ha deciso. Registra tutto ciò che è stato mostrato.
  */
-final class FakeWorkspacePrompts implements WorkspacePrompts {
+public final class FakeWorkspacePrompts implements WorkspacePrompts {
 
     // ---------------------------------------------------------------- finestre modali delle schede
 
     /** Risposta alle conferme locali della griglia («Scartare le modifiche?»); predefinito: no. */
-    boolean gridConfirmAnswer;
+    public boolean gridConfirmAnswer;
     /** File scelto per «Esporta CSV…»; {@code null} = l'utente annulla. */
-    Path csvFile;
+    public Path csvFile;
     /** Testo restituito da «Modifica in una finestra…»; {@code null} = l'utente annulla. */
-    String longText;
+    public String longText;
     /** Gli errori mostrati dalle schede, come «titolo: messaggio». */
-    final List<String> errors = new ArrayList<>();
+    public final List<String> errors = new ArrayList<>();
     /** I messaggi mostrati dall'editor di tabelle. */
-    final List<String> messages = new ArrayList<>();
+    public final List<String> messages = new ArrayList<>();
     /** Risposta alle conferme dell'editor di tabelle; predefinito: sì (i controlli sono già stati fatti). */
-    boolean tableEditorConfirmAnswer = true;
+    public boolean tableEditorConfirmAnswer = true;
     /** Nome digitato nella conferma rafforzata dell'editor SQL; {@code null} = l'utente annulla. */
-    Function<ConfirmationPolicy.Confirmation, String> onConfirmDestructive = c -> null;
+    public Function<ConfirmationPolicy.Confirmation, String> onConfirmDestructive = c -> null;
     /** Scelta alla chiusura di un editor SQL con file non salvato; predefinito: scarta (non scrive su disco). */
-    it.ramasql.app.editor.EditorPrompts.SaveChoice saveChoice =
+    public it.ramasql.app.editor.EditorPrompts.SaveChoice saveChoice =
             it.ramasql.app.editor.EditorPrompts.SaveChoice.DISCARD;
     /** File .sql da aprire e da salvare; {@code null} = l'utente annulla. */
-    Path sqlFileToOpen;
-    Path sqlFileToSave;
+    public Path sqlFileToOpen;
+    public Path sqlFileToSave;
 
     @Override
     public it.ramasql.app.grid.GridPrompts gridPrompts() {
@@ -130,9 +130,9 @@ final class FakeWorkspacePrompts implements WorkspacePrompts {
     }
 
     /** Le domande «Conferma, scarta o resta?» ricevute alla chiusura di una scheda, in ordine. */
-    final List<String> pendingQuestions = new ArrayList<>();
+    public final List<String> pendingQuestions = new ArrayList<>();
     /** Cosa risponde alla domanda di chiusura; predefinito: Resta (non si perde e non si scrive nulla). */
-    java.util.function.Function<String, PendingChoice> onPendingOnClose = q -> PendingChoice.STAY;
+    public java.util.function.Function<String, PendingChoice> onPendingOnClose = q -> PendingChoice.STAY;
 
     @Override
     public PendingChoice askPendingOnClose(String question) {
@@ -141,26 +141,26 @@ final class FakeWorkspacePrompts implements WorkspacePrompts {
     }
 
     /** Un'anteprima mostrata: lo script, la conferma e la scelta fatta nella finestra. */
-    record Shown(SqlScript script, ConfirmationPolicy.Confirmation confirmation, String sqlInDialog,
+    public record Shown(SqlScript script, ConfirmationPolicy.Confirmation confirmation, String sqlInDialog,
             PreviewDialog.Decision decision) {
     }
 
     /** Un «Mostra SQL di creazione». */
-    record CreateSql(String title, String statement, String sql) {
+    public record CreateSql(String title, String statement, String sql) {
     }
 
     /** Cosa fare con la finestra d'anteprima (sull'EDT); predefinito: Annulla. */
-    Consumer<PreviewDialog> onPreview = d -> d.cancelButton().doClick();
+    public Consumer<PreviewDialog> onPreview = d -> d.cancelButton().doClick();
     /** Cosa fare con la finestra «Nuovo catalogo»; predefinito: Annulla. */
-    Consumer<CreateCatalogDialog> onNewCatalog = d -> d.buttons().cancelButton().doClick();
-    Function<String, String> onRename = current -> null;
-    Consumer<ShowCreateDialog> onShowCreate = d -> { };
-    LogExport nextExport;
+    public Consumer<CreateCatalogDialog> onNewCatalog = d -> d.buttons().cancelButton().doClick();
+    public Function<String, String> onRename = current -> null;
+    public Consumer<ShowCreateDialog> onShowCreate = d -> { };
+    public LogExport nextExport;
 
-    final List<Shown> previews = new ArrayList<>();
-    final List<CreateSql> createSql = new ArrayList<>();
-    final List<String> clipboard = new ArrayList<>();
-    final List<String> exportRequests = new ArrayList<>();
+    public final List<Shown> previews = new ArrayList<>();
+    public final List<CreateSql> createSql = new ArrayList<>();
+    public final List<String> clipboard = new ArrayList<>();
+    public final List<String> exportRequests = new ArrayList<>();
 
     @Override
     public PreviewDialog.Decision preview(SqlScript script, ConfirmationPolicy.Confirmation confirmation) {
@@ -212,7 +212,7 @@ final class FakeWorkspacePrompts implements WorkspacePrompts {
         clipboard.add(text);
     }
 
-    static LogExport export(Path file, String unqualify) {
+    public static LogExport export(Path file, String unqualify) {
         return new LogExport(file, unqualify);
     }
 }

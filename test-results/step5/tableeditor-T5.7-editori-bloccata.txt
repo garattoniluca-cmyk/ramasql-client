@@ -1,0 +1,2 @@
+✘ «editori» non può passare a MyISAM: MyISAM non supporta le chiavi esterne.
+È riferita dalle chiavi esterne di altre tabelle: libri.fk_libri_editori. Eliminale prima (dall'editor di quelle tabelle), poi cambia engine.

@@ -33,14 +33,14 @@ import it.ramasql.core.exec.ScriptResult;
 import it.ramasql.core.exec.SqlLog;
 
 /** Il programma vero (finestra mai mostrata), connesso a un server di test dalla sua tessera. */
-final class ClientApp implements AutoCloseable {
+public final class ClientApp implements AutoCloseable {
 
-    static final long TIMEOUT = 30_000;
+    public static final long TIMEOUT = 30_000;
 
-    final DbServer server;
-    final App app;
-    final QuietPrompts prompts;
-    final FakeWorkspacePrompts ws;
+    public final DbServer server;
+    public final App app;
+    public final QuietPrompts prompts;
+    public final FakeWorkspacePrompts ws;
 
     private ClientApp(DbServer server, App app, QuietPrompts prompts, FakeWorkspacePrompts ws) {
         this.server = server;
@@ -50,7 +50,7 @@ final class ClientApp implements AutoCloseable {
     }
 
     /** Avvia il programma e si connette (clic sulla tessera, password dal test); aspetta i cataloghi nel navigatore. */
-    static ClientApp connect(DbServer server, Path dataDir) throws Exception {
+    public static ClientApp connect(DbServer server, Path dataDir) throws Exception {
         ProfileStore store = new ProfileStore(dataDir);
         store.add(server.profile());
         QuietPrompts prompts = new QuietPrompts(server);
@@ -65,40 +65,40 @@ final class ClientApp implements AutoCloseable {
         return a;
     }
 
-    MainFrame frame() {
+    public MainFrame frame() {
         return app.frame();
     }
 
-    NavigatorPanel nav() {
+    public NavigatorPanel nav() {
         return app.frame().navigator();
     }
 
-    SqlPanel panel() {
+    public SqlPanel panel() {
         return app.frame().sqlPanel();
     }
 
-    SessionWorkspace workspace() {
+    public SessionWorkspace workspace() {
         return app.frame().workspace();
     }
 
-    SqlLog log() {
+    public SqlLog log() {
         return app.frame().sqlLog();
     }
 
     /** Navigatore senza letture in corso e nessun esito d'esecuzione in sospeso. */
-    void waitIdle() {
+    public void waitIdle() {
         waitUntil("navigatore e pipeline a riposo", TIMEOUT, () -> nav().isIdle()
                 && (workspace() == null || !workspace().pipeline().isBusy()));
     }
 
     /** Il nodo, aspettando che compaia. */
-    TreePath node(NavNode.Kind kind, String catalog, String name) {
+    public TreePath node(NavNode.Kind kind, String catalog, String name) {
         waitUntil("nodo " + kind + " " + catalog + "." + name, TIMEOUT, () -> nav().find(kind, catalog, name) != null);
         return fromEdt(() -> nav().find(kind, catalog, name));
     }
 
     /** Apre il nodo e aspetta che i suoi figli siano letti (nessun «caricamento…»). */
-    TreePath expand(NavNode.Kind kind, String catalog, String name) {
+    public TreePath expand(NavNode.Kind kind, String catalog, String name) {
         node(kind, catalog, name);
         onEdt(() -> nav().tree().expandPath(nav().find(kind, catalog, name)));
         waitUntil("figli letti di " + kind + " " + catalog + "." + name, TIMEOUT, () -> {
@@ -113,7 +113,7 @@ final class ClientApp implements AutoCloseable {
     }
 
     /** Clic su una voce del menu contestuale del nodo. */
-    void menu(NavNode.Kind kind, String catalog, String name, String itemName) {
+    public void menu(NavNode.Kind kind, String catalog, String name, String itemName) {
         node(kind, catalog, name);
         onEdt(() -> {
             TreePath path = nav().find(kind, catalog, name);
@@ -123,7 +123,7 @@ final class ClientApp implements AutoCloseable {
         });
     }
 
-    static JMenuItem menuItem(JPopupMenu menu, String name) {
+    public static JMenuItem menuItem(JPopupMenu menu, String name) {
         if (menu == null) {
             throw new AssertionError("nessun menu contestuale");
         }
@@ -136,7 +136,7 @@ final class ClientApp implements AutoCloseable {
     }
 
     /** Aspetta l'esito dell'ultima proposta (null se annullata o copiata). */
-    ScriptResult awaitLastProposal() throws Exception {
+    public ScriptResult awaitLastProposal() throws Exception {
         CompletableFuture<ScriptResult> f = fromEdt(() -> workspace().pipeline().lastProposal());
         ScriptResult r = f.get(TIMEOUT, TimeUnit.MILLISECONDS);
         waitIdle();

@@ -51,7 +51,10 @@ public final class WorkTabs {
 
     private final JTabbedPane tabs;
     private final WorkspacePrompts prompts;
+    /** Il titolo di ogni scheda, per aggiornarlo quando la tabella cambia nome o viene creata. */
+    private final java.util.Map<Component, JLabel> titles = new java.util.HashMap<>();
     private int queryCounter;
+    private int newTableCounter;
 
     public WorkTabs(JTabbedPane tabs, WorkspacePrompts prompts) {
         this.tabs = Objects.requireNonNull(tabs, "tabs");
@@ -123,12 +126,19 @@ public final class WorkTabs {
      */
     public TableEditor openTableEditor(SessionWorkspace workspace, TableDef original, String catalog,
             TableEditorPrompts editorPrompts) {
-        String key = original == null ? "nuova" : original.name();
-        String name = tabName("tableEditor", catalog, key);
-        TableEditor existing = (TableEditor) find(name);
-        if (existing != null) {
-            tabs.setSelectedComponent(existing);
-            return existing;
+        // una tabella nuova apre sempre una scheda sua (due «Nuova tabella…» sono due tabelle diverse);
+        // una tabella esistente ne ha una sola, che si riporta davanti
+        String name;
+        if (original == null) {
+            newTableCounter++;
+            name = tabName("tableEditor", catalog, "nuova" + newTableCounter);
+        } else {
+            name = tabName("tableEditor", catalog, original.name());
+            TableEditor existing = (TableEditor) find(name);
+            if (existing != null) {
+                tabs.setSelectedComponent(existing);
+                return existing;
+            }
         }
         TableEditor editor = new TableEditor(original, catalog, workspace.session().serverInfo(),
                 new MetadataCatalogTables(workspace.reader(), catalog), editorPrompts,
@@ -138,6 +148,8 @@ public final class WorkTabs {
         String title = original == null ? Texts.get("tabs.tableEditor.new")
                 : Texts.get("tabs.tableEditor.title", original.name());
         add(editor, title, catalog + (original == null ? "" : "." + original.name()));
+        // appena la tabella prende (o cambia) nome, il titolo della scheda lo segue
+        editor.setOnChange(() -> retitle(editor, Texts.get("tabs.tableEditor.title", editor.editedTable().name())));
         return editor;
     }
 
@@ -183,6 +195,7 @@ public final class WorkTabs {
                 case DISCARD -> editor.revert();
             }
         }
+        titles.remove(tab);
         tabs.remove(index);
         return true;
     }
@@ -194,6 +207,7 @@ public final class WorkTabs {
                 editor.dispose();
             }
         }
+        titles.clear();
         tabs.removeAll();
     }
 
@@ -245,8 +259,21 @@ public final class WorkTabs {
         tabs.addTab(title, tab);
         int index = tabs.getTabCount() - 1;
         tabs.setTabComponentAt(index, header(tab, title, tooltip));
+        tabs.setTitleAt(index, title);
         tabs.setToolTipTextAt(index, tooltip);
         tabs.setSelectedIndex(index);
+    }
+
+    /** Cambia il titolo mostrato sulla linguetta (la scheda resta quella). */
+    private void retitle(Component tab, String title) {
+        JLabel label = titles.get(tab);
+        if (label != null && !title.equals(label.getText())) {
+            label.setText(title);
+            int index = tabs.indexOfComponent(tab);
+            if (index >= 0) {
+                tabs.setTitleAt(index, title);
+            }
+        }
     }
 
     private JComponent header(Component tab, String title, String tooltip) {
@@ -254,6 +281,7 @@ public final class WorkTabs {
         panel.setOpaque(false);
         JLabel label = new JLabel(title);
         label.setToolTipText(tooltip);
+        titles.put(tab, label);
         panel.add(label);
         JButton close = new JButton("×");
         close.setName("tabs.close." + tab.getName());

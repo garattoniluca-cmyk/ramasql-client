@@ -1,0 +1,781 @@
+# T5.2 — andata e ritorno di TableDiff su MySQL
+# Classe: it.ramasql.it.step5.T52AndataRitornoTest (step5, it)
+# Per caso: SQL applicato con SqlExecutor, esito, confronto riletto/atteso e diff residuo.
+# Casi eseguiti: 39, superati: 39
+# Atteso = modello chiesto + sole regole su ciò che decide il server (javadoc della classe):
+#  R1 catalogo di prova; R2 colonne numerate 1..n; R3 engine/charset/collation/AUTO_INCREMENT
+#  non specificati = scelti dal server; R4 charset/collation di colonna uguali alla tabella =
+#  ereditati; R5 NULL senza default = DEFAULT NULL, NOT NULL con DEFAULT NULL = nessun default;
+#  R6 default numerici per valore; R7 NOW()/current_timestamp() = CURRENT_TIMESTAMP;
+#  R8 ordine di indici e FK del lettore. Nessun altro campo è escluso dal confronto (equals).
+
+## Caso 1 — nuova: tabella completa
+server: MySQL 8.0.40
+SQL applicato (CREATE):
+    CREATE TABLE `libri` (
+      `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+      `titolo` VARCHAR(100) NOT NULL,
+      `prezzo` DECIMAL(8,2) NULL,
+      `stato` ENUM('nuovo','usato') NOT NULL DEFAULT 'nuovo',
+      `note` TEXT NULL,
+      `creato` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+esecuzione: OK (1 istruzioni)
+riletta = attesa (equals): sì
+riletta: `libri` InnoDB utf8mb4_general_ci [1:id INT UNSIGNED NOT NULL AI, 2:titolo VARCHAR(100) NOT NULL, 3:prezzo DECIMAL(8,2) NULL DEFAULT NULL, 4:stato ENUM('nuovo','usato') NOT NULL DEFAULT 'nuovo', 5:note TEXT NULL DEFAULT NULL, 6:creato DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP] [PRIMARY PRIMARY[id]]
+diff(riletta, attesa): 0 istruzioni
+ESITO: OK
+
+## Caso 2 — nuova: nomi con spazi e parole riservate
+server: MySQL 8.0.40
+SQL applicato (CREATE):
+    CREATE TABLE `ordine dettagli` (
+      `order` INT NOT NULL,
+      `select` VARCHAR(10) NULL,
+      `group by` DATE NULL,
+      PRIMARY KEY (`order`)
+    );
+esecuzione: OK (1 istruzioni)
+riletta = attesa (equals): sì
+riletta: `ordine dettagli` InnoDB utf8mb4_unicode_ci [1:order INT NOT NULL, 2:select VARCHAR(10) NULL DEFAULT NULL, 3:group by DATE NULL DEFAULT NULL] [PRIMARY PRIMARY[order]]
+diff(riletta, attesa): 0 istruzioni
+ESITO: OK
+
+## Caso 3 — nuova: MyISAM, commenti con apostrofo, AUTO_INCREMENT iniziale
+server: MySQL 8.0.40
+SQL applicato (CREATE):
+    CREATE TABLE `registro` (
+      `id` INT NOT NULL AUTO_INCREMENT COMMENT 'l''identificativo',
+      PRIMARY KEY (`id`)
+    ) ENGINE=MyISAM AUTO_INCREMENT=1000 COMMENT='Registro dell''aula';
+esecuzione: OK (1 istruzioni)
+riletta = attesa (equals): sì
+riletta: `registro` MyISAM utf8mb4_unicode_ci AI=1000 COMMENT='Registro dell'aula' [1:id INT NOT NULL AI 'l'identificativo'] [PRIMARY PRIMARY[id]]
+diff(riletta, attesa): 0 istruzioni
+ESITO: OK
+
+## Caso 4 — nuova: tutti i tipi di default
+server: MySQL 8.0.40
+SQL applicato (CREATE):
+    CREATE TABLE `eventi` (
+      `id` CHAR(36) NOT NULL DEFAULT (uuid()),
+      `titolo` VARCHAR(50) NOT NULL DEFAULT '',
+      `posti` INT NOT NULL DEFAULT 0,
+      `sala` VARCHAR(20) NULL DEFAULT NULL,
+      `creato` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      `modificato` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      `preciso` DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+      PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB;
+esecuzione: OK (1 istruzioni)
+riletta = attesa (equals): sì
+riletta: `eventi` InnoDB utf8mb4_unicode_ci [1:id CHAR(36) NOT NULL DEFAULT uuid(), 2:titolo VARCHAR(50) NOT NULL DEFAULT '', 3:posti INT NOT NULL DEFAULT '0', 4:sala VARCHAR(20) NULL DEFAULT NULL, 5:creato DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, 6:modificato TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, 7:preciso DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6)] [PRIMARY PRIMARY[id]]
+diff(riletta, attesa): 0 istruzioni
+ESITO: OK
+
+## Caso 5 — nuova: charset e collation di colonna
+server: MySQL 8.0.40
+SQL applicato (CREATE):
+    CREATE TABLE `codici` (
+      `codice` VARCHAR(10) COLLATE utf8mb4_bin NOT NULL,
+      `vecchio` VARCHAR(10) CHARACTER SET latin1 COLLATE latin1_swedish_ci NULL,
+      `normale` VARCHAR(10) NULL
+    ) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+esecuzione: OK (1 istruzioni)
+riletta = attesa (equals): sì
+riletta: `codici` InnoDB utf8mb4_general_ci [1:codice VARCHAR(10) NOT NULL utf8mb4_bin, 2:vecchio VARCHAR(10) NULL DEFAULT NULL latin1_swedish_ci, 3:normale VARCHAR(10) NULL DEFAULT NULL] []
+diff(riletta, attesa): 0 istruzioni
+ESITO: OK
+
+## Caso 6 — aggiungi colonna in mezzo
+server: MySQL 8.0.40
+tabella di partenza:
+    CREATE TABLE `libri` (
+      `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+      `titolo` VARCHAR(100) NOT NULL,
+      `prezzo` DECIMAL(8,2) NULL,
+      `stato` ENUM('nuovo','usato') NOT NULL DEFAULT 'nuovo',
+      `note` TEXT NULL,
+      `creato` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+partenza riletta = chiesta: sì
+SQL applicato (= test U, = generato dal riletto):
+    ALTER TABLE `libri` ADD COLUMN `sottotitolo` VARCHAR(200) NULL AFTER `titolo`;
+esecuzione: OK (1 istruzioni)
+riletta = attesa (equals): sì
+riletta: `libri` InnoDB utf8mb4_general_ci [1:id INT UNSIGNED NOT NULL AI, 2:titolo VARCHAR(100) NOT NULL, 3:sottotitolo VARCHAR(200) NULL DEFAULT NULL, 4:prezzo DECIMAL(8,2) NULL DEFAULT NULL, 5:stato ENUM('nuovo','usato') NOT NULL DEFAULT 'nuovo', 6:note TEXT NULL DEFAULT NULL, 7:creato DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP] [PRIMARY PRIMARY[id]]
+diff(riletta, attesa): 0 istruzioni
+ESITO: OK
+
+## Caso 7 — aggiungi colonna con default e commento
+server: MySQL 8.0.40
+tabella di partenza:
+    CREATE TABLE `libri` (
+      `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+      `titolo` VARCHAR(100) NOT NULL,
+      `prezzo` DECIMAL(8,2) NULL,
+      `stato` ENUM('nuovo','usato') NOT NULL DEFAULT 'nuovo',
+      `note` TEXT NULL,
+      `creato` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+partenza riletta = chiesta: sì
+SQL applicato (= test U, = generato dal riletto):
+    ALTER TABLE `libri` ADD COLUMN `copie` INT NOT NULL DEFAULT 1 COMMENT 'copie possedute';
+esecuzione: OK (1 istruzioni)
+riletta = attesa (equals): sì
+riletta: `libri` InnoDB utf8mb4_general_ci [1:id INT UNSIGNED NOT NULL AI, 2:titolo VARCHAR(100) NOT NULL, 3:prezzo DECIMAL(8,2) NULL DEFAULT NULL, 4:stato ENUM('nuovo','usato') NOT NULL DEFAULT 'nuovo', 5:note TEXT NULL DEFAULT NULL, 6:creato DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, 7:copie INT NOT NULL DEFAULT '1' 'copie possedute'] [PRIMARY PRIMARY[id]]
+diff(riletta, attesa): 0 istruzioni
+ESITO: OK
+
+## Caso 8 — aggiungi colonna con nome riservato dopo una con spazi
+server: MySQL 8.0.40
+tabella di partenza:
+    CREATE TABLE `ordine dettagli` (
+      `order` INT NOT NULL,
+      `group by` DATE NULL
+    );
+partenza riletta = chiesta: sì
+SQL applicato (= test U, = generato dal riletto):
+    ALTER TABLE `ordine dettagli` ADD COLUMN `key` INT NULL AFTER `order`;
+esecuzione: OK (1 istruzioni)
+riletta = attesa (equals): sì
+riletta: `ordine dettagli` InnoDB utf8mb4_unicode_ci [1:order INT NOT NULL, 2:key INT NULL DEFAULT NULL, 3:group by DATE NULL DEFAULT NULL] []
+diff(riletta, attesa): 0 istruzioni
+ESITO: OK
+
+## Caso 9 — rimuovi due colonne
+server: MySQL 8.0.40
+tabella di partenza:
+    CREATE TABLE `libri` (
+      `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+      `titolo` VARCHAR(100) NOT NULL,
+      `prezzo` DECIMAL(8,2) NULL,
+      `stato` ENUM('nuovo','usato') NOT NULL DEFAULT 'nuovo',
+      `note` TEXT NULL,
+      `creato` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+partenza riletta = chiesta: sì
+SQL applicato (= test U, = generato dal riletto):
+    ALTER TABLE `libri`
+      DROP COLUMN `prezzo`,
+      DROP COLUMN `note`;
+esecuzione: OK (1 istruzioni)
+riletta = attesa (equals): sì
+riletta: `libri` InnoDB utf8mb4_general_ci [1:id INT UNSIGNED NOT NULL AI, 2:titolo VARCHAR(100) NOT NULL, 3:stato ENUM('nuovo','usato') NOT NULL DEFAULT 'nuovo', 4:creato DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP] [PRIMARY PRIMARY[id]]
+diff(riletta, attesa): 0 istruzioni
+ESITO: OK
+
+## Caso 10 — rinomina colonna: CHANGE COLUMN con la definizione completa
+server: MySQL 8.0.40
+tabella di partenza:
+    CREATE TABLE `libri` (
+      `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+      `titolo` VARCHAR(100) NOT NULL,
+      `prezzo` DECIMAL(8,2) NULL,
+      `stato` ENUM('nuovo','usato') NOT NULL DEFAULT 'nuovo',
+      `note` TEXT NULL,
+      `creato` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+partenza riletta = chiesta: sì
+SQL applicato (= test U, = generato dal riletto):
+    ALTER TABLE `libri` CHANGE COLUMN `titolo` `titolo_libro` VARCHAR(100) NOT NULL;
+esecuzione: OK (1 istruzioni)
+riletta = attesa (equals): sì
+riletta: `libri` InnoDB utf8mb4_general_ci [1:id INT UNSIGNED NOT NULL AI, 2:titolo_libro VARCHAR(100) NOT NULL, 3:prezzo DECIMAL(8,2) NULL DEFAULT NULL, 4:stato ENUM('nuovo','usato') NOT NULL DEFAULT 'nuovo', 5:note TEXT NULL DEFAULT NULL, 6:creato DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP] [PRIMARY PRIMARY[id]]
+diff(riletta, attesa): 0 istruzioni
+ESITO: OK
+
+## Caso 11 — rinomina verso un nome riservato con spazi
+server: MySQL 8.0.40
+tabella di partenza:
+    CREATE TABLE `libri` (
+      `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+      `titolo` VARCHAR(100) NOT NULL,
+      `prezzo` DECIMAL(8,2) NULL,
+      `stato` ENUM('nuovo','usato') NOT NULL DEFAULT 'nuovo',
+      `note` TEXT NULL,
+      `creato` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+partenza riletta = chiesta: sì
+SQL applicato (= test U, = generato dal riletto):
+    ALTER TABLE `libri` CHANGE COLUMN `stato` `order by` ENUM('nuovo','usato') NOT NULL DEFAULT 'nuovo';
+esecuzione: OK (1 istruzioni)
+riletta = attesa (equals): sì
+riletta: `libri` InnoDB utf8mb4_general_ci [1:id INT UNSIGNED NOT NULL AI, 2:titolo VARCHAR(100) NOT NULL, 3:prezzo DECIMAL(8,2) NULL DEFAULT NULL, 4:order by ENUM('nuovo','usato') NOT NULL DEFAULT 'nuovo', 5:note TEXT NULL DEFAULT NULL, 6:creato DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP] [PRIMARY PRIMARY[id]]
+diff(riletta, attesa): 0 istruzioni
+ESITO: OK
+
+## Caso 12 — rinomina solo maiuscole/minuscole
+server: MySQL 8.0.40
+tabella di partenza:
+    CREATE TABLE `libri` (
+      `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+      `titolo` VARCHAR(100) NOT NULL,
+      `prezzo` DECIMAL(8,2) NULL,
+      `stato` ENUM('nuovo','usato') NOT NULL DEFAULT 'nuovo',
+      `note` TEXT NULL,
+      `creato` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+partenza riletta = chiesta: sì
+SQL applicato (= test U, = generato dal riletto):
+    ALTER TABLE `libri` CHANGE COLUMN `titolo` `Titolo` VARCHAR(100) NOT NULL;
+esecuzione: OK (1 istruzioni)
+riletta = attesa (equals): sì
+riletta: `libri` InnoDB utf8mb4_general_ci [1:id INT UNSIGNED NOT NULL AI, 2:Titolo VARCHAR(100) NOT NULL, 3:prezzo DECIMAL(8,2) NULL DEFAULT NULL, 4:stato ENUM('nuovo','usato') NOT NULL DEFAULT 'nuovo', 5:note TEXT NULL DEFAULT NULL, 6:creato DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP] [PRIMARY PRIMARY[id]]
+diff(riletta, attesa): 0 istruzioni
+ESITO: OK
+
+## Caso 13 — cambio tipo INT → BIGINT
+server: MySQL 8.0.40
+tabella di partenza:
+    CREATE TABLE `libri` (
+      `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+      `titolo` VARCHAR(100) NOT NULL,
+      `prezzo` DECIMAL(8,2) NULL,
+      `stato` ENUM('nuovo','usato') NOT NULL DEFAULT 'nuovo',
+      `note` TEXT NULL,
+      `creato` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+partenza riletta = chiesta: sì
+SQL applicato (= test U, = generato dal riletto):
+    ALTER TABLE `libri` MODIFY COLUMN `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT;
+esecuzione: OK (1 istruzioni)
+riletta = attesa (equals): sì
+riletta: `libri` InnoDB utf8mb4_general_ci [1:id BIGINT UNSIGNED NOT NULL AI, 2:titolo VARCHAR(100) NOT NULL, 3:prezzo DECIMAL(8,2) NULL DEFAULT NULL, 4:stato ENUM('nuovo','usato') NOT NULL DEFAULT 'nuovo', 5:note TEXT NULL DEFAULT NULL, 6:creato DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP] [PRIMARY PRIMARY[id]]
+diff(riletta, attesa): 0 istruzioni
+ESITO: OK
+
+## Caso 14 — cambio lunghezza VARCHAR
+server: MySQL 8.0.40
+tabella di partenza:
+    CREATE TABLE `libri` (
+      `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+      `titolo` VARCHAR(100) NOT NULL,
+      `prezzo` DECIMAL(8,2) NULL,
+      `stato` ENUM('nuovo','usato') NOT NULL DEFAULT 'nuovo',
+      `note` TEXT NULL,
+      `creato` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+partenza riletta = chiesta: sì
+SQL applicato (= test U, = generato dal riletto):
+    ALTER TABLE `libri` MODIFY COLUMN `titolo` VARCHAR(200) NOT NULL;
+esecuzione: OK (1 istruzioni)
+riletta = attesa (equals): sì
+riletta: `libri` InnoDB utf8mb4_general_ci [1:id INT UNSIGNED NOT NULL AI, 2:titolo VARCHAR(200) NOT NULL, 3:prezzo DECIMAL(8,2) NULL DEFAULT NULL, 4:stato ENUM('nuovo','usato') NOT NULL DEFAULT 'nuovo', 5:note TEXT NULL DEFAULT NULL, 6:creato DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP] [PRIMARY PRIMARY[id]]
+diff(riletta, attesa): 0 istruzioni
+ESITO: OK
+
+## Caso 15 — nuovo valore di un ENUM
+server: MySQL 8.0.40
+tabella di partenza:
+    CREATE TABLE `libri` (
+      `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+      `titolo` VARCHAR(100) NOT NULL,
+      `prezzo` DECIMAL(8,2) NULL,
+      `stato` ENUM('nuovo','usato') NOT NULL DEFAULT 'nuovo',
+      `note` TEXT NULL,
+      `creato` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+partenza riletta = chiesta: sì
+SQL applicato (= test U, = generato dal riletto):
+    ALTER TABLE `libri` MODIFY COLUMN `stato` ENUM('nuovo','usato','d''epoca') NOT NULL DEFAULT 'nuovo';
+esecuzione: OK (1 istruzioni)
+riletta = attesa (equals): sì
+riletta: `libri` InnoDB utf8mb4_general_ci [1:id INT UNSIGNED NOT NULL AI, 2:titolo VARCHAR(100) NOT NULL, 3:prezzo DECIMAL(8,2) NULL DEFAULT NULL, 4:stato ENUM('nuovo','usato','d''epoca') NOT NULL DEFAULT 'nuovo', 5:note TEXT NULL DEFAULT NULL, 6:creato DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP] [PRIMARY PRIMARY[id]]
+diff(riletta, attesa): 0 istruzioni
+ESITO: OK
+
+## Caso 16 — da NULL a NOT NULL
+server: MySQL 8.0.40
+tabella di partenza:
+    CREATE TABLE `libri` (
+      `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+      `titolo` VARCHAR(100) NOT NULL,
+      `prezzo` DECIMAL(8,2) NULL,
+      `stato` ENUM('nuovo','usato') NOT NULL DEFAULT 'nuovo',
+      `note` TEXT NULL,
+      `creato` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+partenza riletta = chiesta: sì
+SQL applicato (= test U, = generato dal riletto):
+    ALTER TABLE `libri` MODIFY COLUMN `prezzo` DECIMAL(8,2) NOT NULL;
+esecuzione: OK (1 istruzioni)
+riletta = attesa (equals): sì
+riletta: `libri` InnoDB utf8mb4_general_ci [1:id INT UNSIGNED NOT NULL AI, 2:titolo VARCHAR(100) NOT NULL, 3:prezzo DECIMAL(8,2) NOT NULL, 4:stato ENUM('nuovo','usato') NOT NULL DEFAULT 'nuovo', 5:note TEXT NULL DEFAULT NULL, 6:creato DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP] [PRIMARY PRIMARY[id]]
+diff(riletta, attesa): 0 istruzioni
+ESITO: OK
+
+## Caso 17 — default stringa vuota
+server: MySQL 8.0.40
+tabella di partenza:
+    CREATE TABLE `libri` (
+      `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+      `titolo` VARCHAR(100) NOT NULL,
+      `prezzo` DECIMAL(8,2) NULL,
+      `stato` ENUM('nuovo','usato') NOT NULL DEFAULT 'nuovo',
+      `note` TEXT NULL,
+      `creato` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+partenza riletta = chiesta: sì
+SQL applicato (= test U, = generato dal riletto):
+    ALTER TABLE `libri` MODIFY COLUMN `titolo` VARCHAR(100) NOT NULL DEFAULT '';
+esecuzione: OK (1 istruzioni)
+riletta = attesa (equals): sì
+riletta: `libri` InnoDB utf8mb4_general_ci [1:id INT UNSIGNED NOT NULL AI, 2:titolo VARCHAR(100) NOT NULL DEFAULT '', 3:prezzo DECIMAL(8,2) NULL DEFAULT NULL, 4:stato ENUM('nuovo','usato') NOT NULL DEFAULT 'nuovo', 5:note TEXT NULL DEFAULT NULL, 6:creato DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP] [PRIMARY PRIMARY[id]]
+diff(riletta, attesa): 0 istruzioni
+ESITO: OK
+
+## Caso 18 — da default letterale a DEFAULT NULL
+server: MySQL 8.0.40
+tabella di partenza:
+    CREATE TABLE `libri` (
+      `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+      `titolo` VARCHAR(100) NOT NULL,
+      `prezzo` DECIMAL(8,2) NULL DEFAULT 9.99,
+      `stato` ENUM('nuovo','usato') NOT NULL DEFAULT 'nuovo',
+      `note` TEXT NULL,
+      `creato` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+partenza riletta = chiesta: sì
+SQL applicato (= test U, = generato dal riletto):
+    ALTER TABLE `libri` MODIFY COLUMN `prezzo` DECIMAL(8,2) NULL DEFAULT NULL;
+esecuzione: OK (1 istruzioni)
+riletta = attesa (equals): sì
+riletta: `libri` InnoDB utf8mb4_general_ci [1:id INT UNSIGNED NOT NULL AI, 2:titolo VARCHAR(100) NOT NULL, 3:prezzo DECIMAL(8,2) NULL DEFAULT NULL, 4:stato ENUM('nuovo','usato') NOT NULL DEFAULT 'nuovo', 5:note TEXT NULL DEFAULT NULL, 6:creato DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP] [PRIMARY PRIMARY[id]]
+diff(riletta, attesa): 0 istruzioni
+ESITO: OK
+
+## Caso 19 — da letterale a CURRENT_TIMESTAMP
+server: MySQL 8.0.40
+tabella di partenza:
+    CREATE TABLE `libri` (
+      `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+      `titolo` VARCHAR(100) NOT NULL,
+      `prezzo` DECIMAL(8,2) NULL,
+      `stato` ENUM('nuovo','usato') NOT NULL DEFAULT 'nuovo',
+      `note` TEXT NULL,
+      `creato` DATETIME NOT NULL DEFAULT '2000-01-01 00:00:00',
+      PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+partenza riletta = chiesta: sì
+SQL applicato (= test U, = generato dal riletto):
+    ALTER TABLE `libri` MODIFY COLUMN `creato` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP;
+esecuzione: OK (1 istruzioni)
+riletta = attesa (equals): sì
+riletta: `libri` InnoDB utf8mb4_general_ci [1:id INT UNSIGNED NOT NULL AI, 2:titolo VARCHAR(100) NOT NULL, 3:prezzo DECIMAL(8,2) NULL DEFAULT NULL, 4:stato ENUM('nuovo','usato') NOT NULL DEFAULT 'nuovo', 5:note TEXT NULL DEFAULT NULL, 6:creato DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP] [PRIMARY PRIMARY[id]]
+diff(riletta, attesa): 0 istruzioni
+ESITO: OK
+
+## Caso 20 — aggiunta di ON UPDATE CURRENT_TIMESTAMP
+server: MySQL 8.0.40
+tabella di partenza:
+    CREATE TABLE `libri` (
+      `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+      `titolo` VARCHAR(100) NOT NULL,
+      `prezzo` DECIMAL(8,2) NULL,
+      `stato` ENUM('nuovo','usato') NOT NULL DEFAULT 'nuovo',
+      `note` TEXT NULL,
+      `creato` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+partenza riletta = chiesta: sì
+SQL applicato (= test U, = generato dal riletto):
+    ALTER TABLE `libri` MODIFY COLUMN `creato` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP;
+esecuzione: OK (1 istruzioni)
+riletta = attesa (equals): sì
+riletta: `libri` InnoDB utf8mb4_general_ci [1:id INT UNSIGNED NOT NULL AI, 2:titolo VARCHAR(100) NOT NULL, 3:prezzo DECIMAL(8,2) NULL DEFAULT NULL, 4:stato ENUM('nuovo','usato') NOT NULL DEFAULT 'nuovo', 5:note TEXT NULL DEFAULT NULL, 6:creato DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP] [PRIMARY PRIMARY[id]]
+diff(riletta, attesa): 0 istruzioni
+ESITO: OK
+
+## Caso 21 — togli AUTO_INCREMENT
+server: MySQL 8.0.40
+tabella di partenza:
+    CREATE TABLE `libri` (
+      `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+      `titolo` VARCHAR(100) NOT NULL,
+      `prezzo` DECIMAL(8,2) NULL,
+      `stato` ENUM('nuovo','usato') NOT NULL DEFAULT 'nuovo',
+      `note` TEXT NULL,
+      `creato` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+partenza riletta = chiesta: sì
+SQL applicato (= test U, = generato dal riletto):
+    ALTER TABLE `libri` MODIFY COLUMN `id` INT UNSIGNED NOT NULL;
+esecuzione: OK (1 istruzioni)
+riletta = attesa (equals): sì
+riletta: `libri` InnoDB utf8mb4_general_ci [1:id INT UNSIGNED NOT NULL, 2:titolo VARCHAR(100) NOT NULL, 3:prezzo DECIMAL(8,2) NULL DEFAULT NULL, 4:stato ENUM('nuovo','usato') NOT NULL DEFAULT 'nuovo', 5:note TEXT NULL DEFAULT NULL, 6:creato DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP] [PRIMARY PRIMARY[id]]
+diff(riletta, attesa): 0 istruzioni
+ESITO: OK
+
+## Caso 22 — togli UNSIGNED
+server: MySQL 8.0.40
+tabella di partenza:
+    CREATE TABLE `libri` (
+      `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+      `titolo` VARCHAR(100) NOT NULL,
+      `prezzo` DECIMAL(8,2) NULL,
+      `stato` ENUM('nuovo','usato') NOT NULL DEFAULT 'nuovo',
+      `note` TEXT NULL,
+      `creato` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+partenza riletta = chiesta: sì
+SQL applicato (= test U, = generato dal riletto):
+    ALTER TABLE `libri` MODIFY COLUMN `id` INT NOT NULL AUTO_INCREMENT;
+esecuzione: OK (1 istruzioni)
+riletta = attesa (equals): sì
+riletta: `libri` InnoDB utf8mb4_general_ci [1:id INT NOT NULL AI, 2:titolo VARCHAR(100) NOT NULL, 3:prezzo DECIMAL(8,2) NULL DEFAULT NULL, 4:stato ENUM('nuovo','usato') NOT NULL DEFAULT 'nuovo', 5:note TEXT NULL DEFAULT NULL, 6:creato DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP] [PRIMARY PRIMARY[id]]
+diff(riletta, attesa): 0 istruzioni
+ESITO: OK
+
+## Caso 23 — metti UNSIGNED
+server: MySQL 8.0.40
+tabella di partenza:
+    CREATE TABLE `t` (
+      `a` INT NOT NULL,
+      `b` INT NOT NULL
+    );
+partenza riletta = chiesta: sì
+SQL applicato (= test U, = generato dal riletto):
+    ALTER TABLE `t` MODIFY COLUMN `b` INT UNSIGNED NOT NULL;
+esecuzione: OK (1 istruzioni)
+riletta = attesa (equals): sì
+riletta: `t` InnoDB utf8mb4_unicode_ci [1:a INT NOT NULL, 2:b INT UNSIGNED NOT NULL] []
+diff(riletta, attesa): 0 istruzioni
+ESITO: OK
+
+## Caso 24 — aggiungi commento di colonna
+server: MySQL 8.0.40
+tabella di partenza:
+    CREATE TABLE `libri` (
+      `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+      `titolo` VARCHAR(100) NOT NULL,
+      `prezzo` DECIMAL(8,2) NULL,
+      `stato` ENUM('nuovo','usato') NOT NULL DEFAULT 'nuovo',
+      `note` TEXT NULL,
+      `creato` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+partenza riletta = chiesta: sì
+SQL applicato (= test U, = generato dal riletto):
+    ALTER TABLE `libri` MODIFY COLUMN `prezzo` DECIMAL(8,2) NULL COMMENT 'in euro, IVA inclusa: l''importo';
+esecuzione: OK (1 istruzioni)
+riletta = attesa (equals): sì
+riletta: `libri` InnoDB utf8mb4_general_ci [1:id INT UNSIGNED NOT NULL AI, 2:titolo VARCHAR(100) NOT NULL, 3:prezzo DECIMAL(8,2) NULL DEFAULT NULL 'in euro, IVA inclusa: l'importo', 4:stato ENUM('nuovo','usato') NOT NULL DEFAULT 'nuovo', 5:note TEXT NULL DEFAULT NULL, 6:creato DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP] [PRIMARY PRIMARY[id]]
+diff(riletta, attesa): 0 istruzioni
+ESITO: OK
+
+## Caso 25 — charset di colonna
+server: MySQL 8.0.40
+tabella di partenza:
+    CREATE TABLE `libri` (
+      `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+      `titolo` VARCHAR(100) NOT NULL,
+      `prezzo` DECIMAL(8,2) NULL,
+      `stato` ENUM('nuovo','usato') NOT NULL DEFAULT 'nuovo',
+      `note` TEXT NULL,
+      `creato` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+partenza riletta = chiesta: sì
+SQL applicato (= test U, = generato dal riletto):
+    ALTER TABLE `libri` MODIFY COLUMN `titolo` VARCHAR(100) CHARACTER SET latin1 COLLATE latin1_swedish_ci NOT NULL;
+esecuzione: OK (1 istruzioni)
+riletta = attesa (equals): sì
+riletta: `libri` InnoDB utf8mb4_general_ci [1:id INT UNSIGNED NOT NULL AI, 2:titolo VARCHAR(100) NOT NULL latin1_swedish_ci, 3:prezzo DECIMAL(8,2) NULL DEFAULT NULL, 4:stato ENUM('nuovo','usato') NOT NULL DEFAULT 'nuovo', 5:note TEXT NULL DEFAULT NULL, 6:creato DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP] [PRIMARY PRIMARY[id]]
+diff(riletta, attesa): 0 istruzioni
+ESITO: OK
+
+## Caso 26 — PK semplice aggiunta
+server: MySQL 8.0.40
+tabella di partenza:
+    CREATE TABLE `t` (
+      `a` INT NOT NULL,
+      `b` INT NOT NULL
+    );
+partenza riletta = chiesta: sì
+SQL applicato (= test U, = generato dal riletto):
+    ALTER TABLE `t` ADD PRIMARY KEY (`a`);
+esecuzione: OK (1 istruzioni)
+riletta = attesa (equals): sì
+riletta: `t` InnoDB utf8mb4_unicode_ci [1:a INT NOT NULL, 2:b INT NOT NULL] [PRIMARY PRIMARY[a]]
+diff(riletta, attesa): 0 istruzioni
+ESITO: OK
+
+## Caso 27 — PK composta aggiunta
+server: MySQL 8.0.40
+tabella di partenza:
+    CREATE TABLE `t` (
+      `a` INT NOT NULL,
+      `b` INT NOT NULL
+    );
+partenza riletta = chiesta: sì
+SQL applicato (= test U, = generato dal riletto):
+    ALTER TABLE `t` ADD PRIMARY KEY (`a`, `b`);
+esecuzione: OK (1 istruzioni)
+riletta = attesa (equals): sì
+riletta: `t` InnoDB utf8mb4_unicode_ci [1:a INT NOT NULL, 2:b INT NOT NULL] [PRIMARY PRIMARY[a, b]]
+diff(riletta, attesa): 0 istruzioni
+ESITO: OK
+
+## Caso 28 — PK tolta insieme all'AUTO_INCREMENT che la richiede
+server: MySQL 8.0.40
+tabella di partenza:
+    CREATE TABLE `libri` (
+      `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+      `titolo` VARCHAR(100) NOT NULL,
+      `prezzo` DECIMAL(8,2) NULL,
+      `stato` ENUM('nuovo','usato') NOT NULL DEFAULT 'nuovo',
+      `note` TEXT NULL,
+      `creato` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+partenza riletta = chiesta: sì
+SQL applicato (= test U, = generato dal riletto):
+    ALTER TABLE `libri`
+      DROP PRIMARY KEY,
+      MODIFY COLUMN `id` INT UNSIGNED NOT NULL;
+esecuzione: OK (1 istruzioni)
+riletta = attesa (equals): sì
+riletta: `libri` InnoDB utf8mb4_general_ci [1:id INT UNSIGNED NOT NULL, 2:titolo VARCHAR(100) NOT NULL, 3:prezzo DECIMAL(8,2) NULL DEFAULT NULL, 4:stato ENUM('nuovo','usato') NOT NULL DEFAULT 'nuovo', 5:note TEXT NULL DEFAULT NULL, 6:creato DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP] []
+diff(riletta, attesa): 0 istruzioni
+ESITO: OK
+
+## Caso 29 — PK composta: ordine delle colonne cambiato
+server: MySQL 8.0.40
+tabella di partenza:
+    CREATE TABLE `libri_autori` (
+      `id_libro` INT UNSIGNED NOT NULL,
+      `id_autore` INT UNSIGNED NOT NULL,
+      `ruolo` VARCHAR(30) NOT NULL DEFAULT 'autore',
+      PRIMARY KEY (`id_libro`, `id_autore`)
+    ) ENGINE=InnoDB;
+partenza riletta = chiesta: sì
+SQL applicato (= test U, = generato dal riletto):
+    ALTER TABLE `libri_autori`
+      DROP PRIMARY KEY,
+      ADD PRIMARY KEY (`id_autore`, `id_libro`);
+esecuzione: OK (1 istruzioni)
+riletta = attesa (equals): sì
+riletta: `libri_autori` InnoDB utf8mb4_unicode_ci [1:id_libro INT UNSIGNED NOT NULL, 2:id_autore INT UNSIGNED NOT NULL, 3:ruolo VARCHAR(30) NOT NULL DEFAULT 'autore'] [PRIMARY PRIMARY[id_autore, id_libro]]
+diff(riletta, attesa): 0 istruzioni
+ESITO: OK
+
+## Caso 30 — PK da composta a semplice
+server: MySQL 8.0.40
+tabella di partenza:
+    CREATE TABLE `libri_autori` (
+      `id_libro` INT UNSIGNED NOT NULL,
+      `id_autore` INT UNSIGNED NOT NULL,
+      `ruolo` VARCHAR(30) NOT NULL DEFAULT 'autore',
+      PRIMARY KEY (`id_libro`, `id_autore`)
+    ) ENGINE=InnoDB;
+partenza riletta = chiesta: sì
+SQL applicato (= test U, = generato dal riletto):
+    ALTER TABLE `libri_autori`
+      DROP PRIMARY KEY,
+      ADD PRIMARY KEY (`id_libro`);
+esecuzione: OK (1 istruzioni)
+riletta = attesa (equals): sì
+riletta: `libri_autori` InnoDB utf8mb4_unicode_ci [1:id_libro INT UNSIGNED NOT NULL, 2:id_autore INT UNSIGNED NOT NULL, 3:ruolo VARCHAR(30) NOT NULL DEFAULT 'autore'] [PRIMARY PRIMARY[id_libro]]
+diff(riletta, attesa): 0 istruzioni
+ESITO: OK
+
+## Caso 31 — nuova colonna AUTO_INCREMENT che diventa PK
+server: MySQL 8.0.40
+tabella di partenza:
+    CREATE TABLE `t` (
+      `a` INT NOT NULL,
+      `b` INT NOT NULL
+    );
+partenza riletta = chiesta: sì
+SQL applicato (= test U, = generato dal riletto):
+    ALTER TABLE `t`
+      ADD COLUMN `id` INT NOT NULL AUTO_INCREMENT FIRST,
+      ADD PRIMARY KEY (`id`);
+esecuzione: OK (1 istruzioni)
+riletta = attesa (equals): sì
+riletta: `t` InnoDB utf8mb4_unicode_ci [1:id INT NOT NULL AI, 2:a INT NOT NULL, 3:b INT NOT NULL] [PRIMARY PRIMARY[id]]
+diff(riletta, attesa): 0 istruzioni
+ESITO: OK
+
+## Caso 32 — engine InnoDB → MyISAM
+server: MySQL 8.0.40
+tabella di partenza:
+    CREATE TABLE `libri` (
+      `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+      `titolo` VARCHAR(100) NOT NULL,
+      `prezzo` DECIMAL(8,2) NULL,
+      `stato` ENUM('nuovo','usato') NOT NULL DEFAULT 'nuovo',
+      `note` TEXT NULL,
+      `creato` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+partenza riletta = chiesta: sì
+SQL applicato (= test U, = generato dal riletto):
+    ALTER TABLE `libri` ENGINE=MyISAM;
+esecuzione: OK (1 istruzioni)
+riletta = attesa (equals): sì
+riletta: `libri` MyISAM utf8mb4_general_ci [1:id INT UNSIGNED NOT NULL AI, 2:titolo VARCHAR(100) NOT NULL, 3:prezzo DECIMAL(8,2) NULL DEFAULT NULL, 4:stato ENUM('nuovo','usato') NOT NULL DEFAULT 'nuovo', 5:note TEXT NULL DEFAULT NULL, 6:creato DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP] [PRIMARY PRIMARY[id]]
+diff(riletta, attesa): 0 istruzioni
+ESITO: OK
+
+## Caso 33 — engine MyISAM → InnoDB
+server: MySQL 8.0.40
+tabella di partenza:
+    CREATE TABLE `registro` (
+      `riga` VARCHAR(200) NULL
+    ) ENGINE=MyISAM;
+partenza riletta = chiesta: sì
+SQL applicato (= test U, = generato dal riletto):
+    ALTER TABLE `registro` ENGINE=InnoDB;
+esecuzione: OK (1 istruzioni)
+riletta = attesa (equals): sì
+riletta: `registro` InnoDB utf8mb4_unicode_ci [1:riga VARCHAR(200) NULL DEFAULT NULL] []
+diff(riletta, attesa): 0 istruzioni
+ESITO: OK
+
+## Caso 34 — charset e collation di tabella
+server: MySQL 8.0.40
+tabella di partenza:
+    CREATE TABLE `libri` (
+      `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+      `titolo` VARCHAR(100) NOT NULL,
+      `prezzo` DECIMAL(8,2) NULL,
+      `stato` ENUM('nuovo','usato') NOT NULL DEFAULT 'nuovo',
+      `note` TEXT NULL,
+      `creato` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+partenza riletta = chiesta: sì
+SQL applicato (= test U, = generato dal riletto):
+    ALTER TABLE `libri` DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+esecuzione: OK (1 istruzioni)
+riletta = attesa (equals): sì
+riletta: `libri` InnoDB latin1_swedish_ci [1:id INT UNSIGNED NOT NULL AI, 2:titolo VARCHAR(100) NOT NULL utf8mb4_general_ci, 3:prezzo DECIMAL(8,2) NULL DEFAULT NULL, 4:stato ENUM('nuovo','usato') NOT NULL DEFAULT 'nuovo' utf8mb4_general_ci, 5:note TEXT NULL DEFAULT NULL utf8mb4_general_ci, 6:creato DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP] [PRIMARY PRIMARY[id]]
+diff(riletta, attesa): 0 istruzioni
+ESITO: OK
+
+## Caso 35 — commento di tabella
+server: MySQL 8.0.40
+tabella di partenza:
+    CREATE TABLE `libri` (
+      `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+      `titolo` VARCHAR(100) NOT NULL,
+      `prezzo` DECIMAL(8,2) NULL,
+      `stato` ENUM('nuovo','usato') NOT NULL DEFAULT 'nuovo',
+      `note` TEXT NULL,
+      `creato` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+partenza riletta = chiesta: sì
+SQL applicato (= test U, = generato dal riletto):
+    ALTER TABLE `libri` COMMENT='Catalogo dell''istituto';
+esecuzione: OK (1 istruzioni)
+riletta = attesa (equals): sì
+riletta: `libri` InnoDB utf8mb4_general_ci COMMENT='Catalogo dell'istituto' [1:id INT UNSIGNED NOT NULL AI, 2:titolo VARCHAR(100) NOT NULL, 3:prezzo DECIMAL(8,2) NULL DEFAULT NULL, 4:stato ENUM('nuovo','usato') NOT NULL DEFAULT 'nuovo', 5:note TEXT NULL DEFAULT NULL, 6:creato DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP] [PRIMARY PRIMARY[id]]
+diff(riletta, attesa): 0 istruzioni
+ESITO: OK
+
+## Caso 36 — AUTO_INCREMENT iniziale
+server: MySQL 8.0.40
+tabella di partenza:
+    CREATE TABLE `libri` (
+      `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+      `titolo` VARCHAR(100) NOT NULL,
+      `prezzo` DECIMAL(8,2) NULL,
+      `stato` ENUM('nuovo','usato') NOT NULL DEFAULT 'nuovo',
+      `note` TEXT NULL,
+      `creato` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+partenza riletta = chiesta: sì
+SQL applicato (= test U, = generato dal riletto):
+    ALTER TABLE `libri` AUTO_INCREMENT=1000;
+esecuzione: OK (1 istruzioni)
+riletta = attesa (equals): sì
+riletta: `libri` InnoDB utf8mb4_general_ci AI=1000 [1:id INT UNSIGNED NOT NULL AI, 2:titolo VARCHAR(100) NOT NULL, 3:prezzo DECIMAL(8,2) NULL DEFAULT NULL, 4:stato ENUM('nuovo','usato') NOT NULL DEFAULT 'nuovo', 5:note TEXT NULL DEFAULT NULL, 6:creato DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP] [PRIMARY PRIMARY[id]]
+diff(riletta, attesa): 0 istruzioni
+ESITO: OK
+
+## Caso 37 — rinomina tabella + nuova colonna: prima RENAME, poi ALTER sul nome nuovo
+server: MySQL 8.0.40
+tabella di partenza:
+    CREATE TABLE `libri` (
+      `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+      `titolo` VARCHAR(100) NOT NULL,
+      `prezzo` DECIMAL(8,2) NULL,
+      `stato` ENUM('nuovo','usato') NOT NULL DEFAULT 'nuovo',
+      `note` TEXT NULL,
+      `creato` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+partenza riletta = chiesta: sì
+SQL applicato (= test U, = generato dal riletto):
+    RENAME TABLE `libri` TO `volumi`;
+    ALTER TABLE `volumi` ADD COLUMN `isbn` CHAR(13) NULL;
+esecuzione: OK (2 istruzioni)
+riletta = attesa (equals): sì
+riletta: `volumi` InnoDB utf8mb4_general_ci [1:id INT UNSIGNED NOT NULL AI, 2:titolo VARCHAR(100) NOT NULL, 3:prezzo DECIMAL(8,2) NULL DEFAULT NULL, 4:stato ENUM('nuovo','usato') NOT NULL DEFAULT 'nuovo', 5:note TEXT NULL DEFAULT NULL, 6:creato DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, 7:isbn CHAR(13) NULL DEFAULT NULL] [PRIMARY PRIMARY[id]]
+diff(riletta, attesa): 0 istruzioni
+ESITO: OK
+
+## Caso 38 — combinazione: DROP, MODIFY, ADD, engine e commento in un solo ALTER
+server: MySQL 8.0.40
+tabella di partenza:
+    CREATE TABLE `libri` (
+      `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+      `titolo` VARCHAR(100) NOT NULL,
+      `prezzo` DECIMAL(8,2) NULL,
+      `stato` ENUM('nuovo','usato') NOT NULL DEFAULT 'nuovo',
+      `note` TEXT NULL,
+      `creato` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+partenza riletta = chiesta: sì
+SQL applicato (= test U, = generato dal riletto):
+    ALTER TABLE `libri`
+      DROP COLUMN `note`,
+      MODIFY COLUMN `titolo` VARCHAR(200) NOT NULL,
+      ADD COLUMN `isbn` CHAR(13) NULL AFTER `titolo`,
+      ENGINE=MyISAM,
+      COMMENT='Catalogo';
+esecuzione: OK (1 istruzioni)
+riletta = attesa (equals): sì
+riletta: `libri` MyISAM utf8mb4_general_ci COMMENT='Catalogo' [1:id INT UNSIGNED NOT NULL AI, 2:titolo VARCHAR(200) NOT NULL, 3:isbn CHAR(13) NULL DEFAULT NULL, 4:prezzo DECIMAL(8,2) NULL DEFAULT NULL, 5:stato ENUM('nuovo','usato') NOT NULL DEFAULT 'nuovo', 6:creato DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP] [PRIMARY PRIMARY[id]]
+diff(riletta, attesa): 0 istruzioni
+ESITO: OK
+
+## Caso 39 — combinazione: rinomina, NULL, default e PK in un solo ALTER
+server: MySQL 8.0.40
+tabella di partenza:
+    CREATE TABLE `t` (
+      `a` INT NOT NULL,
+      `b` INT NOT NULL
+    );
+partenza riletta = chiesta: sì
+SQL applicato (= test U, = generato dal riletto):
+    ALTER TABLE `t`
+      CHANGE COLUMN `a` `codice` VARCHAR(8) NOT NULL,
+      MODIFY COLUMN `b` INT NULL DEFAULT 5,
+      ADD PRIMARY KEY (`codice`);
+esecuzione: OK (1 istruzioni)
+riletta = attesa (equals): sì
+riletta: `t` InnoDB utf8mb4_unicode_ci [1:codice VARCHAR(8) NOT NULL, 2:b INT NULL DEFAULT '5'] [PRIMARY PRIMARY[codice]]
+diff(riletta, attesa): 0 istruzioni
+ESITO: OK
+

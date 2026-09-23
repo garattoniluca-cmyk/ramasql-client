@@ -34,7 +34,7 @@ import it.ramasql.core.exec.StatementSplitter;
  * l'interfaccia dichiara. Credenziali dalle variabili {@code RAMASQL_IT_*} (le carica {@code scripts\verify.ps1}):
  * se mancano il test <b>fallisce</b>. La password non si stampa e non si scrive mai.
  */
-enum DbServer {
+public enum DbServer {
 
     MARIADB("MariaDB"),
     MYSQL("MySQL");
@@ -48,16 +48,16 @@ enum DbServer {
         this.label = label;
     }
 
-    String label() {
+    public String label() {
         return label;
     }
 
-    String id() {
+    public String id() {
         return name().toLowerCase(Locale.ROOT);
     }
 
     /** Profilo del client verso questo server, senza catalogo predefinito. */
-    ConnectionProfile profile() {
+    public ConnectionProfile profile() {
         Matcher m = HOST_PORT.matcher(env("URL"));
         if (!m.matches()) {
             throw new AssertionError("URL del server di test non riconosciuto: " + env("URL"));
@@ -66,12 +66,12 @@ enum DbServer {
                 "", "");
     }
 
-    char[] password() {
+    public char[] password() {
         return env("PASSWORD").toCharArray();
     }
 
     /** Connessione di servizio del test (autocommit), senza catalogo. */
-    Connection connect() {
+    public Connection connect() {
         Properties p = new Properties();
         p.setProperty("user", env("USER"));
         p.setProperty("password", env("PASSWORD"));
@@ -85,7 +85,7 @@ enum DbServer {
     }
 
     /** Un nome di catalogo di test nuovo: {@code ramasql_test_ui_<scopo>_<casuale>}. */
-    static String newCatalogName(String purpose) {
+    public static String newCatalogName(String purpose) {
         StringBuilder sb = new StringBuilder("ramasql_test_ui_").append(purpose).append('_');
         for (int i = 0; i < 6; i++) {
             sb.append("abcdefghijklmnopqrstuvwxyz0123456789".charAt(RANDOM.nextInt(36)));
@@ -93,19 +93,19 @@ enum DbServer {
         return sb.toString();
     }
 
-    static String requireTestName(String name) {
+    public static String requireTestName(String name) {
         if (!name.startsWith("ramasql_test_") || !name.matches("[a-z0-9_]+")) {
             throw new AssertionError("Solo cataloghi ramasql_test_*: " + name);
         }
         return name;
     }
 
-    void createCatalog(String name) throws SQLException {
+    public void createCatalog(String name) throws SQLException {
         run("CREATE DATABASE `" + requireTestName(name) + "` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci");
     }
 
     /** {@code DROP DATABASE IF EXISTS} (solo cataloghi di test); non fallisce mai, per i blocchi finally. */
-    void dropQuietly(String name) {
+    public void dropQuietly(String name) {
         if (name == null) {
             return;
         }
@@ -116,7 +116,7 @@ enum DbServer {
         }
     }
 
-    void run(String sql) throws SQLException {
+    public void run(String sql) throws SQLException {
         try (Connection c = connect(); Statement st = c.createStatement()) {
             st.execute(sql);
         }
@@ -126,7 +126,7 @@ enum DbServer {
      * Carica una fixture di {@code it-tests/fixtures/} nel catalogo (con la connessione del test, fuori dal client:
      * nel registro del client non finisce nulla).
      */
-    void loadFixture(String catalog, String fileName) throws SQLException {
+    public void loadFixture(String catalog, String fileName) throws SQLException {
         Path file = Probe.projectRoot().resolve("it-tests").resolve("fixtures").resolve(fileName);
         String script;
         try {
@@ -143,14 +143,14 @@ enum DbServer {
     }
 
     /** Un valore letto con la connessione del test ({@code null} se nessuna riga). */
-    String scalar(String sql) throws SQLException {
+    public String scalar(String sql) throws SQLException {
         try (Connection c = connect(); Statement st = c.createStatement(); ResultSet rs = st.executeQuery(sql)) {
             return rs.next() ? rs.getString(1) : null;
         }
     }
 
     /** Le righe di una query, valori come testo ({@code null} = NULL), con la connessione del test. */
-    java.util.List<java.util.List<String>> rows(String sql) throws SQLException {
+    public java.util.List<java.util.List<String>> rows(String sql) throws SQLException {
         java.util.List<java.util.List<String>> out = new java.util.ArrayList<>();
         try (Connection c = connect(); Statement st = c.createStatement(); ResultSet rs = st.executeQuery(sql)) {
             int n = rs.getMetaData().getColumnCount();
@@ -165,17 +165,17 @@ enum DbServer {
         return out;
     }
 
-    boolean tableExists(String catalog, String table) throws SQLException {
+    public boolean tableExists(String catalog, String table) throws SQLException {
         return "1".equals(scalar("SELECT COUNT(*) FROM information_schema.TABLES WHERE TABLE_SCHEMA = '" + catalog
                 + "' AND TABLE_NAME = '" + table + "'"));
     }
 
-    boolean catalogExists(String catalog) throws SQLException {
+    public boolean catalogExists(String catalog) throws SQLException {
         return "1".equals(scalar("SELECT COUNT(*) FROM information_schema.SCHEMATA WHERE SCHEMA_NAME = '"
                 + catalog + "'"));
     }
 
-    long rowCount(String catalog, String table) throws SQLException {
+    public long rowCount(String catalog, String table) throws SQLException {
         return Long.parseLong(scalar("SELECT COUNT(*) FROM `" + catalog + "`.`" + table + "`"));
     }
 

@@ -1,0 +1,7 @@
+SQL:
+ALTER TABLE `ramasql_test_cols`.`editori`
+  ADD COLUMN `sito` VARCHAR(45) NULL,
+  DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci
+
+AVVISO:
+ℹ Il nuovo charset e la nuova collation valgono per le colonne che aggiungerai: le colonne di testo esistenti mantengono il loro charset.

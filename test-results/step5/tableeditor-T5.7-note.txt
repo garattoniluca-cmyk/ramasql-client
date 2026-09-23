@@ -1,0 +1,5 @@
+ANDATA: [ALTER TABLE `ramasql_test_t57`.`note` ENGINE=MyISAM]
+RITORNO: [ALTER TABLE `ramasql_test_t57`.`note` ENGINE=InnoDB]
+SPIEGAZIONE:
+ℹ MyISAM: niente chiavi esterne né transazioni, e dopo un guasto i dati possono rovinarsi. Si usa solo per confrontarlo con InnoDB.
+Passando da InnoDB a MyISAM il server ricostruisce la tabella copiando tutte le righe: su una tabella grande può richiedere tempo.

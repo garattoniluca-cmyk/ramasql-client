@@ -1,0 +1,23 @@
+ANTEPRIMA (scheda SQL):
+CREATE TABLE `ramasql_test_t54`.`editori` (
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `nome` VARCHAR(80) NOT NULL,
+  `citta` VARCHAR(60) NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB;
+
+ESEGUITO (passato a TableApplier):
+CREATE TABLE `ramasql_test_t54`.`editori` (
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `nome` VARCHAR(80) NOT NULL,
+  `citta` VARCHAR(60) NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB;
+
+IDENTICI: true
+
+ESITO:
+✔ Istruzione applicata.
+Applicata: CREATE TABLE `ramasql_test_t54`.`editori` ( `id` INT UNSIGNED NOT NULL AUTO_INCREMENT, `nome` VARCHAR(80) NOT NULL, `citta` VARCHAR(60) NULL, PRIMARY KEY (`i…
+ℹ L'editor mostra ora la tabella com'è davvero sul server (riletta dopo l'esecuzione).
+✔ verificato sul server: indici e chiavi esterne di «editori» sono quelli chiesti

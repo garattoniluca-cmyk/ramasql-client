@@ -1,0 +1,31 @@
+ANTEPRIMA:
+CREATE TABLE `ramasql_test_t54`.`libri` (
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `titolo` VARCHAR(150) NOT NULL,
+  `isbn` CHAR(13) NULL,
+  `anno` SMALLINT UNSIGNED NULL,
+  `prezzo` DECIMAL(6,2) NOT NULL DEFAULT 0.00,
+  `id_editore` INT UNSIGNED NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE INDEX `isbn_UNIQUE` (`isbn`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Catalogo dei libri';
+
+ESEGUITO:
+CREATE TABLE `ramasql_test_t54`.`libri` (
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `titolo` VARCHAR(150) NOT NULL,
+  `isbn` CHAR(13) NULL,
+  `anno` SMALLINT UNSIGNED NULL,
+  `prezzo` DECIMAL(6,2) NOT NULL DEFAULT 0.00,
+  `id_editore` INT UNSIGNED NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE INDEX `isbn_UNIQUE` (`isbn`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Catalogo dei libri';
+
+IDENTICI: true
+
+ESITO:
+✔ Istruzione applicata.
+Applicata: CREATE TABLE `ramasql_test_t54`.`libri` ( `id` INT UNSIGNED NOT NULL AUTO_INCREMENT, `titolo` VARCHAR(150) NOT NULL, `isbn` CHAR(13) NULL, `anno` SMALLINT UN…
+ℹ L'editor mostra ora la tabella com'è davvero sul server (riletta dopo l'esecuzione).
+✔ verificato sul server: indici e chiavi esterne di «libri» sono quelli chiesti

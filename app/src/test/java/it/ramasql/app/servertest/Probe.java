@@ -39,12 +39,12 @@ import it.ramasql.core.connection.AppData;
  * visibile); i componenti si pilotano via API sull'EDT; l'evidenza visiva è il componente disegnato su un'immagine
  * salvata in {@code test-results/stepN/}.
  */
-final class Probe {
+public final class Probe {
 
     private Probe() {
     }
 
-    static void setup() {
+    public static void setup() {
         String override = System.getProperty(AppData.OVERRIDE_PROPERTY);
         if (override == null || override.isBlank()) {
             throw new AssertionError("La proprietà " + AppData.OVERRIDE_PROPERTY
@@ -54,7 +54,7 @@ final class Probe {
         onEdt(FlatLightLaf::setup);
     }
 
-    static void onEdt(Runnable action) {
+    public static void onEdt(Runnable action) {
         if (SwingUtilities.isEventDispatchThread()) {
             action.run();
             return;
@@ -75,14 +75,14 @@ final class Probe {
         }
     }
 
-    static <T> T fromEdt(Supplier<T> supplier) {
+    public static <T> T fromEdt(Supplier<T> supplier) {
         AtomicReference<T> value = new AtomicReference<>();
         onEdt(() -> value.set(supplier.get()));
         return value.get();
     }
 
     /** Aspetta (interrogando l'EDT) che la condizione diventi vera. */
-    static void waitUntil(String what, long timeoutMillis, BooleanSupplier conditionOnEdt) {
+    public static void waitUntil(String what, long timeoutMillis, BooleanSupplier conditionOnEdt) {
         long start = System.nanoTime();
         while (true) {
             if (fromEdt(conditionOnEdt::getAsBoolean)) {
@@ -101,7 +101,7 @@ final class Probe {
         }
     }
 
-    static Path projectRoot() {
+    public static Path projectRoot() {
         Path p = Path.of(System.getProperty("user.dir")).toAbsolutePath();
         while (p != null && !Files.exists(p.resolve("mvnw.cmd"))) {
             p = p.getParent();
@@ -113,7 +113,7 @@ final class Probe {
     }
 
     /** La cartella delle evidenze di uno step: {@code test-results/step4}… */
-    static Path resultsDir(String step) {
+    public static Path resultsDir(String step) {
         try {
             return Files.createDirectories(projectRoot().resolve("test-results").resolve(step));
         } catch (IOException e) {
@@ -122,7 +122,7 @@ final class Probe {
     }
 
     /** File di testo di evidenza (mai password). */
-    static void writeText(String step, String fileName, String text) {
+    public static void writeText(String step, String fileName, String text) {
         try {
             Files.writeString(resultsDir(step).resolve(fileName), text, StandardCharsets.UTF_8);
         } catch (IOException e) {
@@ -131,7 +131,7 @@ final class Probe {
     }
 
     /** Disegna una finestra mai mostrata (menu compreso) e la salva. */
-    static BufferedImage paintWindow(String step, Window window, String fileName) {
+    public static BufferedImage paintWindow(String step, Window window, String fileName) {
         return fromEdt(() -> {
             window.validate();
             Component root = window instanceof JFrame f ? f.getRootPane()
@@ -141,7 +141,7 @@ final class Probe {
     }
 
     /** Disegna un componente alla sua dimensione preferita (es. l'albero intero, anche la parte fuori vista). */
-    static BufferedImage paintAtPreferredSize(String step, Component c, String fileName) {
+    public static BufferedImage paintAtPreferredSize(String step, Component c, String fileName) {
         return fromEdt(() -> {
             java.awt.Dimension old = c.getSize();
             c.setSize(c.getPreferredSize());
@@ -153,7 +153,7 @@ final class Probe {
         });
     }
 
-    static BufferedImage paint(String step, Component c, String fileName) {
+    public static BufferedImage paint(String step, Component c, String fileName) {
         c.doLayout();
         BufferedImage img = new BufferedImage(Math.max(1, c.getWidth()), Math.max(1, c.getHeight()),
                 BufferedImage.TYPE_INT_RGB);

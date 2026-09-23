@@ -1,0 +1,10 @@
+ESEGUITO:
+CREATE TABLE `ramasql_test_t58`.`ordine dettagli` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `order` INT NOT NULL,
+  `select` VARCHAR(45) NULL DEFAULT 'nuovo',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB;
+
+RINOMINA SUCCESSIVA:
+ALTER TABLE `ramasql_test_t58`.`ordine dettagli` CHANGE COLUMN `order` `group` INT NOT NULL;

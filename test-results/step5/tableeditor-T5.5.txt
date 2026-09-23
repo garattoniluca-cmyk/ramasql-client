@@ -1,0 +1,20 @@
+AVVISO NELLA SCHEDA COLONNE:
+⚠ titolo: passando da VARCHAR(100) a VARCHAR(20) i valori più lunghi di 20 caratteri potrebbero essere troncati o rifiutati dal server.
+
+CONFERMA CHIESTA:
+Alcuni dati potrebbero cambiare
+Prima di applicare, controlla:
+• titolo: passando da VARCHAR(100) a VARCHAR(20) i valori più lunghi di 20 caratteri potrebbero essere troncati o rifiutati dal server.
+
+Se il server rifiuta la modifica, nulla va perso: te lo dirà con la spiegazione.
+[Applica comunque]
+
+SQL PASSATO ALL'ESECUZIONE:
+ALTER TABLE `ramasql_test_t55`.`libri` MODIFY COLUMN `titolo` VARCHAR(20) NOT NULL
+
+ESITO:
+✘ Istruzioni applicate: 0 su 1; il server si è fermato alla n. 1. Le istruzioni DDL non si annullano: ciò che è stato applicato resta.
+✘ Errore 1265: Data truncated for column 'titolo' at row 3
+Un valore non entra nella colonna: è troppo lungo per il nuovo tipo.
+Non riuscita: ALTER TABLE `ramasql_test_t55`.`libri` MODIFY COLUMN `titolo` VARCHAR(20) NOT NULL
+ℹ L'editor mostra ora la tabella com'è davvero sul server (riletta dopo l'esecuzione).

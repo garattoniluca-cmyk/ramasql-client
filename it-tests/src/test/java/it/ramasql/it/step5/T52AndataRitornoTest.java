@@ -7,36 +7,88 @@
  * version 3 of the License, or (at your option) any later version. This program is
  * distributed WITHOUT ANY WARRANTY. See the LICENSE file for details.
  */
-package it.ramasql.core.sqlgen;
+package it.ramasql.it.step5;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 
-import it.ramasql.core.connection.ServerInfo;
-import it.ramasql.core.exec.RiskLevel;
-import it.ramasql.core.exec.SqlStatement;
-import it.ramasql.core.metadata.ColumnDef;
-import it.ramasql.core.metadata.ColumnDefault;
-import it.ramasql.core.metadata.TableDef;
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.EnumMap;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.TreeMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Stream;
+
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Tag;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
+import it.ramasql.core.connection.ServerInfo;
+import it.ramasql.core.connection.Session;
+import it.ramasql.core.exec.SqlExecutor;
+import it.ramasql.core.exec.SqlLog;
+import it.ramasql.core.metadata.ColumnDef;
+import it.ramasql.core.metadata.ColumnDefault;
+import it.ramasql.core.metadata.ForeignKeyDef;
+import it.ramasql.core.metadata.IndexDef;
+import it.ramasql.core.metadata.SqlTypes;
+import it.ramasql.core.metadata.TableDef;
+import it.ramasql.core.sqlgen.TableDiff;
+import it.ramasql.it.ItServers;
+import it.ramasql.it.TestCatalog;
+import it.ramasql.it.TestResults;
+
 /**
- * T5.1 — {@code TableDiff} su colonne, chiave primaria e opzioni di tabella. Ogni caso è verificato con
- * {@link #MARIADB} e con {@link #MYSQL}: per queste operazioni l'SQL scelto è lo stesso sui due server.
- * Gli SQL attesi sono eseguibili in sequenza: {@code diff(null, originale)} crea la tabella di partenza.
+ * T5.2 — andata e ritorno di {@link TableDiff} sui due server, per 39 casi di T5.1 (stessi modelli e stesso SQL
+ * atteso dei test U di {@code TableDiffColumnsTest}): crea la tabella di partenza con {@code diff(null, originale)},
+ * applica con {@link SqlExecutor} l'{@code ALTER} di {@code diff(originale, modificata)}, rilegge con
+ * {@code MetadataReader} e controlla che
+ * <ol>
+ *   <li>la tabella di partenza riletta sia quella chiesta (il {@code CREATE} è giusto);</li>
+ *   <li>partendo dalla tabella <i>riletta</i> (come fa l'editor) il generatore produca lo stesso SQL;</li>
+ *   <li>la tabella riletta dopo l'{@code ALTER} sia <b>uguale</b> ({@code equals}) a quella attesa;</li>
+ *   <li>{@code TableDiff.diff(riletta, attesa)} dia <b>zero istruzioni</b>.</li>
+ * </ol>
+ *
+ * <h2>Dal modello chiesto al modello atteso (solo ciò che decide il server, regole scritte)</h2>
+ * Il modello modificato dell'editor lascia alcune scelte al server; per il confronto con {@code equals} l'atteso
+ * si ottiene dal modello chiesto con queste sole regole (vedi {@link #atteso}):
+ * <ul>
+ *   <li><b>R1</b> catalogo = quello di prova (l'SQL non è qualificato: vale il catalogo della sessione).</li>
+ *   <li><b>R2</b> colonne numerate 1…n (il server le numera; nel modello le colonne nuove hanno posizione 0).</li>
+ *   <li><b>R3</b> engine, charset, collation, AUTO_INCREMENT di tabella <i>non specificati</i> ({@code null}) = quelli
+ *       scelti dal server (predefiniti del catalogo/server): si prendono dal riletto. Se sono specificati, si
+ *       confrontano.</li>
+ *   <li><b>R4</b> charset/collation di colonna uguali a quelli della tabella = {@code null} («ereditati», convenzione
+ *       del lettore); charset di colonna dato senza collation = collation predefinita del server per quel charset.</li>
+ *   <li><b>R5</b> colonna annullabile senza default = {@code DEFAULT NULL} (i server non li distinguono); NOT NULL con
+ *       {@code DEFAULT NULL} = nessun default (il generatore non lo scrive).</li>
+ *   <li><b>R6</b> default numerici confrontati per valore (il server scrive {@code 0.00} per {@code 0} su un DECIMAL).</li>
+ *   <li><b>R7</b> {@code current_timestamp()}, {@code NOW()}, {@code CURRENT_TIMESTAMP(0)} = {@code CURRENT_TIMESTAMP}
+ *       (forma canonica, la stessa del lettore); parentesi esterne tolte.</li>
+ *   <li><b>R8</b> indici: PRIMARY per prima, poi per nome; chiavi esterne per nome (ordine del lettore).</li>
+ * </ul>
  */
 @Tag("step5")
-class TableDiffColumnsTest {
+@Tag("it")
+class T52AndataRitornoTest {
 
-    static final ServerInfo MARIADB = ServerInfo.parse("11.5.2-MariaDB");
-    static final ServerInfo MYSQL = ServerInfo.parse("8.0.39");
+    private static final Pattern NOW = Pattern.compile(
+            "(?i)(CURRENT_TIMESTAMP|NOW|LOCALTIME|LOCALTIMESTAMP)(\\s*\\(\\s*(\\d*)\\s*\\))?");
+
+    /** Evidenze per server, in ordine di caso. */
+    private static final Map<ItServers, Map<Integer, String>> EVIDENZE = new EnumMap<>(ItServers.class);
+
+    // ---------------------------------------------------------------- modelli (gli stessi dei test U di T5.1)
 
     static final TableDef LIBRI = TableDef.of(null, "libri")
             .addColumn(ColumnDef.of("id", "INT").withUnsigned(true).notNull().withAutoIncrement(true))
@@ -68,12 +120,27 @@ class TableDiffColumnsTest {
             .addColumn(ColumnDef.of("riga", "VARCHAR", "200"))
             .withEngine("MyISAM").withOrdinalPositions();
 
-    private static Arguments caso(String nome, TableDef originale, TableDef modificata, String... attese) {
-        return arguments(nome, originale, modificata, List.of(attese));
+    static final TableDef ORDINE = TableDef.of(null, "ordine dettagli").addColumn(ColumnDef.of("order", "INT").notNull())
+            .addColumn(ColumnDef.of("group by", "DATE")).withOrdinalPositions();
+
+    /**
+     * Un caso di T5.1: modelli e SQL atteso (quello dei test U).
+     *
+     * @param attese SQL atteso di {@code diff(originale, modificata)}, identico al test U
+     */
+    record Caso(String nome, TableDef originale, TableDef modificata, List<String> attese) {
+        @Override
+        public String toString() {
+            return nome;
+        }
     }
 
-    static Stream<Arguments> casi() {
-        return Stream.of(
+    private static Caso caso(String nome, TableDef originale, TableDef modificata, String... attese) {
+        return new Caso(nome, originale, modificata, List.of(attese));
+    }
+
+    static List<Caso> casi() {
+        return List.of(
                 // ------------------------------------------------------------ tabella nuova
                 caso("nuova: tabella completa", null, LIBRI, """
                         CREATE TABLE `libri` (
@@ -85,11 +152,6 @@ class TableDiffColumnsTest {
                           `creato` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
                           PRIMARY KEY (`id`)
                         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci"""),
-                caso("nuova: minima, senza opzioni", null,
-                        TableDef.of(null, "t").addColumn(ColumnDef.of("a", "INT")), """
-                        CREATE TABLE `t` (
-                          `a` INT NULL
-                        )"""),
                 caso("nuova: nomi con spazi e parole riservate", null,
                         TableDef.of(null, "ordine dettagli")
                                 .addColumn(ColumnDef.of("order", "INT").notNull())
@@ -102,11 +164,6 @@ class TableDiffColumnsTest {
                           `group by` DATE NULL,
                           PRIMARY KEY (`order`)
                         )"""),
-                caso("nuova: backtick nel nome", null,
-                        TableDef.of(null, "strana`tabella").addColumn(ColumnDef.of("col`onna", "INT")), """
-                        CREATE TABLE `strana``tabella` (
-                          `col``onna` INT NULL
-                        )"""),
                 caso("nuova: MyISAM, commenti con apostrofo, AUTO_INCREMENT iniziale", null,
                         TableDef.of(null, "registro")
                                 .addColumn(ColumnDef.of("id", "INT").notNull().withAutoIncrement(true)
@@ -117,14 +174,6 @@ class TableDiffColumnsTest {
                           `id` INT NOT NULL AUTO_INCREMENT COMMENT 'l''identificativo',
                           PRIMARY KEY (`id`)
                         ) ENGINE=MyISAM AUTO_INCREMENT=1000 COMMENT='Registro dell''aula'"""),
-                caso("nuova: PK composta, nome qualificato dal catalogo", null,
-                        LIBRI_AUTORI.withCatalog("ramasql_test_u"), """
-                        CREATE TABLE `ramasql_test_u`.`libri_autori` (
-                          `id_libro` INT UNSIGNED NOT NULL,
-                          `id_autore` INT UNSIGNED NOT NULL,
-                          `ruolo` VARCHAR(30) NOT NULL DEFAULT 'autore',
-                          PRIMARY KEY (`id_libro`, `id_autore`)
-                        ) ENGINE=InnoDB"""),
                 caso("nuova: tutti i tipi di default", null,
                         TableDef.of(null, "eventi")
                                 .addColumn(ColumnDef.of("id", "CHAR", "36").notNull()
@@ -166,52 +215,16 @@ class TableDiffColumnsTest {
                           `normale` VARCHAR(10) NULL
                         ) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci"""),
 
-                // ------------------------------------------------------------ nessuna modifica
-                caso("nessuna modifica → zero istruzioni", LIBRI, LIBRI),
-                caso("nessuna modifica: INT(10) e INT sono lo stesso tipo", LIBRI,
-                        LIBRI.changeColumn("id", c -> c.withTypeArgs("10"))),
-                caso("nessuna modifica: current_timestamp() è CURRENT_TIMESTAMP", LIBRI,
-                        LIBRI.changeColumn("creato", c -> c.withDefault(ColumnDefault.expression("current_timestamp()")))),
-                caso("nessuna modifica: nessun default e DEFAULT NULL si equivalgono", LIBRI,
-                        LIBRI.changeColumn("prezzo", c -> c.withDefault(ColumnDefault.NULL_VALUE))),
-                caso("nessuna modifica: BOOLEAN è TINYINT(1), INTEGER è INT",
-                        SENZA_PK.addColumn(ColumnDef.of("ok", "TINYINT", "1")).withOrdinalPositions(),
-                        SENZA_PK.addColumn(ColumnDef.of("ok", "BOOLEAN")).withOrdinalPositions()
-                                .changeColumn("a", c -> c.withType("INTEGER", null))),
-                caso("nessuna modifica: default numerico 0 e 0.00",
-                        LIBRI.changeColumn("prezzo", c -> c.withDefault(ColumnDefault.literal("0.00"))),
-                        LIBRI.changeColumn("prezzo", c -> c.withDefault(ColumnDefault.literal("0")))),
-                caso("nessuna modifica: collation di colonna uguale a quella della tabella",
-                        LIBRI.changeColumn("titolo", c -> c.withCharset("utf8mb4", "utf8mb4_general_ci")), LIBRI),
-                caso("nessuna modifica: engine scritto in minuscolo, opzioni non specificate",
-                        LIBRI, LIBRI.withEngine("innodb").withCharset(null, null)),
-
                 // ------------------------------------------------------------ aggiungi / rimuovi / rinomina
-                caso("aggiungi colonna in fondo", LIBRI, LIBRI.addColumn(ColumnDef.of("isbn", "VARCHAR", "13")),
-                        "ALTER TABLE `libri` ADD COLUMN `isbn` VARCHAR(13) NULL"),
-                caso("aggiungi colonna in testa", LIBRI_AUTORI,
-                        LIBRI_AUTORI.addColumn(0, ColumnDef.of("codice", "CHAR", "5").notNull()),
-                        "ALTER TABLE `libri_autori` ADD COLUMN `codice` CHAR(5) NOT NULL FIRST"),
                 caso("aggiungi colonna in mezzo", LIBRI, LIBRI.addColumn(2, ColumnDef.of("sottotitolo", "VARCHAR", "200")),
                         "ALTER TABLE `libri` ADD COLUMN `sottotitolo` VARCHAR(200) NULL AFTER `titolo`"),
-                caso("aggiungi due colonne in fondo", LIBRI,
-                        LIBRI.addColumn(ColumnDef.of("isbn", "VARCHAR", "13"))
-                                .addColumn(ColumnDef.of("pagine", "SMALLINT").withUnsigned(true)), """
-                        ALTER TABLE `libri`
-                          ADD COLUMN `isbn` VARCHAR(13) NULL,
-                          ADD COLUMN `pagine` SMALLINT UNSIGNED NULL"""),
                 caso("aggiungi colonna con default e commento", LIBRI,
                         LIBRI.addColumn(ColumnDef.of("copie", "INT").notNull().withDefault(ColumnDefault.literal("1"))
                                 .withComment("copie possedute")),
                         "ALTER TABLE `libri` ADD COLUMN `copie` INT NOT NULL DEFAULT 1 COMMENT 'copie possedute'"),
-                caso("aggiungi colonna con nome riservato dopo una con spazi",
-                        TableDef.of(null, "ordine dettagli").addColumn(ColumnDef.of("order", "INT").notNull())
-                                .addColumn(ColumnDef.of("group by", "DATE")).withOrdinalPositions(),
-                        TableDef.of(null, "ordine dettagli").addColumn(ColumnDef.of("order", "INT").notNull())
-                                .addColumn(ColumnDef.of("group by", "DATE")).withOrdinalPositions()
-                                .addColumn(1, ColumnDef.of("key", "INT")),
+                caso("aggiungi colonna con nome riservato dopo una con spazi", ORDINE,
+                        ORDINE.addColumn(1, ColumnDef.of("key", "INT")),
                         "ALTER TABLE `ordine dettagli` ADD COLUMN `key` INT NULL AFTER `order`"),
-                caso("rimuovi colonna", LIBRI, LIBRI.removeColumn("note"), "ALTER TABLE `libri` DROP COLUMN `note`"),
                 caso("rimuovi due colonne", LIBRI, LIBRI.removeColumn("note").removeColumn("prezzo"), """
                         ALTER TABLE `libri`
                           DROP COLUMN `prezzo`,
@@ -219,75 +232,40 @@ class TableDiffColumnsTest {
                 caso("rinomina colonna: CHANGE COLUMN con la definizione completa", LIBRI,
                         LIBRI.changeColumn("titolo", c -> c.withName("titolo_libro")),
                         "ALTER TABLE `libri` CHANGE COLUMN `titolo` `titolo_libro` VARCHAR(100) NOT NULL"),
-                caso("rinomina e cambia tipo insieme", LIBRI,
-                        LIBRI.changeColumn("note", c -> c.withName("descrizione").withType("MEDIUMTEXT", null)),
-                        "ALTER TABLE `libri` CHANGE COLUMN `note` `descrizione` MEDIUMTEXT NULL"),
                 caso("rinomina verso un nome riservato con spazi", LIBRI,
                         LIBRI.changeColumn("stato", c -> c.withName("order by")),
                         "ALTER TABLE `libri` CHANGE COLUMN `stato` `order by` ENUM('nuovo','usato') NOT NULL DEFAULT 'nuovo'"),
                 caso("rinomina solo maiuscole/minuscole", LIBRI, LIBRI.changeColumn("titolo", c -> c.withName("Titolo")),
                         "ALTER TABLE `libri` CHANGE COLUMN `titolo` `Titolo` VARCHAR(100) NOT NULL"),
-                caso("senza posizioni l'abbinamento è per nome: nome diverso = DROP + ADD",
-                        TableDef.of(null, "t").addColumn(ColumnDef.of("a", "INT")).addColumn(ColumnDef.of("b", "INT")),
-                        TableDef.of(null, "t").addColumn(ColumnDef.of("a", "BIGINT")).addColumn(ColumnDef.of("c", "INT")), """
-                        ALTER TABLE `t`
-                          DROP COLUMN `b`,
-                          MODIFY COLUMN `a` BIGINT NULL,
-                          ADD COLUMN `c` INT NULL"""),
 
                 // ------------------------------------------------------------ tipo, lunghezza, NULL
                 caso("cambio tipo INT → BIGINT", LIBRI, LIBRI.changeColumn("id", c -> c.withType("BIGINT", null)),
                         "ALTER TABLE `libri` MODIFY COLUMN `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT"),
                 caso("cambio lunghezza VARCHAR", LIBRI, LIBRI.changeColumn("titolo", c -> c.withTypeArgs("200")),
                         "ALTER TABLE `libri` MODIFY COLUMN `titolo` VARCHAR(200) NOT NULL"),
-                caso("cambio precisione DECIMAL", LIBRI, LIBRI.changeColumn("prezzo", c -> c.withTypeArgs("10,3")),
-                        "ALTER TABLE `libri` MODIFY COLUMN `prezzo` DECIMAL(10,3) NULL"),
                 caso("nuovo valore di un ENUM", LIBRI,
                         LIBRI.changeColumn("stato", c -> c.withTypeArgs("'nuovo','usato','d''epoca'")),
                         "ALTER TABLE `libri` MODIFY COLUMN `stato` ENUM('nuovo','usato','d''epoca') NOT NULL DEFAULT 'nuovo'"),
-                caso("cambio tipo TEXT → VARCHAR", LIBRI, LIBRI.changeColumn("note", c -> c.withType("VARCHAR", "500")),
-                        "ALTER TABLE `libri` MODIFY COLUMN `note` VARCHAR(500) NULL"),
                 caso("da NULL a NOT NULL", LIBRI, LIBRI.changeColumn("prezzo", ColumnDef::notNull),
                         "ALTER TABLE `libri` MODIFY COLUMN `prezzo` DECIMAL(8,2) NOT NULL"),
-                caso("da NOT NULL a NULL", LIBRI, LIBRI.changeColumn("titolo", c -> c.withNullable(true)),
-                        "ALTER TABLE `libri` MODIFY COLUMN `titolo` VARCHAR(100) NULL"),
 
                 // ------------------------------------------------------------ default
-                caso("default numerico", LIBRI, LIBRI.changeColumn("prezzo", c -> c.withDefault(ColumnDefault.literal("0"))),
-                        "ALTER TABLE `libri` MODIFY COLUMN `prezzo` DECIMAL(8,2) NULL DEFAULT 0"),
                 caso("default stringa vuota", LIBRI, LIBRI.changeColumn("titolo", c -> c.withDefault(ColumnDefault.literal(""))),
                         "ALTER TABLE `libri` MODIFY COLUMN `titolo` VARCHAR(100) NOT NULL DEFAULT ''"),
-                caso("default con apostrofo", LIBRI,
-                        LIBRI.changeColumn("titolo", c -> c.withDefault(ColumnDefault.literal("senza titolo: l'ignoto"))),
-                        "ALTER TABLE `libri` MODIFY COLUMN `titolo` VARCHAR(100) NOT NULL DEFAULT 'senza titolo: l''ignoto'"),
                 caso("da default letterale a DEFAULT NULL",
                         LIBRI.changeColumn("prezzo", c -> c.withDefault(ColumnDefault.literal("9.99"))),
                         LIBRI.changeColumn("prezzo", c -> c.withDefault(ColumnDefault.NULL_VALUE)),
                         "ALTER TABLE `libri` MODIFY COLUMN `prezzo` DECIMAL(8,2) NULL DEFAULT NULL"),
-                caso("rimozione del default", LIBRI, LIBRI.changeColumn("stato", c -> c.withDefault(ColumnDefault.NONE)),
-                        "ALTER TABLE `libri` MODIFY COLUMN `stato` ENUM('nuovo','usato') NOT NULL"),
-                caso("cambio del default letterale", LIBRI,
-                        LIBRI.changeColumn("stato", c -> c.withDefault(ColumnDefault.literal("usato"))),
-                        "ALTER TABLE `libri` MODIFY COLUMN `stato` ENUM('nuovo','usato') NOT NULL DEFAULT 'usato'"),
                 caso("da letterale a CURRENT_TIMESTAMP",
                         LIBRI.changeColumn("creato", c -> c.withDefault(ColumnDefault.literal("2000-01-01 00:00:00"))), LIBRI,
                         "ALTER TABLE `libri` MODIFY COLUMN `creato` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP"),
-                caso("da CURRENT_TIMESTAMP a nessun default", LIBRI,
-                        LIBRI.changeColumn("creato", c -> c.withDefault(ColumnDefault.NONE)),
-                        "ALTER TABLE `libri` MODIFY COLUMN `creato` DATETIME NOT NULL"),
                 caso("aggiunta di ON UPDATE CURRENT_TIMESTAMP", LIBRI,
                         LIBRI.changeColumn("creato", c -> c.withOnUpdate("CURRENT_TIMESTAMP")),
                         "ALTER TABLE `libri` MODIFY COLUMN `creato` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"),
-                caso("NOT NULL con DEFAULT NULL: il default non si scrive", LIBRI,
-                        LIBRI.changeColumn("prezzo", c -> c.notNull().withDefault(ColumnDefault.NULL_VALUE)),
-                        "ALTER TABLE `libri` MODIFY COLUMN `prezzo` DECIMAL(8,2) NOT NULL"),
 
-                // ------------------------------------------------------------ AI, UNSIGNED, commento, collation
+                // ------------------------------------------------------------ AI, UNSIGNED, commento, charset
                 caso("togli AUTO_INCREMENT", LIBRI, LIBRI.changeColumn("id", c -> c.withAutoIncrement(false)),
                         "ALTER TABLE `libri` MODIFY COLUMN `id` INT UNSIGNED NOT NULL"),
-                caso("metti AUTO_INCREMENT (la colonna è già chiave)",
-                        LIBRI.changeColumn("id", c -> c.withAutoIncrement(false)), LIBRI,
-                        "ALTER TABLE `libri` MODIFY COLUMN `id` INT UNSIGNED NOT NULL AUTO_INCREMENT"),
                 caso("togli UNSIGNED", LIBRI, LIBRI.changeColumn("id", c -> c.withUnsigned(false)),
                         "ALTER TABLE `libri` MODIFY COLUMN `id` INT NOT NULL AUTO_INCREMENT"),
                 caso("metti UNSIGNED", SENZA_PK, SENZA_PK.changeColumn("b", c -> c.withUnsigned(true)),
@@ -295,10 +273,6 @@ class TableDiffColumnsTest {
                 caso("aggiungi commento di colonna", LIBRI,
                         LIBRI.changeColumn("prezzo", c -> c.withComment("in euro, IVA inclusa: l'importo")),
                         "ALTER TABLE `libri` MODIFY COLUMN `prezzo` DECIMAL(8,2) NULL COMMENT 'in euro, IVA inclusa: l''importo'"),
-                caso("togli commento di colonna", LIBRI.changeColumn("prezzo", c -> c.withComment("in euro")), LIBRI,
-                        "ALTER TABLE `libri` MODIFY COLUMN `prezzo` DECIMAL(8,2) NULL"),
-                caso("collation di colonna", LIBRI, LIBRI.changeColumn("titolo", c -> c.withCharset("utf8mb4", "utf8mb4_bin")),
-                        "ALTER TABLE `libri` MODIFY COLUMN `titolo` VARCHAR(100) COLLATE utf8mb4_bin NOT NULL"),
                 caso("charset di colonna", LIBRI,
                         LIBRI.changeColumn("titolo", c -> c.withCharset("latin1", "latin1_swedish_ci")),
                         "ALTER TABLE `libri` MODIFY COLUMN `titolo` VARCHAR(100) CHARACTER SET latin1 COLLATE latin1_swedish_ci NOT NULL"),
@@ -308,8 +282,6 @@ class TableDiffColumnsTest {
                         "ALTER TABLE `t` ADD PRIMARY KEY (`a`)"),
                 caso("PK composta aggiunta", SENZA_PK, SENZA_PK.withPrimaryKey("a", "b"),
                         "ALTER TABLE `t` ADD PRIMARY KEY (`a`, `b`)"),
-                caso("PK tolta", LIBRI_AUTORI, LIBRI_AUTORI.withPrimaryKey(),
-                        "ALTER TABLE `libri_autori` DROP PRIMARY KEY"),
                 caso("PK tolta insieme all'AUTO_INCREMENT che la richiede", LIBRI,
                         LIBRI.withPrimaryKey().changeColumn("id", c -> c.withAutoIncrement(false)), """
                         ALTER TABLE `libri`
@@ -324,13 +296,6 @@ class TableDiffColumnsTest {
                         ALTER TABLE `libri_autori`
                           DROP PRIMARY KEY,
                           ADD PRIMARY KEY (`id_libro`)"""),
-                caso("PK da semplice a composta", SENZA_PK.withPrimaryKey("a"), SENZA_PK.withPrimaryKey("a", "b"), """
-                        ALTER TABLE `t`
-                          DROP PRIMARY KEY,
-                          ADD PRIMARY KEY (`a`, `b`)"""),
-                caso("rinomina di una colonna della PK: la PK non si tocca", LIBRI_AUTORI,
-                        LIBRI_AUTORI.changeColumn("id_libro", c -> c.withName("libro")).withPrimaryKey("libro", "id_autore"),
-                        "ALTER TABLE `libri_autori` CHANGE COLUMN `id_libro` `libro` INT UNSIGNED NOT NULL"),
                 caso("nuova colonna AUTO_INCREMENT che diventa PK", SENZA_PK,
                         SENZA_PK.addColumn(0, ColumnDef.of("id", "INT").notNull().withAutoIncrement(true))
                                 .withPrimaryKey("id"), """
@@ -341,21 +306,18 @@ class TableDiffColumnsTest {
                 // ------------------------------------------------------------ opzioni di tabella
                 caso("engine InnoDB → MyISAM", LIBRI, LIBRI.withEngine("MyISAM"), "ALTER TABLE `libri` ENGINE=MyISAM"),
                 caso("engine MyISAM → InnoDB", MYISAM, MYISAM.withEngine("InnoDB"), "ALTER TABLE `registro` ENGINE=InnoDB"),
-                caso("charset e collation", LIBRI, LIBRI.withCharset("latin1", "latin1_swedish_ci"),
+                // Il cambio di charset di tabella cambia il predefinito per le colonne future e non converte quelle
+                // esistenti (TableDiff, come Workbench): nel modello modificato le colonne di testo esistenti
+                // restano quindi esplicitamente in utf8mb4_general_ci; l'SQL è lo stesso del test U.
+                caso("charset e collation di tabella", LIBRI, conColonneFissate(LIBRI)
+                                .withCharset("latin1", "latin1_swedish_ci"),
                         "ALTER TABLE `libri` DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci"),
-                caso("solo collation", LIBRI, LIBRI.withCharset("utf8mb4", "utf8mb4_unicode_ci"),
-                        "ALTER TABLE `libri` COLLATE=utf8mb4_unicode_ci"),
                 caso("commento di tabella", LIBRI, LIBRI.withComment("Catalogo dell'istituto"),
                         "ALTER TABLE `libri` COMMENT='Catalogo dell''istituto'"),
-                caso("commento di tabella tolto", LIBRI.withComment("Catalogo"), LIBRI, "ALTER TABLE `libri` COMMENT=''"),
                 caso("AUTO_INCREMENT iniziale", LIBRI, LIBRI.withAutoIncrementStart(1000L),
                         "ALTER TABLE `libri` AUTO_INCREMENT=1000"),
 
                 // ------------------------------------------------------------ rinomina tabella e combinazioni
-                caso("rinomina tabella", LIBRI, LIBRI.withName("volumi"), "RENAME TABLE `libri` TO `volumi`"),
-                caso("rinomina tabella: catalogo, spazi e parola riservata",
-                        LIBRI.withCatalog("ramasql_test_u"), LIBRI.withCatalog("ramasql_test_u").withName("order by"),
-                        "RENAME TABLE `ramasql_test_u`.`libri` TO `ramasql_test_u`.`order by`"),
                 caso("rinomina tabella + nuova colonna: prima RENAME, poi ALTER sul nome nuovo", LIBRI,
                         LIBRI.withName("volumi").addColumn(ColumnDef.of("isbn", "CHAR", "13")),
                         "RENAME TABLE `libri` TO `volumi`",
@@ -377,72 +339,216 @@ class TableDiffColumnsTest {
                         ALTER TABLE `t`
                           CHANGE COLUMN `a` `codice` VARCHAR(8) NOT NULL,
                           MODIFY COLUMN `b` INT NULL DEFAULT 5,
-                          ADD PRIMARY KEY (`codice`)"""),
-                caso("combinazione con catalogo: l'ALTER è qualificato", LIBRI.withCatalog("ramasql_test_u"),
-                        LIBRI.withCatalog("ramasql_test_u").removeColumn("note"),
-                        "ALTER TABLE `ramasql_test_u`.`libri` DROP COLUMN `note`"),
-
-                // ------------------------------------------------------------ elementi avanzati
-                caso("elementi avanzati: CHECK, colonna generata e partizioni non vengono mai toccati",
-                        LIBRI.addColumn(ColumnDef.of("prezzo_ivato", "DECIMAL", "10,2").withGenerated(true)
-                                        .withOrdinalPosition(7))
-                                .withAdvancedElements(List.of(
-                                        "CONSTRAINT `chk_prezzo` CHECK (`prezzo` >= 0)",
-                                        "`prezzo_ivato` decimal(10,2) GENERATED ALWAYS AS (`prezzo` * 1.22) STORED",
-                                        "PARTITION BY HASH (`id`) PARTITIONS 4")),
-                        LIBRI.changeColumn("titolo", c -> c.withTypeArgs("150")),
-                        "ALTER TABLE `libri` MODIFY COLUMN `titolo` VARCHAR(150) NOT NULL"),
-                // ------------------------------------------------------------ ZEROFILL (conservato, Step 3)
-                caso("zerofill: un MODIFY di un'altra proprietà lo conserva",
-                        LIBRI.addColumn(ColumnDef.of("codice", "INT", "6").withUnsigned(true).withZerofill(true)
-                                .notNull().withOrdinalPosition(7)),
-                        LIBRI.addColumn(ColumnDef.of("codice", "INT", "6").withUnsigned(true).withZerofill(true)
-                                .notNull().withOrdinalPosition(7).withComment("codice interno")),
-                        "ALTER TABLE `libri` MODIFY COLUMN `codice` INT(6) UNSIGNED ZEROFILL NOT NULL"
-                                + " COMMENT 'codice interno'"),
-                caso("zerofill: letto e letto uguali → nessuna istruzione",
-                        LIBRI.addColumn(ColumnDef.of("codice", "INT", "6").withUnsigned(true).withZerofill(true)
-                                .withOrdinalPosition(7)),
-                        LIBRI.addColumn(ColumnDef.of("codice", "INT", "6").withUnsigned(true).withZerofill(true)
-                                .withOrdinalPosition(7))),
-                caso("zerofill: toglierlo è una modifica",
-                        LIBRI.addColumn(ColumnDef.of("codice", "INT", "6").withUnsigned(true).withZerofill(true)
-                                .withOrdinalPosition(7)),
-                        LIBRI.addColumn(ColumnDef.of("codice", "INT", "6").withUnsigned(true)
-                                .withOrdinalPosition(7)),
-                        "ALTER TABLE `libri` MODIFY COLUMN `codice` INT(6) UNSIGNED NULL"),
-                caso("zerofill: colonna nuova",
-                        LIBRI, LIBRI.addColumn(ColumnDef.of("codice", "INT", "6").withUnsigned(true).withZerofill(true)),
-                        "ALTER TABLE `libri` ADD COLUMN `codice` INT(6) UNSIGNED ZEROFILL NULL"),
-                caso("elementi avanzati: una colonna generata non si aggiunge né si modifica",
-                        LIBRI.addColumn(ColumnDef.of("g", "INT").withGenerated(true).withOrdinalPosition(7)),
-                        LIBRI.addColumn(ColumnDef.of("g", "BIGINT").withGenerated(true).withOrdinalPosition(7))
-                                .addColumn(ColumnDef.of("h", "INT").withGenerated(true))));
+                          ADD PRIMARY KEY (`codice`)"""));
     }
 
-    @ParameterizedTest(name = "[{index}] {0}")
-    @MethodSource("casi")
-    void diff(String nome, TableDef originale, TableDef modificata, List<String> attese) {
-        assertEquals(attese, TableDiff.diff(originale, modificata, MARIADB), "MariaDB");
-        assertEquals(attese, TableDiff.diff(originale, modificata, MYSQL), "MySQL");
-        for (String sql : attese) {
-            assertTrue(sql.contains("`"), "identificatori sempre tra backtick");
+    /** Le colonne di testo con il charset/collation della tabella scritti per esteso (vedi il caso del charset). */
+    private static TableDef conColonneFissate(TableDef t) {
+        List<ColumnDef> cols = new ArrayList<>();
+        for (ColumnDef c : t.columns()) {
+            boolean testo = SqlTypes.isText(c.dataType()) || c.dataType().equals("ENUM") || c.dataType().equals("SET");
+            cols.add(testo && c.charset() == null ? c.withCharset(t.charset(), t.collation()) : c);
+        }
+        return t.withColumns(cols);
+    }
+
+    static Stream<Arguments> casiPerServer() {
+        List<Arguments> out = new ArrayList<>();
+        List<Caso> casi = casi();
+        for (ItServers server : ItServers.values()) {
+            for (int i = 0; i < casi.size(); i++) {
+                out.add(arguments(server, i + 1, casi.get(i)));
+            }
+        }
+        return out.stream();
+    }
+
+    @ParameterizedTest(name = "[{0}] caso {1}: {2}")
+    @MethodSource("casiPerServer")
+    void andataERitorno(ItServers server, int numero, Caso caso) throws Exception {
+        StringBuilder ev = new StringBuilder();
+        ev.append("## Caso ").append(numero).append(" — ").append(caso.nome()).append('\n');
+        try {
+            eseguiCaso(server, caso, ev);
+            ev.append("ESITO: OK\n");
+        } catch (Throwable t) {
+            ev.append("ESITO: FALLITO — ").append(t.getMessage()).append('\n');
+            throw t;
+        } finally {
+            synchronized (EVIDENZE) {
+                EVIDENZE.computeIfAbsent(server, k -> new TreeMap<>()).put(numero, ev.toString());
+            }
         }
     }
 
-    @Test
-    void iCasiSonoAlmenoSessanta() {
-        assertTrue(casi().count() >= 60, "T5.1 chiede almeno 60 casi, sono " + casi().count());
+    private void eseguiCaso(ItServers server, Caso caso, StringBuilder ev) throws Exception {
+        try (TestCatalog cat = TestCatalog.create(server, "t52"); Session session = EditorSupport.open(server,
+                cat.name()); SqlExecutor exec = new SqlExecutor(session, new SqlLog(), null)) {
+            ServerInfo info = session.serverInfo();
+            ev.append("server: ").append(info.displayName()).append('\n');
+            TableDef finale;
+            List<String> applicate;
+            if (caso.originale() == null) {
+                applicate = TableDiff.diff(null, caso.modificata(), info);
+                assertEquals(caso.attese(), applicate, "SQL del generatore = SQL atteso del test U");
+                ev.append("SQL applicato (CREATE):\n").append(EditorSupport.block(applicate)).append('\n');
+                EditorSupport.apply(exec, "T5.2 " + caso.nome(), applicate);
+                ev.append("esecuzione: OK (").append(applicate.size()).append(" istruzioni)\n");
+            } else {
+                List<String> create = TableDiff.diff(null, caso.originale(), info);
+                ev.append("tabella di partenza:\n").append(EditorSupport.block(create)).append('\n');
+                EditorSupport.apply(exec, "T5.2 partenza " + caso.nome(), create);
+                TableDef partenza = EditorSupport.reread(session, cat.name(), caso.originale().name());
+                assertEquals(atteso(caso.originale(), cat.name(), partenza), partenza,
+                        "la tabella di partenza riletta è quella chiesta");
+                ev.append("partenza riletta = chiesta: sì\n");
+
+                applicate = TableDiff.diff(caso.originale(), caso.modificata(), info);
+                assertEquals(caso.attese(), applicate, "SQL del generatore = SQL atteso del test U");
+                List<String> dalRiletto = TableDiff.diff(partenza.withCatalog(null), caso.modificata(), info);
+                assertEquals(applicate, dalRiletto, "partendo dal riletto (come l'editor) l'SQL è lo stesso");
+                ev.append("SQL applicato (= test U, = generato dal riletto):\n")
+                        .append(EditorSupport.block(applicate)).append('\n');
+                EditorSupport.apply(exec, "T5.2 " + caso.nome(), applicate);
+                ev.append("esecuzione: OK (").append(applicate.size()).append(" istruzioni)\n");
+            }
+            finale = EditorSupport.reread(session, cat.name(), caso.modificata().name());
+            TableDef atteso = atteso(caso.modificata(), cat.name(), finale);
+            assertEquals(atteso, finale, "tabella riletta = tabella attesa");
+            ev.append("riletta = attesa (equals): sì\n");
+            ev.append("riletta: ").append(descrivi(finale)).append('\n');
+            List<String> residuo = TableDiff.diff(finale, atteso, info);
+            assertEquals(List.of(), residuo, "diff(riletta, attesa) deve essere vuoto");
+            assertFalse(residuo.iterator().hasNext());
+            ev.append("diff(riletta, attesa): 0 istruzioni\n");
+            assertTrue(exec.log().entries().stream().allMatch(e -> e.outcome() == SqlLog.Outcome.OK));
+        }
     }
 
-    @Test
-    void leIstruzioniPerLaPipelineHannoOrigineERischio() {
-        List<SqlStatement> s = TableDiff.statements(LIBRI, LIBRI.removeColumn("note").withName("volumi"), MYSQL,
-                "Editor di tabelle");
-        assertEquals(2, s.size());
-        assertEquals("Editor di tabelle", s.get(0).origin());
-        assertEquals(RiskLevel.MODIFIES, s.get(0).risk(), "RENAME TABLE");
-        assertEquals(RiskLevel.DESTRUCTIVE, s.get(1).risk(), "ALTER … DROP COLUMN");
-        assertEquals(RiskLevel.MODIFIES, TableDiff.statements(null, LIBRI, MARIADB, "x").get(0).risk());
+    // ---------------------------------------------------------------- atteso = chiesto + regole R1…R8
+
+    /** Il modello atteso sul server a partire da quello chiesto, con le sole regole R1…R8 della classe. */
+    static TableDef atteso(TableDef chiesto, String catalog, TableDef riletto) {
+        TableDef t = chiesto.withCatalog(catalog).withOrdinalPositions();                        // R1, R2
+        t = t.withEngine(t.engine() != null ? canonicalEngine(t.engine()) : riletto.engine());   // R3
+        if (t.charset() == null && t.collation() == null) {
+            t = t.withCharset(riletto.charset(), riletto.collation());
+        } else if (t.collation() == null) {
+            t = t.withCharset(t.charset(), riletto.collation());
+        }
+        if (t.autoIncrementStart() == null) {
+            t = t.withAutoIncrementStart(riletto.autoIncrementStart());
+        }
+        List<ColumnDef> cols = new ArrayList<>();
+        for (ColumnDef c : t.columns()) {
+            ColumnDef server = riletto.column(c.name()).orElse(null);
+            String charset = c.charset();
+            String collation = c.collation();
+            if (charset != null && collation == null && server != null) {                           // R4
+                collation = server.collation() != null ? server.collation() : t.collation();
+            }
+            if (charset != null && charset.equalsIgnoreCase(t.charset())) {
+                charset = null;
+            }
+            if (collation != null && collation.equalsIgnoreCase(t.collation())) {
+                collation = null;
+            }
+            c = c.withCharset(charset, collation);
+            ColumnDefault d = c.defaultValue();                                                      // R5
+            if (!c.autoIncrement() && c.nullable() && d.isNone()) {
+                d = ColumnDefault.NULL_VALUE;
+            } else if (!c.nullable() && d.kind() == ColumnDefault.Kind.NULL) {
+                d = ColumnDefault.NONE;
+            }
+            if (d.kind() == ColumnDefault.Kind.LITERAL && server != null                           // R6
+                    && server.defaultValue().kind() == ColumnDefault.Kind.LITERAL
+                    && SqlTypes.isNumeric(c.dataType()) && sameNumber(d.value(), server.defaultValue().value())) {
+                d = server.defaultValue();
+            }
+            if (d.kind() == ColumnDefault.Kind.EXPRESSION) {                                        // R7
+                d = ColumnDefault.expression(canonicalExpression(d.value()));
+            }
+            c = c.withDefault(d).withOnUpdate(c.onUpdate() == null ? null : canonicalExpression(c.onUpdate()));
+            cols.add(c);
+        }
+        t = t.withColumns(cols);
+        List<IndexDef> idx = new ArrayList<>(t.indexes());                                         // R8
+        idx.sort(Comparator.comparing((IndexDef i) -> !i.isPrimary()).thenComparing(i -> i.name().toLowerCase(Locale.ROOT)));
+        List<ForeignKeyDef> fks = new ArrayList<>(t.foreignKeys());
+        fks.sort(Comparator.comparing(f -> f.name().toLowerCase(Locale.ROOT)));
+        return t.withIndexes(idx).withForeignKeys(fks);
+    }
+
+    private static String canonicalEngine(String engine) {
+        return engine.equalsIgnoreCase("innodb") ? "InnoDB" : engine.equalsIgnoreCase("myisam") ? "MyISAM" : engine;
+    }
+
+    private static boolean sameNumber(String a, String b) {
+        try {
+            return new BigDecimal(a.trim()).compareTo(new BigDecimal(b.trim())) == 0;
+        } catch (NumberFormatException e) {
+            return false;
+        }
+    }
+
+    private static String canonicalExpression(String expression) {
+        String s = expression.trim();
+        while (s.startsWith("(") && s.endsWith(")")) {
+            s = s.substring(1, s.length() - 1).trim();
+        }
+        Matcher m = NOW.matcher(s);
+        if (m.matches()) {
+            String p = m.group(3);
+            return "CURRENT_TIMESTAMP" + (p != null && !p.isEmpty() && !p.equals("0") ? "(" + p + ")" : "");
+        }
+        return s;
+    }
+
+    static String descrivi(TableDef t) {
+        StringBuilder s = new StringBuilder("`").append(t.name()).append("` ").append(t.engine()).append(' ')
+                .append(t.collation()).append(t.autoIncrementStart() == null ? "" : " AI=" + t.autoIncrementStart())
+                .append(t.comment().isEmpty() ? "" : " COMMENT='" + t.comment() + "'").append(" [");
+        List<String> parts = new ArrayList<>();
+        for (ColumnDef c : t.columns()) {
+            parts.add(c.ordinalPosition() + ":" + c.name() + " " + c.fullType() + (c.unsigned() ? " UNSIGNED" : "")
+                    + (c.nullable() ? " NULL" : " NOT NULL")
+                    + switch (c.defaultValue().kind()) {
+                        case NONE -> "";
+                        case NULL -> " DEFAULT NULL";
+                        case LITERAL -> " DEFAULT '" + c.defaultValue().value() + "'";
+                        case EXPRESSION -> " DEFAULT " + c.defaultValue().value();
+                    }
+                    + (c.onUpdate() == null ? "" : " ON UPDATE " + c.onUpdate())
+                    + (c.autoIncrement() ? " AI" : "")
+                    + (c.collation() == null ? "" : " " + c.collation())
+                    + (c.comment().isEmpty() ? "" : " '" + c.comment() + "'"));
+        }
+        s.append(String.join(", ", parts)).append("] ");
+        List<String> idx = new ArrayList<>();
+        for (IndexDef i : t.indexes()) {
+            idx.add(i.kind() + " " + i.name() + i.columns());
+        }
+        return s.append(idx).toString();
+    }
+
+    @AfterAll
+    static void scriviEvidenze() {
+        synchronized (EVIDENZE) {
+            for (Map.Entry<ItServers, Map<Integer, String>> e : EVIDENZE.entrySet()) {
+                long ok = e.getValue().values().stream().filter(v -> v.contains("ESITO: OK")).count();
+                StringBuilder out = new StringBuilder("# T5.2 — andata e ritorno di TableDiff su " + e.getKey().label()
+                        + "\n# Classe: it.ramasql.it.step5.T52AndataRitornoTest (step5, it)\n"
+                        + "# Per caso: SQL applicato con SqlExecutor, esito, confronto riletto/atteso e diff residuo.\n"
+                        + "# Casi eseguiti: " + e.getValue().size() + ", superati: " + ok + "\n"
+                        + "# Atteso = modello chiesto + sole regole su ciò che decide il server (javadoc della classe):\n"
+                        + "#  R1 catalogo di prova; R2 colonne numerate 1..n; R3 engine/charset/collation/AUTO_INCREMENT\n"
+                        + "#  non specificati = scelti dal server; R4 charset/collation di colonna uguali alla tabella =\n"
+                        + "#  ereditati; R5 NULL senza default = DEFAULT NULL, NOT NULL con DEFAULT NULL = nessun default;\n"
+                        + "#  R6 default numerici per valore; R7 NOW()/current_timestamp() = CURRENT_TIMESTAMP;\n"
+                        + "#  R8 ordine di indici e FK del lettore. Nessun altro campo è escluso dal confronto (equals).\n\n");
+                e.getValue().values().forEach(v -> out.append(v).append('\n'));
+                TestResults.write("step5", "T5.2-" + e.getKey().name().toLowerCase(Locale.ROOT) + ".txt", out.toString());
+            }
+        }
     }
 }

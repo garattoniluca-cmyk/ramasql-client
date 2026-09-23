@@ -20,13 +20,13 @@ import it.ramasql.core.connection.ConnectionFailure;
 import it.ramasql.core.connection.ConnectionProfile;
 
 /** {@link Prompts} dei test dello Step 3: dà la password del server di test e registra avvisi ed errori. */
-final class QuietPrompts implements Prompts {
+public final class QuietPrompts implements Prompts {
 
     private final DbServer server;
-    AppSettings nextSettings;
-    final List<String> errors = new ArrayList<>();
+    public AppSettings nextSettings;
+    public final List<String> errors = new ArrayList<>();
 
-    QuietPrompts(DbServer server) {
+    public QuietPrompts(DbServer server) {
         this.server = server;
     }
 

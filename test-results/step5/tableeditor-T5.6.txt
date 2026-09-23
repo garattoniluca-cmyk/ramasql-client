@@ -1,0 +1,17 @@
+ISTRUZIONI:
+RENAME TABLE `ramasql_test_t56`.`libri` TO `ramasql_test_t56`.`volumi`;
+ALTER TABLE `ramasql_test_t56`.`volumi` DROP FOREIGN KEY `fk_libri_editori`;
+ALTER TABLE `ramasql_test_t56`.`volumi`
+  MODIFY COLUMN `titolo` VARCHAR(200) NOT NULL,
+  ADD CONSTRAINT `fk_libri_editori` FOREIGN KEY (`id_editore`) REFERENCES `editori` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT;
+
+ESITO MOSTRATO:
+✘ Istruzioni applicate: 1 su 3; il server si è fermato alla n. 2. Le istruzioni DDL non si annullano: ciò che è stato applicato resta.
+✘ Errore 1142: ALTER command denied to user 'studente'@'localhost' for table `ramasql_test_t56`.`volumi`
+Il tuo utente non ha il permesso di modificare la tabella.
+Applicata: RENAME TABLE `ramasql_test_t56`.`libri` TO `ramasql_test_t56`.`volumi`
+Non riuscita: ALTER TABLE `ramasql_test_t56`.`volumi` DROP FOREIGN KEY `fk_libri_editori`
+Non eseguita: ALTER TABLE `ramasql_test_t56`.`volumi` MODIFY COLUMN `titolo` VARCHAR(200) NOT NULL, ADD CONSTRAINT `fk_libri_editori` FOREIGN KEY (`id_editore`) REFERENCES…
+ℹ L'editor mostra ora la tabella com'è davvero sul server (riletta dopo l'esecuzione).
+
+STATO RICARICATO: nome=volumi, ON DELETE=RESTRICT, titolo=VARCHAR(150)
