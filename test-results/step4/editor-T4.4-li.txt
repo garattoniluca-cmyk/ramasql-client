@@ -1,0 +1,5 @@
+T4.4 — testo: SELECT * FROM li  (cursore in fondo) + Ctrl+Spazio
+libri — tabella
+libri_autori — tabella
+LIKE — parola chiave
+LIMIT — parola chiave

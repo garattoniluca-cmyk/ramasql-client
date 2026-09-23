@@ -271,6 +271,9 @@ public final class TableDiff {
         if (c.unsigned()) {
             sql.append(" UNSIGNED");
         }
+        if (c.zerofill()) {
+            sql.append(" ZEROFILL");
+        }
         if (c.charset() != null && !c.charset().equalsIgnoreCase(table.charset())) {
             sql.append(" CHARACTER SET ").append(c.charset());
         }
@@ -407,6 +410,7 @@ public final class TableDiff {
 
     private static boolean sameDefinition(ColumnDef o, ColumnDef e, TableDef original) {
         return SqlTypes.sameType(o, e)
+                && o.zerofill() == e.zerofill()
                 && o.nullable() == e.nullable()
                 && o.autoIncrement() == e.autoIncrement()
                 && o.comment().equals(e.comment())

@@ -1,0 +1,18 @@
+File riletto dal disco (695 byte), copia in test-results/step4/T4.22-soci.csv.
+Primi 3 byte: EF BB BF (BOM UTF-8). Separatore «;», decimali con la virgola, righe CR+LF.
+Contenuto (<TAB> <CR> <LF> resi visibili):
+id;tessera;nome;email;nato_il;quota;punti<CR><LF>
+1;T101;"Rossi; Anna";anna.rossi@scuola.it;2008-01-10;10,50;0<CR><LF>
+2;T102;Bruno Bianchi;bruno.bianchi@scuola.it;2008-02-11;11,50;10<CR><LF>
+3;T103;"Carla<TAB>Verdi";carla.verdi@scuola.it;2008-03-12;12,50;20<CR><LF>
+4;T104;Dario Neri;"riga uno<LF>
+riga due";;13,50;30<CR><LF>
+5;T105;"Elena ""Leni"" Galli";;2008-05-14;14,50;40<CR><LF>
+6;T106;Fabio Conti;"";2008-06-15;15,50;50<CR><LF>
+7;T107;Giulia Testà 😀;giulia.testa@scuola.it;2008-07-16;16,50;60<CR><LF>
+8;T108;Luca Moro;luca.moro@scuola.it;2008-08-17;17,50;70<CR><LF>
+9;T109;Marta Riva;marta.riva@scuola.it;2008-09-18;18,50;80<CR><LF>
+10;T110;Nicola Fonti;nicola.fonti@scuola.it;2008-01-10;19,50;90<CR><LF>
+11;T111;Olga Sala;olga.sala@scuola.it;2008-02-11;20,50;100<CR><LF>
+
+Da fare a mano: aprire il file con un doppio clic nell'Excel italiano e controllare colonne e accenti (T4.22).

@@ -1,0 +1,15 @@
+(1) 2×2 sopra righe 2-3 → PasteResult[cellsWritten=4, rowsAdded=0, discardedColumns=0, skippedCells=0] · 0 inserimenti · 2 modifiche · 0 eliminazioni in sospeso
+(2) valore «99» su selezione 5×1 → PasteResult[cellsWritten=5, rowsAdded=0, discardedColumns=0, skippedCells=0]
+(3) blocco 1×4 da «quota» → PasteResult[cellsWritten=2, rowsAdded=0, discardedColumns=2, skippedCells=0] · avviso: Incollate 2 celle. Il blocco era più largo della tabella: 2 colonne in più scartate. Ctrl+Z per annullare.
+(4) blocco da «id» (AUTO_INCREMENT) → PasteResult[cellsWritten=1, rowsAdded=0, discardedColumns=0, skippedCells=1] · avviso: Incollate 1 celle. Colonne saltate perché le calcola il server: id. Ctrl+Z per annullare.
+
+SQL generato alla Conferma (9 UPDATE):
+UPDATE `biblioteca`.`soci` SET `quota` = 1.00, `punti` = 5 WHERE `id` = 1;
+UPDATE `biblioteca`.`soci` SET `nome` = 'Bruno B.', `email` = 'bruno@esempio.it' WHERE `id` = 2;
+UPDATE `biblioteca`.`soci` SET `nome` = 'Carla V.', `email` = 'carla@esempio.it' WHERE `id` = 3;
+UPDATE `biblioteca`.`soci` SET `punti` = 99 WHERE `id` = 7;
+UPDATE `biblioteca`.`soci` SET `punti` = 99 WHERE `id` = 8;
+UPDATE `biblioteca`.`soci` SET `punti` = 99 WHERE `id` = 9;
+UPDATE `biblioteca`.`soci` SET `punti` = 99 WHERE `id` = 10;
+UPDATE `biblioteca`.`soci` SET `punti` = 99 WHERE `id` = 11;
+UPDATE `biblioteca`.`soci` SET `tessera` = 'T999' WHERE `id` = 12;

@@ -45,7 +45,13 @@ import it.ramasql.app.connection.ConnectingPanel;
 import it.ramasql.app.connection.ConnectionController;
 import it.ramasql.app.connection.HomePanel;
 import it.ramasql.app.connection.ShellView;
+import it.ramasql.app.editor.SqlEditor;
+import it.ramasql.app.grid.DataGrid;
 import it.ramasql.app.navigator.NavigatorPanel;
+import it.ramasql.app.tableeditor.TableEditor;
+import it.ramasql.app.workspace.MetadataCompletionSource;
+import it.ramasql.app.workspace.WorkTabs;
+import it.ramasql.core.metadata.TableDef;
 import it.ramasql.app.settings.SettingsController;
 import it.ramasql.app.sqlpanel.SqlPanel;
 import it.ramasql.app.theme.AppIcons;
@@ -104,6 +110,7 @@ public final class MainFrame extends JFrame implements ShellView {
     private final JPanel navigatorHost = new JPanel(navigatorCards);
     private final NavigatorPanel navigatorPanel = new NavigatorPanel();
     private final JTabbedPane workTabs = new JTabbedPane();
+    private final transient WorkTabs tabs;
     private final SqlPanel sqlPanel;
     private final JSplitPane horizontalSplit;
     private final JSplitPane verticalSplit;
@@ -128,6 +135,11 @@ public final class MainFrame extends JFrame implements ShellView {
         this.workspacePrompts = workspacePrompts != null ? workspacePrompts
                 : new SwingWorkspacePrompts(() -> this, () -> settings.settings().workDirectory());
         this.sqlPanel = new SqlPanel(sqlLog, this.workspacePrompts, navigatorPanel::selectedCatalog);
+        this.tabs = new WorkTabs(workTabs, this.workspacePrompts);
+        navigatorPanel.setOnOpenTable(this::openDataEntry);
+        navigatorPanel.setOnDesignTable((catalog, table) -> openTableEditor(catalog, table));
+        navigatorPanel.setOnNewTable(catalog -> openTableEditor(catalog, null));
+        navigatorPanel.setOnOpenView(this::openView);
         settings.addListener(changed -> {
             if (workspace != null) {
                 workspace.setRowLimit(changed.rowLimit());
@@ -325,6 +337,26 @@ public final class MainFrame extends JFrame implements ShellView {
         connectButton().setEnabled(true);
         connectButton().setToolTipText(Texts.get("toolbar.connect.tooltip"));
         connectButton().addActionListener(e -> connectOrDisconnect());
+        button("newQuery").addActionListener(e -> openSqlEditor());
+        button("newTable").addActionListener(e -> {
+            String catalog = navigatorPanel.selectedCatalog();
+            if (catalog != null && !catalog.isBlank()) {
+                openTableEditor(catalog, null);
+            }
+        });
+        button("run").addActionListener(e -> {
+            SqlEditor editor = tabs.selectedEditor();
+            if (editor != null) {
+                editor.runCurrent();
+            }
+        });
+        button("stop").addActionListener(e -> {
+            SqlEditor editor = tabs.selectedEditor();
+            if (editor != null) {
+                editor.cancelRun();
+            }
+        });
+        workTabs.addChangeListener(e -> updateToolbar());
         return bar;
     }
 
@@ -396,7 +428,7 @@ public final class MainFrame extends JFrame implements ShellView {
     @Override
     public void showHome(List<ConnectionProfile> profiles) {
         closeWorkspace();
-        workTabs.removeAll(); // le schede appartengono alla connessione che si è chiusa
+        tabs.closeAllSilently(); // le schede appartengono alla connessione che si è chiusa
         home.setProfiles(profiles);
         show(Screen.HOME);
         connectButton().setText(Texts.get("toolbar.connect"));
@@ -407,12 +439,13 @@ public final class MainFrame extends JFrame implements ShellView {
         setServerPill("", Tokens.TEXT_TERTIARY);
         statusCatalog.setText("");
         statusCatalog.setVisible(false);
+        updateToolbar();
     }
 
     @Override
     public void showConnecting(ConnectionProfile profile) {
         closeWorkspace();
-        workTabs.removeAll();
+        tabs.closeAllSilently();
         connecting.setProfile(profile);
         show(Screen.CONNECTING);
         connectButton().setEnabled(false);
@@ -437,11 +470,64 @@ public final class MainFrame extends JFrame implements ShellView {
         statusCatalog.setText(catalog == null || catalog.isEmpty()
                 ? Texts.get("status.catalog.none") : Texts.get("status.catalog", catalog));
         statusCatalog.setVisible(true);
+        updateToolbar();
     }
 
     @Override
     public int openTabCount() {
         return workTabs.getTabCount();
+    }
+
+    // ---------------------------------------------------------------- schede dell'area di lavoro
+
+    /** Le schede aperte (data-entry, editor SQL, editor di tabelle). */
+    public WorkTabs tabs() {
+        return tabs;
+    }
+
+    /** Apre il data-entry di una tabella già letta dai metadati. */
+    public DataGrid openDataEntry(String catalog, TableDef table) {
+        if (workspace == null) {
+            return null;
+        }
+        DataGrid grid = tabs.openDataEntry(workspace, table, settings.settings().rowLimit(),
+                workspacePrompts.gridPrompts());
+        updateToolbar();
+        return grid;
+    }
+
+    /** Apre una vista in sola lettura. */
+    public DataGrid openView(NavigatorPanel.ViewToOpen view) {
+        if (workspace == null) {
+            return null;
+        }
+        DataGrid grid = tabs.openView(workspace, view.catalog(), view.name(), view.columns(),
+                settings.settings().rowLimit(), workspacePrompts.gridPrompts());
+        updateToolbar();
+        return grid;
+    }
+
+    /** Apre l'editor di struttura: {@code table} nullo = tabella nuova nel catalogo. */
+    public TableEditor openTableEditor(String catalog, TableDef table) {
+        if (workspace == null) {
+            return null;
+        }
+        TableEditor editor = tabs.openTableEditor(workspace, table, catalog,
+                workspacePrompts.tableEditorPrompts());
+        updateToolbar();
+        return editor;
+    }
+
+    /** Apre una scheda «Query N» con l'editor SQL. */
+    public SqlEditor openSqlEditor() {
+        if (workspace == null) {
+            return null;
+        }
+        SqlEditor editor = tabs.openSqlEditor(workspace, settings.settings().rowLimit(),
+                workspacePrompts.editorPrompts(), workspacePrompts.gridPrompts(),
+                new MetadataCompletionSource(workspace.reader(), navigatorPanel::selectedCatalog));
+        updateToolbar();
+        return editor;
     }
 
     /** Lettore dei metadati, esecutore e pipeline per la sessione appena aperta; il navigatore inizia a leggere. */
@@ -514,6 +600,36 @@ public final class MainFrame extends JFrame implements ShellView {
 
     public List<JButton> toolbarButtons() {
         return List.copyOf(toolbarButtons);
+    }
+
+    /** Il pulsante della barra con quella chiave («newQuery», «run»…). */
+    public JButton button(String key) {
+        for (JButton b : toolbarButtons) {
+            if (("toolbar." + key).equals(b.getName())) {
+                return b;
+            }
+        }
+        throw new IllegalArgumentException("pulsante assente nella barra: " + key);
+    }
+
+    /**
+     * Abilita i pulsanti che ora hanno senso: «Nuova query» e «Nuova tabella» appena c'è una connessione, «Esegui» e
+     * «Interrompi» solo con un editor SQL davanti (e «Interrompi» solo mentre qualcosa sta girando). Gli altri restano
+     * spenti con il loro «Arriva in una prossima versione» finché il loro step non c'è.
+     */
+    public void updateToolbar() {
+        boolean connected = workspace != null;
+        enable(button("newQuery"), connected, Texts.get("toolbar.newQuery.tooltip"));
+        enable(button("newTable"), connected && navigatorPanel.selectedCatalog() != null,
+                Texts.get("toolbar.newTable.tooltip"));
+        SqlEditor editor = tabs.selectedEditor();
+        enable(button("run"), editor != null && !editor.isRunning(), Texts.get("toolbar.run.tooltip"));
+        enable(button("stop"), editor != null && editor.isRunning(), Texts.get("toolbar.stop.tooltip"));
+    }
+
+    private static void enable(JButton button, boolean on, String tooltip) {
+        button.setEnabled(on);
+        button.setToolTipText(on ? tooltip : Texts.get("toolbar.comingSoon"));
     }
 
     public final JButton connectButton() {

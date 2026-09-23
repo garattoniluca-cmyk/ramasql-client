@@ -1,0 +1,7 @@
+Ctrl+X su righe 1-2 × nome..punti:
+  appunti = blocco originale [[Anna Rossi, anna.rossi@scuola.it, 2008-01-10, 10.50, 0], [Bruno Bianchi, bruno.bianchi@scuola.it, 2008-02-11, 11.50, 10]]
+  dopo = [[, null, null, null, 0], [, null, null, null, 10]]
+  avviso: Celle svuotate (Ctrl+Z per annullare).
+  SQL (prima riga): UPDATE `biblioteca`.`soci` SET `nome` = '', `email` = NULL, `nato_il` = NULL, `quota` = NULL WHERE `id` = 1
+Ctrl+Z: blocco ripristinato, nessuna modifica in sospeso.
+Canc su riga nuova (email..punti): celle non impostate → INSERT INTO `biblioteca`.`soci` (`tessera`, `nome`) VALUES ('T500', 'Nuovo Socio')

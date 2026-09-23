@@ -1,0 +1,13 @@
+﻿id;tessera;nome;email;nato_il;quota;punti
+1;T101;"Rossi; Anna";anna.rossi@scuola.it;2008-01-10;10,50;0
+2;T102;Bruno Bianchi;bruno.bianchi@scuola.it;2008-02-11;11,50;10
+3;T103;"Carla	Verdi";carla.verdi@scuola.it;2008-03-12;12,50;20
+4;T104;Dario Neri;"riga uno
+riga due";;13,50;30
+5;T105;"Elena ""Leni"" Galli";;2008-05-14;14,50;40
+6;T106;Fabio Conti;"";2008-06-15;15,50;50
+7;T107;Giulia Testà 😀;giulia.testa@scuola.it;2008-07-16;16,50;60
+8;T108;Luca Moro;luca.moro@scuola.it;2008-08-17;17,50;70
+9;T109;Marta Riva;marta.riva@scuola.it;2008-09-18;18,50;80
+10;T110;Nicola Fonti;nicola.fonti@scuola.it;2008-01-10;19,50;90
+11;T111;Olga Sala;olga.sala@scuola.it;2008-02-11;20,50;100

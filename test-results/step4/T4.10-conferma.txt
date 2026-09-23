@@ -1,0 +1,8 @@
+3 modifiche + 1 inserimento + 1 eliminazione → onConfirm con 5 RowChange → 5 istruzioni (nessuna di transazione):
+DELETE FROM `biblioteca`.`soci` WHERE `id` = 9;
+UPDATE `biblioteca`.`soci` SET `nome` = 'Anna Rossi Bianchi' WHERE `id` = 1;
+UPDATE `biblioteca`.`soci` SET `quota` = 99.90 WHERE `id` = 2;
+UPDATE `biblioteca`.`soci` SET `email` = 'carla@esempio.it' WHERE `id` = 3;
+INSERT INTO `biblioteca`.`soci` (`tessera`, `nome`) VALUES ('T200', 'Zeno Nuovo');
+Esito simulato: markSaved su tutte, id 13 alla riga nuova → in griglia «13 | T200 | Zeno Nuovo», nessuna modifica in sospeso.
+Da fare nell'integrazione: anteprima, esecuzione con SqlExecutor, rilettura dei dati sul server.

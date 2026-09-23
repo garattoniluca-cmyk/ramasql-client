@@ -1,0 +1,6 @@
+T4.4 — testo: SELECT libri.  (cursore in fondo) + Ctrl+Spazio
+anno — colonna di libri
+id — colonna di libri
+id_editore — colonna di libri
+prezzo — colonna di libri
+titolo — colonna di libri

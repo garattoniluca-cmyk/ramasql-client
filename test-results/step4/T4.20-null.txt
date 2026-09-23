@@ -1,0 +1,4 @@
+NULL: «NULL» corsivo grigio; stringa vuota: «».
+Imposta NULL su nome+email riga 1 → email NULL, nome invariato; avviso: «Le colonne nome non ammettono NULL…».
+Modifica in una finestra: testo con a-capo e tab salvato; in cella si vede «Prima riga↵Seconda riga↵→con rientro».
+Editor aperto su NULL e chiuso vuoto: resta NULL.

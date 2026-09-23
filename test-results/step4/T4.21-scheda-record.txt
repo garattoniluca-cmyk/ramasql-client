@@ -1,0 +1,5 @@
+Scheda aperta sulla riga 3 («Record 3 di 12»); email modificata → visibile in griglia.
+«Nuovo» → «Record nuovo»; 6 campi scritti → «Record 13 di 13»; quota «abc» → contorno rosso, Conferma disabilitata; corretta in 12.00 → abilitata.
+Ritorno alla griglia: riga 13 selezionata con i valori della scheda.
+Ctrl+S dalla scheda → onConfirm → UPDATE `biblioteca`.`soci` SET `email` = 'carla@esempio.it' WHERE `id` = 3 ; INSERT INTO `biblioteca`.`soci` (`tessera`, `nome`, `email`, `nato_il`, `quota`, `punti`) VALUES ('T400', 'Sara Nuova', 'sara@esempio.it', '2009-09-09', 12.00, 5)
+Elimina dalla scheda sulla riga 1 → «Riga da eliminare alla Conferma.», contatore 1 inserimento · 1 modifica · 1 eliminazione in sospeso

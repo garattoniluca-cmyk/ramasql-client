@@ -1,0 +1,5 @@
+3 inserimenti, il 2º con tessera duplicata.
+Esito simulato: 1º markSaved (id 13), 2º markError(1062 spiegato), 3º non eseguito.
+Stati: SALVATA / IN_ERRORE / PENDENTE; avviso: Riga nuova non salvata: Duplicate entry 'T101' for key 'uq_tessera' (1062) — esiste già un socio con questa tessera.
+Corretta la tessera (T301): seconda Conferma → INSERT INTO `biblioteca`.`soci` (`tessera`, `nome`) VALUES ('T301', 'Socio 1') ; INSERT INTO `biblioteca`.`soci` (`tessera`, `nome`) VALUES ('T302', 'Socio 2')
+Da fare nell'integrazione: esecutore che si ferma al primo errore e spiegazione in italiano del codice 1062 (dal classificatore d'errori).

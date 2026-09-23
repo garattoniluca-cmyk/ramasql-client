@@ -1,0 +1,18 @@
+Blocco selezionato: righe 3-5, colonne tessera..nato_il (3×4)
+Ctrl+C (<TAB> <CR> <LF> resi visibili):
+T103<TAB>"Carla<TAB>Verdi"<TAB>carla.verdi@scuola.it<TAB>2008-03-12<CR><LF>
+T104<TAB>Dario Neri<TAB>"riga uno<LF>
+riga due"<TAB><CR><LF>
+T105<TAB>"Elena ""Leni"" Galli"<TAB><TAB>2008-05-14<CR><LF>
+
+Copia con intestazioni:
+tessera<TAB>nome<TAB>email<TAB>nato_il<CR><LF>
+T103<TAB>"Carla<TAB>Verdi"<TAB>carla.verdi@scuola.it<TAB>2008-03-12<CR><LF>
+T104<TAB>Dario Neri<TAB>"riga uno<LF>
+riga due"<TAB><CR><LF>
+T105<TAB>"Elena ""Leni"" Galli"<TAB><TAB>2008-05-14<CR><LF>
+
+Riletto con ClipboardBlock.parse: [[T103, Carla	Verdi, carla.verdi@scuola.it, 2008-03-12], [T104, Dario Neri, riga uno
+riga due, null], [T105, Elena "Leni" Galli, null, 2008-05-14]]
+Appunti usati: privati (new Clipboard("test")), non quelli di sistema.
+Verifica in Excel e Calc reali: vedi Bug002SystemClipboardTest e il controllo manuale T4.16.

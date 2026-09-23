@@ -1,0 +1,25 @@
+Testo «da Excel» (20×3, CR+LF) incollato sulla riga d'inserimento, colonna nome.
+Righe in sospeso: 20; contatore: 20 inserimenti · 0 modifiche · 0 eliminazioni in sospeso
+Avviso: Incollate 60 celle, 20 righe nuove. Ctrl+Z per annullare.
+onConfirm chiamato 1 volta con 20 RowChange INSERT.
+SQL da DmlGenerator (20 istruzioni, nessuna di transazione):
+INSERT INTO `biblioteca`.`autori` (`nome`, `cognome`, `nazione`) VALUES ('Umberto 1', 'Eco', 'Italia');
+INSERT INTO `biblioteca`.`autori` (`nome`, `cognome`, `nazione`) VALUES ('Natalia 2', 'Ginzburg', 'Italia');
+INSERT INTO `biblioteca`.`autori` (`nome`, `cognome`, `nazione`) VALUES ('Gabriel 3', 'García Márquez', 'Colombia');
+INSERT INTO `biblioteca`.`autori` (`nome`, `cognome`, `nazione`) VALUES ('José 4', 'Saramago', 'Portogallo');
+INSERT INTO `biblioteca`.`autori` (`nome`, `cognome`) VALUES ('Wisława 5', 'Szymborska');
+INSERT INTO `biblioteca`.`autori` (`nome`, `cognome`, `nazione`) VALUES ('Umberto 6', 'Eco', 'Italia');
+INSERT INTO `biblioteca`.`autori` (`nome`, `cognome`, `nazione`) VALUES ('Natalia 7', 'Ginzburg', 'Italia');
+INSERT INTO `biblioteca`.`autori` (`nome`, `cognome`, `nazione`) VALUES ('Gabriel 8', 'García Márquez', 'Colombia');
+INSERT INTO `biblioteca`.`autori` (`nome`, `cognome`, `nazione`) VALUES ('José 9', 'Saramago', 'Portogallo');
+INSERT INTO `biblioteca`.`autori` (`nome`, `cognome`) VALUES ('Wisława 10', 'Szymborska');
+INSERT INTO `biblioteca`.`autori` (`nome`, `cognome`, `nazione`) VALUES ('Umberto 11', 'Eco', 'Italia');
+INSERT INTO `biblioteca`.`autori` (`nome`, `cognome`, `nazione`) VALUES ('Natalia 12', 'Ginzburg', 'Italia');
+INSERT INTO `biblioteca`.`autori` (`nome`, `cognome`, `nazione`) VALUES ('Gabriel 13', 'García Márquez', 'Colombia');
+INSERT INTO `biblioteca`.`autori` (`nome`, `cognome`, `nazione`) VALUES ('José 14', 'Saramago', 'Portogallo');
+INSERT INTO `biblioteca`.`autori` (`nome`, `cognome`) VALUES ('Wisława 15', 'Szymborska');
+INSERT INTO `biblioteca`.`autori` (`nome`, `cognome`, `nazione`) VALUES ('Umberto 16', 'Eco', 'Italia');
+INSERT INTO `biblioteca`.`autori` (`nome`, `cognome`, `nazione`) VALUES ('Natalia 17', 'Ginzburg', 'Italia');
+INSERT INTO `biblioteca`.`autori` (`nome`, `cognome`, `nazione`) VALUES ('Gabriel 18', 'García Márquez', 'Colombia');
+INSERT INTO `biblioteca`.`autori` (`nome`, `cognome`, `nazione`) VALUES ('José 19', 'Saramago', 'Portogallo');
+INSERT INTO `biblioteca`.`autori` (`nome`, `cognome`) VALUES ('Wisława 20', 'Szymborska');

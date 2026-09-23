@@ -1,0 +1,52 @@
+T4.2 (lato componente) — Esegui tutto su 50 istruzioni; esecutore finto su un altro thread
+Sotto-schede Risultato: 20; righe nella scheda Esito: 50
+1 | CREATE TABLE ramasql_prova (id INT AUTO_INCREMENT PRIMARY KEY, nome VARCHAR(50), n INT) | 1 riga interessata | 0,001 s | 
+2 | ALTER TABLE ramasql_prova ADD COLUMN nota VARCHAR(100) | 2 righe interessate | 0,002 s | 
+3 | CREATE PROCEDURE somma_prova() BEGIN SELECT SUM(n) FROM ramasql_prova; END | 3 righe interessate | 0,003 s | 
+4 | SHOW COLUMNS FROM ramasql_prova | 4 righe | 0,004 s | 
+5 | SELECT id, nome FROM ramasql_prova WHERE n >= 5 | 5 righe | 0,005 s | 
+6 | INSERT INTO ramasql_prova (nome, n) VALUES ('riga; 6', 6) | 6 righe interessate | 0,006 s | 
+7 | UPDATE ramasql_prova SET nota = 'aggiornata' WHERE n = 7 | 7 righe interessate | 0,007 s | 
+8 | DELETE FROM ramasql_prova WHERE n = 800 | 8 righe interessate | 0,008 s | 
+9 | SHOW COLUMNS FROM ramasql_prova | 9 righe | 0,009 s | 
+10 | SELECT id, nome FROM ramasql_prova WHERE n >= 10 | 10 righe | 0,010 s | 
+11 | INSERT INTO ramasql_prova (nome, n) VALUES ('riga; 11', 11) | 11 righe interessate | 0,011 s | 
+12 | UPDATE ramasql_prova SET nota = 'aggiornata' WHERE n = 12 | 12 righe interessate | 0,012 s | 
+13 | DELETE FROM ramasql_prova WHERE n = 1300 | 13 righe interessate | 0,013 s | 
+14 | SHOW COLUMNS FROM ramasql_prova | 14 righe | 0,014 s | 
+15 | SELECT id, nome FROM ramasql_prova WHERE n >= 15 | 15 righe | 0,015 s | 
+16 | INSERT INTO ramasql_prova (nome, n) VALUES ('riga; 16', 16) | 16 righe interessate | 0,016 s | 
+17 | UPDATE ramasql_prova SET nota = 'aggiornata' WHERE n = 17 | 17 righe interessate | 0,017 s | 
+18 | DELETE FROM ramasql_prova WHERE n = 1800 | 18 righe interessate | 0,018 s | 
+19 | SHOW COLUMNS FROM ramasql_prova | 19 righe | 0,019 s | 
+20 | SELECT id, nome FROM ramasql_prova WHERE n >= 20 | 20 righe | 0,020 s | 
+21 | INSERT INTO ramasql_prova (nome, n) VALUES ('riga; 21', 21) | 21 righe interessate | 0,021 s | 
+22 | UPDATE ramasql_prova SET nota = 'aggiornata' WHERE n = 22 | 22 righe interessate | 0,022 s | 
+23 | DELETE FROM ramasql_prova WHERE n = 2300 | 23 righe interessate | 0,023 s | 
+24 | SHOW COLUMNS FROM ramasql_prova | 24 righe | 0,024 s | 
+25 | SELECT id, nome FROM ramasql_prova WHERE n >= 25 | 25 righe | 0,025 s | 
+26 | INSERT INTO ramasql_prova (nome, n) VALUES ('riga; 26', 26) | 26 righe interessate | 0,026 s | 
+27 | UPDATE ramasql_prova SET nota = 'aggiornata' WHERE n = 27 | 27 righe interessate | 0,027 s | 
+28 | DELETE FROM ramasql_prova WHERE n = 2800 | 28 righe interessate | 0,028 s | 
+29 | SHOW COLUMNS FROM ramasql_prova | 29 righe | 0,029 s | 
+30 | SELECT id, nome FROM ramasql_prova WHERE n >= 30 | 30 righe | 0,030 s | 
+31 | INSERT INTO ramasql_prova (nome, n) VALUES ('riga; 31', 31) | 31 righe interessate | 0,031 s | 
+32 | UPDATE ramasql_prova SET nota = 'aggiornata' WHERE n = 32 | 32 righe interessate | 0,032 s | 
+33 | DELETE FROM ramasql_prova WHERE n = 3300 | 33 righe interessate | 0,033 s | 
+34 | SHOW COLUMNS FROM ramasql_prova | 34 righe | 0,034 s | 
+35 | SELECT id, nome FROM ramasql_prova WHERE n >= 35 | 35 righe | 0,035 s | 
+36 | INSERT INTO ramasql_prova (nome, n) VALUES ('riga; 36', 36) | 36 righe interessate | 0,036 s | 
+37 | UPDATE ramasql_prova SET nota = 'aggiornata' WHERE n = 37 | 37 righe interessate | 0,037 s | 
+38 | DELETE FROM ramasql_prova WHERE n = 3800 | 38 righe interessate | 0,038 s | 
+39 | SHOW COLUMNS FROM ramasql_prova | 39 righe | 0,039 s | 
+40 | SELECT id, nome FROM ramasql_prova WHERE n >= 40 | 40 righe | 0,040 s | 
+41 | INSERT INTO ramasql_prova (nome, n) VALUES ('riga; 41', 41) | 41 righe interessate | 0,041 s | 
+42 | UPDATE ramasql_prova SET nota = 'aggiornata' WHERE n = 42 | 42 righe interessate | 0,042 s | 
+43 | DELETE FROM ramasql_prova WHERE n = 4300 | 43 righe interessate | 0,043 s | 
+44 | SHOW COLUMNS FROM ramasql_prova | 44 righe | 0,044 s | 
+45 | SELECT id, nome FROM ramasql_prova WHERE n >= 45 | 45 righe | 0,045 s | 
+46 | INSERT INTO ramasql_prova (nome, n) VALUES ('riga; 46', 46) | 46 righe interessate | 0,046 s | 
+47 | UPDATE ramasql_prova SET nota = 'aggiornata' WHERE n = 47 | 47 righe interessate | 0,047 s | 
+48 | DELETE FROM ramasql_prova WHERE n = 4800 | 48 righe interessate | 0,048 s | 
+49 | CALL somma_prova() | 49 righe | 0,049 s | 
+50 | SELECT COUNT(*) FROM ramasql_prova | 50 righe | 0,050 s | 

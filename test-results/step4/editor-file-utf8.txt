@@ -1,0 +1,3 @@
+Salvataggio e riapertura in UTF-8 (senza BOM) di: -- Città, perché, àèìòù, «virgolette» 📚
+Byte scritti: 115; testo riletto identico: true
+Titolo dopo il salvataggio: prova accenti.sql

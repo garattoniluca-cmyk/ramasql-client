@@ -1,0 +1,6 @@
+UPDATE soci SET nome='x'  -> conferma chiesta; rifiutata; istruzioni consegnate: 0
+DELETE FROM prestiti  -> conferma chiesta; rifiutata; istruzioni consegnate: 0
+DROP TABLE prestiti  -> conferma chiesta; rifiutata; istruzioni consegnate: 0
+DROP DATABASE ramasql_test_prova  -> conferma chiesta; rifiutata; istruzioni consegnate: 0
+TRUNCATE TABLE soci  -> conferma chiesta; rifiutata; istruzioni consegnate: 0
+ALTER TABLE soci DROP COLUMN email  -> conferma chiesta; rifiutata; istruzioni consegnate: 0

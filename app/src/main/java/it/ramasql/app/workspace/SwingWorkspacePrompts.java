@@ -53,6 +53,34 @@ public final class SwingWorkspacePrompts implements WorkspacePrompts {
     }
 
     @Override
+    public it.ramasql.app.grid.GridPrompts gridPrompts() {
+        return new it.ramasql.app.grid.SwingGridPrompts(owner::get, workDirectory);
+    }
+
+    @Override
+    public it.ramasql.app.editor.EditorPrompts editorPrompts() {
+        return new it.ramasql.app.editor.SwingEditorPrompts(owner::get, workDirectory);
+    }
+
+    @Override
+    public it.ramasql.app.tableeditor.TableEditorPrompts tableEditorPrompts() {
+        return new it.ramasql.app.tableeditor.SwingTableEditorPrompts(owner::get);
+    }
+
+    @Override
+    public PendingChoice askPendingOnClose(String question) {
+        String[] options = {Texts.get("grid.close.confirm"), Texts.get("grid.close.discard"),
+            Texts.get("grid.close.stay")};
+        int choice = JOptionPane.showOptionDialog(owner.get(), question, Texts.get("grid.close.title"),
+                JOptionPane.DEFAULT_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, options[2]);
+        return switch (choice) {
+            case 0 -> PendingChoice.CONFIRM;
+            case 1 -> PendingChoice.DISCARD;
+            default -> PendingChoice.STAY;   // anche la X della finestra: non si perde nulla
+        };
+    }
+
+    @Override
     public String askNewTableName(String catalog, String currentName) {
         Object answer = JOptionPane.showInputDialog(owner.get(), Texts.get("nav.rename.message", currentName),
                 Texts.get("nav.rename.title"), JOptionPane.PLAIN_MESSAGE, null, null, currentName);

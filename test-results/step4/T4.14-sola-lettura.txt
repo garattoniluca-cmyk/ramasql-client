@@ -1,0 +1,4 @@
+Tabella «registro» senza PK/UNIQUE, vista e risultati di query: nessuna riga d'inserimento, editCellAt rifiutato, Ctrl+V/Canc/Imposta NULL/Elimina righe/Ctrl+X senza effetto, Conferma/Scarta/contatore assenti; Ctrl+C copia il blocco.
+Spiegazione tabella: Questa tabella non ha una chiave primaria né un indice UNIQUE: il client non saprebbe quale riga modificare. Puoi copiare i dati.
+Spiegazione vista: Le viste si leggono soltanto: i dati si modificano nelle tabelle da cui la vista li prende. Puoi copiarli.
+Risultati di query: nessuna spiegazione (riga non mostrata).

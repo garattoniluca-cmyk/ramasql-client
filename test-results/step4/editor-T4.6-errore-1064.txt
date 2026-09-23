@@ -1,0 +1,9 @@
+T4.6 (lato componente): errore 1064 simulato sulla 2a istruzione dello script
+Messaggio del server: You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'FORM libri\nWHERE anno > 2000' at line 3
+Riga evidenziata nel documento: 5
+Testo evidenziato: FORM libri
+Riquadro errore:
+Istruzione 2 — errore 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'FORM libri
+WHERE anno > 2000' at line 3
+In parole semplici: L'SQL non è scritto correttamente (errore di sintassi). Guarda il punto evidenziato: spesso manca una virgola o un apice, c'è una parola chiave sbagliata o nel posto sbagliato.
+Il punto dell'errore è evidenziato nell'editor, alla riga 5.

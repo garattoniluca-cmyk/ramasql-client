@@ -1,0 +1,6 @@
+Incollato 2×3 da nato_il: «2026-02-30», «12.50», «abc» / «2001-01-01», «3.00», «7».
+Celle non valide: 2 → suggerimenti: «Data non valida…» e «Valore non valido: serve un numero intero.»
+Dopo l'incolla: 0 inserimenti · 2 modifiche · 0 eliminazioni in sospeso · Conferma: 2 celle non valide (segnate in rosso): correggile per poter confermare.
+Ctrl+S con celle non valide: onConfirm NON chiamato.
+Ctrl+Z: tutte le 6 celle tornano come prima, nessuna modifica in sospeso.
+Incollato di nuovo, corrette a mano (2026-02-28, 42): Conferma abilitata, onConfirm con 2 modifiche.

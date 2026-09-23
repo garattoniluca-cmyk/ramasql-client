@@ -1,0 +1,7 @@
+3 righe scritte nella riga d'inserimento; poi cambio riga (0 → 7), ordinamento per nome, pagina successiva, rilettura.
+onConfirm chiamato: 0 volte. Letture dal fornitore: 1 (solo l'apertura).
+Ordinamento/pagina rifiutati con avviso: «Prima conferma o scarta le modifiche in sospeso: cambiare pagina o ordinare non salva nulla.»
+Contatore: 3 inserimenti · 0 modifiche · 0 eliminazioni in sospeso
+T4.12 — domanda alla chiusura: «Ci sono modifiche in sospeso (3 inserimenti · 0 modifiche · 0 eliminazioni). Conferma, scarta o resta?»
+Scarta (dopo conferma della domanda): righe come lette, contatore «Nessuna modifica in sospeso».
+Poi pagina 2 (letture: 2) e ordinamento nome Z→A (letture: 3).

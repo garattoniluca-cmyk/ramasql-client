@@ -1,0 +1,4 @@
+finestra: SQL che verrà eseguito
+SQL: DROP TABLE prestiti;
+da riscrivere: prestiti
+Esegui con «prestiti»: abilitato

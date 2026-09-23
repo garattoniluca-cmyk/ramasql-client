@@ -1,10 +1,10 @@
 T3.8 — registro esportato e rieseguito, su MySQL
-Origine: ramasql_test_s3_reg_a_65gt4j · copia (vuota): ramasql_test_s3_reg_b_fperj6
+Origine: ramasql_test_ui_reg_a_moxmig · copia (vuota): ramasql_test_ui_reg_b_1h2rx2
 
 1) fixture biblioteca.sql caricata con l'esecutore del client: 15 istruzioni nel registro
 2) dal navigatore: rinomina autori→scrittori, svuota prestiti, elimina libri_autori (OK), elimina editori (rifiutata: ERRORE 3730)
 3) Esporta… → T3.8-registro-interfaccia-mysql.sql (1224 righe; USE e DROP TABLE editori commentati)
-4) rieseguito con l'esecutore su ramasql_test_s3_reg_b_fperj6: 17 istruzioni, tutte OK
+4) rieseguito con l'esecutore su ramasql_test_ui_reg_b_1h2rx2: 17 istruzioni, tutte OK
 
    editori: TableDef uguali (colonne 3, indici 2, FK 0, AUTO_INCREMENT 21)
    libri: TableDef uguali (colonne 6, indici 3, FK 1, AUTO_INCREMENT 201)

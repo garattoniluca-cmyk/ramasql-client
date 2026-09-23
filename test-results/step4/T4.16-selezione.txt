@@ -1,0 +1,4 @@
+Clic intestazione «nome» → righe 1-12 × colonna nome;
+Maiusc+clic «email» → colonne nome..email;
+clic numero riga 5 → riga intera (7 colonne);
+Ctrl+A → tutto; copiate 12 righe × 7 colonne (riga d'inserimento esclusa).

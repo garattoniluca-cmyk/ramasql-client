@@ -1,0 +1,8 @@
+T4.7 — tabella da 1000000 righe su MySQL
+Catalogo di test: ramasql_test_ui_grande_xinoin (creato e popolato in 3888 ms con INSERT … SELECT, fuori dal client)
+Prima pagina: 5 ms (limite 1000 ms) — SQL nel registro: SELECT `id`, `testo`, `numero` FROM `ramasql_test_ui_grande_xinoin`.`grande` LIMIT 1001
+Pagina 2: 2 ms, prima riga id=1001 — SELECT `id`, `testo`, `numero` FROM `ramasql_test_ui_grande_xinoin`.`grande` LIMIT 1001 OFFSET 1000
+Ordinamento su «numero» (colonna senza indice), decrescente: 200 ms — SELECT `id`, `testo`, `numero` FROM `ramasql_test_ui_grande_xinoin`.`grande` ORDER BY `numero` DESC LIMIT 1001
+Memoria usata dopo le tre letture: 58 MB (limite 300 MB)
+Righe tenute in memoria dalla griglia: 1000 (di 1000000 sul server)
+Esito: SUPERATO

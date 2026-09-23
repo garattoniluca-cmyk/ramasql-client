@@ -1,0 +1,4 @@
+T4.3 (lato componente): SELECT SLEEP(30) -> Interrompi
+cancel() ricevuti dall'esecutore: 1
+stato dopo la fine: Interrotto: eseguite 1 istruzioni su 1.
+nuova esecuzione accettata dopo l'interruzione: [SELECT 1]

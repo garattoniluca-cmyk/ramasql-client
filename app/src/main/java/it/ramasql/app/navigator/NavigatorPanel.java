@@ -28,6 +28,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 import javax.swing.AbstractAction;
@@ -642,6 +643,85 @@ public final class NavigatorPanel extends JPanel {
         }
     }
 
+    // ---------------------------------------------------------------- aperture chieste dall'albero
+
+    /** Chi apre la scheda di data-entry di una tabella (la tabella è già letta dai metadati). */
+    private BiConsumer<String, TableDef> onOpenTable = (catalog, table) -> { };
+    /** Chi apre l'editor di struttura di una tabella esistente. */
+    private BiConsumer<String, TableDef> onDesignTable = (catalog, table) -> { };
+    /**
+     * Una vista da aprire in sola lettura: le colonne si leggono dal canale dei metadati prima di aprire la scheda.
+     *
+     * @param catalog catalogo della vista
+     * @param name    nome della vista
+     * @param columns colonne della vista, nell'ordine
+     */
+    public record ViewToOpen(String catalog, String name, java.util.List<it.ramasql.core.metadata.ColumnDef> columns) {
+    }
+
+    /** Chi apre la scheda (in sola lettura) di una vista. */
+    private Consumer<ViewToOpen> onOpenView = v -> { };
+
+    public void setOnOpenView(Consumer<ViewToOpen> handler) {
+        this.onOpenView = handler == null ? v -> { } : handler;
+    }
+
+    /** «Apri vista»: le colonne si leggono in background, poi la scheda si apre in sola lettura. */
+    public void openView(String catalog, String view) {
+        if (workspace == null) {
+            return;
+        }
+        MetadataReader reader = workspace.reader();
+        background(() -> reader.viewColumns(catalog, view), columns -> {
+            if (columns.isEmpty()) {
+                view().message(PipelineView.MessageKind.WARNING, Texts.get("nav.table.missing"));
+            } else {
+                onOpenView.accept(new ViewToOpen(catalog, view, columns));
+            }
+        }, error -> view().message(PipelineView.MessageKind.ERROR, Texts.get("nav.load.error", describe(error))),
+                sessionEpoch);
+    }
+
+    /** Chi apre l'editor per una tabella nuova nel catalogo indicato. */
+    private Consumer<String> onNewTable = catalog -> { };
+
+    public void setOnOpenTable(BiConsumer<String, TableDef> handler) {
+        this.onOpenTable = handler == null ? (c, t) -> { } : handler;
+    }
+
+    public void setOnDesignTable(BiConsumer<String, TableDef> handler) {
+        this.onDesignTable = handler == null ? (c, t) -> { } : handler;
+    }
+
+    public void setOnNewTable(Consumer<String> handler) {
+        this.onNewTable = handler == null ? c -> { } : handler;
+    }
+
+    /** «Apri tabella»: la definizione si legge in background, poi la scheda si apre sull'EDT. */
+    public void openTable(String catalog, String table) {
+        readTable(catalog, table, onOpenTable);
+    }
+
+    /** «Progetta tabella…»: come sopra, ma apre l'editor di struttura. */
+    public void designTable(String catalog, String table) {
+        readTable(catalog, table, onDesignTable);
+    }
+
+    private void readTable(String catalog, String table, BiConsumer<String, TableDef> handler) {
+        if (workspace == null) {
+            return;
+        }
+        MetadataReader reader = workspace.reader();
+        background(() -> reader.table(catalog, table), found -> {
+            if (found.isPresent()) {
+                handler.accept(catalog, found.get());
+            } else {
+                view().message(PipelineView.MessageKind.WARNING, Texts.get("nav.table.missing"));
+            }
+        }, error -> view().message(PipelineView.MessageKind.ERROR, Texts.get("nav.load.error", describe(error))),
+                sessionEpoch);
+    }
+
     /** Il menu contestuale del nodo; {@code null} se il nodo non ne ha. */
     public JPopupMenu menuFor(TreePath path) {
         NavNode n = nodeOf(path);
@@ -656,6 +736,8 @@ public final class NavigatorPanel extends JPanel {
                 menu.add(system);
             }
             case CATALOG -> {
+                menu.add(item("nav.menu.newTable", () -> onNewTable.accept(n.catalog())));
+                menu.addSeparator();
                 JMenuItem drop = item("nav.menu.dropCatalog", () -> propose(TreeScripts.dropCatalog(n.catalog())));
                 drop.setEnabled(!(n.data() instanceof CatalogInfo c && c.system()));
                 menu.add(drop);
@@ -663,6 +745,9 @@ public final class NavigatorPanel extends JPanel {
                 menu.add(item("nav.menu.refresh", () -> refreshCatalog(n.catalog())));
             }
             case TABLE -> {
+                menu.add(item("nav.menu.openTable", () -> openTable(n.catalog(), n.name())));
+                menu.add(item("nav.menu.designTable", () -> designTable(n.catalog(), n.name())));
+                menu.addSeparator();
                 menu.add(item("nav.menu.rename", () -> renameTable(n.catalog(), n.name())));
                 menu.add(item("nav.menu.truncate", () -> propose(TreeScripts.truncateTable(n.catalog(), n.name()))));
                 menu.add(item("nav.menu.dropTable", () -> propose(TreeScripts.dropTable(n.catalog(), n.name()))));
@@ -671,6 +756,8 @@ public final class NavigatorPanel extends JPanel {
                 menu.add(item("nav.menu.copyName", () -> copy(n.name())));
             }
             case VIEW -> {
+                menu.add(item("nav.menu.openView", () -> openView(n.catalog(), n.name())));
+                menu.addSeparator();
                 menu.add(item("nav.menu.dropView", () -> propose(TreeScripts.dropView(n.catalog(), n.name()))));
                 menu.addSeparator();
                 menu.add(item("nav.menu.showCreate", () -> showCreateView(n.catalog(), n.name())));

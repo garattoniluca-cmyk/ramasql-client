@@ -1,0 +1,19 @@
+Testo che gli altri programmi leggono da CF_UNICODETEXT (PowerShell, Clipboard.GetText), <TAB> <CR> <LF> resi visibili.
+
+Griglia (BlockTransferable, flavor grezzo → UNICODE TEXT):
+Dario Neri<TAB>"riga uno<LF>
+riga due"<CR><LF>
+
+StringSelection (confronto, JDK):
+Dario Neri<TAB>"riga uno<CR><LF>
+riga due"<CR><LF>
+
+text/plain;charset=utf-16 su InputStream (confronto, «rimedio noto»):
+Dario Neri<TAB>"riga uno<CR><LF>
+riga due"<CR><LF>
+
+Esito: solo il flavor grezzo lascia il LF da solo dentro la cella.
+
+Da un altro programma (PowerShell SetText, testo in stile Excel) → Ctrl+V sulla riga d'inserimento: celle [[Zeta, Bianchi, prima
+seconda], [Omega, Neri, null]]
+Gli appunti dell'utente sono stati salvati prima del test (48 formati) e rimessi dopo.

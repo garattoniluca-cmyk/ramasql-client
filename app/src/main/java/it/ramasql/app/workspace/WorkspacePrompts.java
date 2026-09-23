@@ -36,6 +36,26 @@ public interface WorkspacePrompts {
     record LogExport(Path file, String unqualifyCatalog) {
     }
 
+    /** Le finestre modali della griglia di data-entry (conferme locali, testo lungo, esporta CSV). */
+    it.ramasql.app.grid.GridPrompts gridPrompts();
+
+    /** Le finestre modali dell'editor SQL (apri/salva .sql, conferma rafforzata, errori). */
+    it.ramasql.app.editor.EditorPrompts editorPrompts();
+
+    /** Le finestre modali dell'editor di tabelle. */
+    it.ramasql.app.tableeditor.TableEditorPrompts tableEditorPrompts();
+
+    /** Cosa fare chiudendo una scheda di data-entry che ha modifiche in sospeso (T4.12). */
+    enum PendingChoice { CONFIRM, DISCARD, STAY }
+
+    /**
+     * Domanda alla chiusura di una scheda con modifiche in sospeso: «Conferma, scarta o resta?». Chiudere una scheda
+     * non deve mai far perdere lavoro in silenzio né scrivere sul server senza che l'utente lo chieda.
+     *
+     * @param question testo già pronto della domanda ({@code DataGrid.closeQuestion()})
+     */
+    PendingChoice askPendingOnClose(String question);
+
     /** Finestra «SQL che verrà eseguito»: restituisce la scelta dell'utente. */
     PreviewDialog.Decision preview(SqlScript script, ConfirmationPolicy.Confirmation confirmation);
 
