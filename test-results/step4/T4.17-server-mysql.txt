@@ -1,8 +1,8 @@
 T4.17 — incolla 20×3 su MySQL
-Catalogo di test: ramasql_test_ui_incolla_qn00e9 — autori: 50 righe prima
+Catalogo di test: ramasql_test_ui_incolla_qtb7hx — autori: 50 righe prima
 Blocco negli appunti: 20 righe × 3 colonne, tabulazioni e a-capo come Excel
 Contatore dopo l'incolla: «20 inserimenti · 0 modifiche · 0 eliminazioni in sospeso»
 Anteprima: 20 istruzioni, tutte INSERT
-Prima istruzione: INSERT INTO `ramasql_test_ui_incolla_qn00e9`.`autori` (`cognome`, `nome`, `nazionalita`) VALUES ('Incolla01', 'Nome 1', 'italiana è così')
+Prima istruzione: INSERT INTO `ramasql_test_ui_incolla_qtb7hx`.`autori` (`cognome`, `nome`, `nazionalita`) VALUES ('Incolla01', 'Nome 1', 'italiana è così')
 Sul server: 70 righe (20 con cognome «Incolla…»); esempi [[Incolla01, Nome 1, italiana è così], [Incolla02, Nome 2, italiana è così], [Incolla03, Nome 3, irlandese]]
 Esito: SUPERATO

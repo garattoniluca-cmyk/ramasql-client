@@ -1,30 +1,30 @@
 T3.6 — operazioni del navigatore con Esegui, su MariaDB
-1) Crea il catalogo «ramasql_test_ui_ops_46bmd0» — anteprima CONFIRM: «CREATE DATABASE `ramasql_test_ui_ops_46bmd0` CHARACTER SET latin1 COLLATE latin1_swedish_ci;»
-   registro: #1 Navigatore OK 0 ms; messaggio: Crea il catalogo «ramasql_test_ui_ops_46bmd0»: eseguito (1 istruzione, 1 ms).
+1) Crea il catalogo «ramasql_test_ui_ops_rrkuq2» — anteprima CONFIRM: «CREATE DATABASE `ramasql_test_ui_ops_rrkuq2` CHARACTER SET latin1 COLLATE latin1_swedish_ci;»
+   registro: #1 Navigatore OK 0 ms; messaggio: Crea il catalogo «ramasql_test_ui_ops_rrkuq2»: eseguito (1 istruzione, 1 ms).
    server: SCHEMATA → latin1 / latin1_swedish_ci; albero: catalogo comparso senza aggiornare
-2) Rinomina la tabella «autori» in «scrittori» — anteprima CONFIRM: «RENAME TABLE `ramasql_test_ui_ops_46bmd0`.`autori` TO `ramasql_test_ui_ops_46bmd0`.`scrittori`;»
-   registro: #2 Navigatore OK 3 ms; messaggio: Rinomina la tabella «autori» in «scrittori»: eseguito (1 istruzione, 3 ms).
+2) Rinomina la tabella «autori» in «scrittori» — anteprima CONFIRM: «RENAME TABLE `ramasql_test_ui_ops_rrkuq2`.`autori` TO `ramasql_test_ui_ops_rrkuq2`.`scrittori`;»
+   registro: #2 Navigatore OK 3 ms; messaggio: Rinomina la tabella «autori» in «scrittori»: eseguito (1 istruzione, 4 ms).
    server: scrittori presente, autori assente; albero aggiornato da solo
-3) Svuota la tabella «prestiti» — anteprima STRONG: «TRUNCATE TABLE `ramasql_test_ui_ops_46bmd0`.`prestiti`;»
-   registro: #3 Navigatore OK 5 ms; messaggio: Svuota la tabella «prestiti»: eseguito (1 istruzione, 5 ms).
+3) Svuota la tabella «prestiti» — anteprima STRONG: «TRUNCATE TABLE `ramasql_test_ui_ops_rrkuq2`.`prestiti`;»
+   registro: #3 Navigatore OK 4 ms; messaggio: Svuota la tabella «prestiti»: eseguito (1 istruzione, 6 ms).
    server: COUNT(*) di prestiti = 0
-4) Elimina la tabella «prestiti» — anteprima STRONG: «DROP TABLE `ramasql_test_ui_ops_46bmd0`.`prestiti`;»
-   registro: #4 Navigatore OK 5 ms; messaggio: Elimina la tabella «prestiti»: eseguito (1 istruzione, 5 ms).
+4) Elimina la tabella «prestiti» — anteprima STRONG: «DROP TABLE `ramasql_test_ui_ops_rrkuq2`.`prestiti`;»
+   registro: #4 Navigatore OK 3 ms; messaggio: Elimina la tabella «prestiti»: eseguito (1 istruzione, 4 ms).
    server: prestiti assente; albero aggiornato da solo
 5) Elimina editori (riferita da libri): rifiutata dal server — registro: ERRORE 1451 (23000), riga evidenziata;
    Messaggi: Elimina la tabella «editori»: non riuscito.
-             Errore 1451 (SQLSTATE 23000) dal server: (conn=11273) Cannot delete or update a parent row: a foreign key constraint fails
+             Errore 1451 (SQLSTATE 23000) dal server: (conn=12309) Cannot delete or update a parent row: a foreign key constraint fails
              Cosa significa: Non si può eliminare o modificare questa riga: altre righe la usano attraverso una chiave esterna.
              Istruzioni applicate: 0 su 1 (senza transazioni: quelle applicate restano).
-6) Elimina il catalogo «ramasql_test_ui_ops_46bmd0» — anteprima STRONG: «DROP DATABASE `ramasql_test_ui_ops_46bmd0`;»
-   registro: #6 Navigatore OK 15 ms; messaggio: Elimina il catalogo «ramasql_test_ui_ops_46bmd0»: eseguito (1 istruzione, 15 ms).
+6) Elimina il catalogo «ramasql_test_ui_ops_rrkuq2» — anteprima STRONG: «DROP DATABASE `ramasql_test_ui_ops_rrkuq2`;»
+   registro: #6 Navigatore OK 12 ms; messaggio: Elimina il catalogo «ramasql_test_ui_ops_rrkuq2»: eseguito (1 istruzione, 12 ms).
    server: catalogo assente; albero aggiornato da solo
 
 Registro (6 righe):
-  #1 Navigatore OK        0 ms  CREATE DATABASE `ramasql_test_ui_ops_46bmd0` CHARACTER SET latin1 COLLATE latin1_swedish_ci
-  #2 Navigatore OK        3 ms  RENAME TABLE `ramasql_test_ui_ops_46bmd0`.`autori` TO `ramasql_test_ui_ops_46bmd0`.`scrittori`
-  #3 Navigatore OK        5 ms  TRUNCATE TABLE `ramasql_test_ui_ops_46bmd0`.`prestiti`
-  #4 Navigatore OK        5 ms  DROP TABLE `ramasql_test_ui_ops_46bmd0`.`prestiti`
-  #5 Navigatore ERROR     3 ms  DROP TABLE `ramasql_test_ui_ops_46bmd0`.`editori`
-  #6 Navigatore OK       15 ms  DROP DATABASE `ramasql_test_ui_ops_46bmd0`
+  #1 Navigatore OK        0 ms  CREATE DATABASE `ramasql_test_ui_ops_rrkuq2` CHARACTER SET latin1 COLLATE latin1_swedish_ci
+  #2 Navigatore OK        3 ms  RENAME TABLE `ramasql_test_ui_ops_rrkuq2`.`autori` TO `ramasql_test_ui_ops_rrkuq2`.`scrittori`
+  #3 Navigatore OK        4 ms  TRUNCATE TABLE `ramasql_test_ui_ops_rrkuq2`.`prestiti`
+  #4 Navigatore OK        3 ms  DROP TABLE `ramasql_test_ui_ops_rrkuq2`.`prestiti`
+  #5 Navigatore ERROR     5 ms  DROP TABLE `ramasql_test_ui_ops_rrkuq2`.`editori`
+  #6 Navigatore OK       12 ms  DROP DATABASE `ramasql_test_ui_ops_rrkuq2`
 Schermate: T3.6-1…6-mariadb.png (anteprime), T3.6-registro-mariadb.png, nuovo-catalogo.png, registro.png

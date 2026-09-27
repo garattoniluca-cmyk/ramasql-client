@@ -1,5 +1,5 @@
 T3.9 — controllo del bytecode (481 classi di [core, app, model, sqleo-qb]; 145 riferimenti a java.sql.* / org.mariadb.*: chiamate invoke*, riferimenti a metodo dei bootstrap di invokedynamic, costanti MethodHandle)
-Classi ammesse (possono eseguire SQL): [it/ramasql/core/exec/SqlExecutor, it/ramasql/core/connection/InternalQueries, it/ramasql/core/metadata/MetadataQueries]
+Classi ammesse (possono eseguire SQL): [it/ramasql/core/connection/InternalQueries, it/ramasql/core/exec/SqlExecutor, it/ramasql/core/metadata/MetadataQueries]
 Chiamate che creano o eseguono istruzioni SQL:
   it/ramasql/core/connection/InternalQueries → [Connection.createStatement, Statement.execute, Statement.executeQuery]
   it/ramasql/core/exec/SqlExecutor → [Connection.createStatement, Statement.execute]

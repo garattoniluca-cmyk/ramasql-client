@@ -1,16 +1,16 @@
 T5.4 e T5.8 — editor di tabelle sul server MariaDB
-Catalogo di test: ramasql_test_ui_editor5_htlzgz
+Catalogo di test: ramasql_test_ui_editor5_7gdpz0
 T5.4 — editori: anteprima = registro = eseguito
-CREATE TABLE `ramasql_test_ui_editor5_htlzgz`.`editori` (
+CREATE TABLE `ramasql_test_ui_editor5_7gdpz0`.`editori` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
   `nome` VARCHAR(80) NOT NULL,
   `citta` VARCHAR(60) NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB;
-  esito: ✔ Istruzione applicata. Applicata: CREATE TABLE `ramasql_test_ui_editor5_htlzgz`.`editori` ( `id` INT UNSIGNED NOT NULL AUTO_INCREMENT, `nome` VARCHAR(80) NOT NULL, `citta` VARCHAR(60) NULL, P… ℹ L'editor mostra ora la tabella com'è davvero sul server (riletta dopo l'esecuzione). ✔ verificato sul server: indici e chiavi esterne di «editori» sono quelli chiesti
+  esito: ✔ Istruzione applicata. Applicata: CREATE TABLE `ramasql_test_ui_editor5_7gdpz0`.`editori` ( `id` INT UNSIGNED NOT NULL AUTO_INCREMENT, `nome` VARCHAR(80) NOT NULL, `citta` VARCHAR(60) NULL, P… ℹ L'editor mostra ora la tabella com'è davvero sul server (riletta dopo l'esecuzione). ✔ verificato sul server: indici e chiavi esterne di «editori» sono quelli chiesti
   TableDiff(riletta dal server, voluta): 0 istruzioni
 T5.4 — libri: anteprima = registro; commento sul server «Catalogo dei libri»
 T5.8 — «ordine dettagli» con colonne «order» e «select»: creata sul server;
-  CREATE TABLE `ramasql_test_ui_editor5_htlzgz`.`ordine dettagli` (   `order` INT NOT NULL AUTO_INCREMENT,   `select` VARCHAR(45) NULL DEFAULT 'nuovo',   PRIMARY KEY (`order`) ) ENGINE=InnoDB
+  CREATE TABLE `ramasql_test_ui_editor5_7gdpz0`.`ordine dettagli` (   `order` INT NOT NULL AUTO_INCREMENT,   `select` VARCHAR(45) NULL DEFAULT 'nuovo',   PRIMARY KEY (`order`) ) ENGINE=InnoDB
   riga di prova scritta: order=7, select='nuovo' (DEFAULT)
 Esito: SUPERATO

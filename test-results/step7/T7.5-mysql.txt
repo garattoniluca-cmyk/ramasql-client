@@ -1,5 +1,5 @@
 T7.5 — gesti sul diagramma ed esecuzione su MySQL
-Catalogo di test: ramasql_test_ui_visual75_ak0o66
+Catalogo di test: ramasql_test_ui_visual75_alvgoy
 gesto 1 — tabelle editori e libri:
 SELECT
 	`editori`.`id`,
@@ -71,7 +71,7 @@ GROUP BY
 ORDER BY
 	`editori`.`nome` ASC
 
-Esecuzione: USE `ramasql_test_ui_visual75_ak0o66` + la query; registro: 2 righe con origine «Query visiva»
+Esecuzione: USE `ramasql_test_ui_visual75_alvgoy` + la query; registro: 2 righe con origine «Query visiva»
 Righe mostrate (16): [[Adelphi, 1], [Città Nuova, 2], [E/O, 1], [Einaudi, 1], [Feltrinelli, 2], [Guanda, 1], [Iperborea, 2], [L'Orma, 1], [Laterza, 1], [Longanesi, 2], [Marsilio, 1], [Mondadori, 1], [Neri Pozza, 1], [Rizzoli, 1], [Sellerio, 1], [Zanichelli, 1]]
 Righe della stessa domanda scritta a mano, lette con una connessione separata: [[Adelphi, 1], [Città Nuova, 2], [E/O, 1], [Einaudi, 1], [Feltrinelli, 2], [Guanda, 1], [Iperborea, 2], [L'Orma, 1], [Laterza, 1], [Longanesi, 2], [Marsilio, 1], [Mondadori, 1], [Neri Pozza, 1], [Rizzoli, 1], [Sellerio, 1], [Zanichelli, 1]]
 Esito: SUPERATO

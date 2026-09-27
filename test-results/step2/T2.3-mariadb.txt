@@ -7,7 +7,7 @@ T2.3 — errori di connessione provocati contro MariaDB (flusso: clic sulla tess
   originale: Errore di rete: SQLSTATE 08000 · java.net.UnknownHostException: host-che-non-esiste.invalid
   schermata: T2.3-mariadb-1-host-inesistente.png
 
-2-porta-chiusa  (108 ms)
+2-porta-chiusa  (106 ms)
   profilo: ramasql_test@127.0.0.1:3399
   causa: PORT_CLOSED
   messaggio: Il computer «127.0.0.1» risponde, ma sulla porta 3399 nessun server accetta connessioni. Correggi il campo Porta (di solito 3306; controlla quella indicata da chi gestisce il server) e verifica che il server MariaDB o MySQL sia avviato.
@@ -18,20 +18,20 @@ T2.3 — errori di connessione provocati contro MariaDB (flusso: clic sulla tess
   profilo: ramasql_test@127.0.0.1:3306
   causa: ACCESS_DENIED
   messaggio: Il server ha rifiutato l'accesso all'utente «ramasql_test»: nome utente o password sbagliati. Riscrivi la password (attenzione a maiuscole e minuscole) e controlla il campo Utente.
-  originale: Errore 1045 (SQLSTATE 28000): (conn=11554) Access denied for user 'ramasql_test'@'localhost' (using password: YES)
+  originale: Errore 1045 (SQLSTATE 28000): (conn=12590) Access denied for user 'ramasql_test'@'localhost' (using password: YES)
   schermata: T2.3-mariadb-3-password-errata.png
 
-4-catalogo-senza-permesso  (95 ms)
+4-catalogo-senza-permesso  (96 ms)
   profilo: ramasql_test@127.0.0.1:3306 catalogo mysql
   causa: CATALOG_ACCESS_DENIED
   messaggio: L'utente «ramasql_test» non ha il permesso di usare il catalogo «mysql». Correggi il campo Catalogo del profilo (puoi lasciarlo vuoto) oppure chiedi il permesso a chi amministra il server.
-  originale: Errore 1044 (SQLSTATE 42000): (conn=11555) Access denied for user 'ramasql_test'@'localhost' to database 'mysql'
+  originale: Errore 1044 (SQLSTATE 42000): (conn=12591) Access denied for user 'ramasql_test'@'localhost' to database 'mysql'
   schermata: T2.3-mariadb-4-catalogo-senza-permesso.png
 
-5-catalogo-inesistente  (95 ms)
+5-catalogo-inesistente  (94 ms)
   profilo: ramasql_test@127.0.0.1:3306 catalogo ramasql_test_non_esiste
   causa: UNKNOWN_CATALOG
   messaggio: Il catalogo «ramasql_test_non_esiste» non esiste su questo server. Correggi il nome nel campo Catalogo del profilo, oppure lascialo vuoto.
-  originale: Errore 1049 (SQLSTATE 42000): (conn=11556) Unknown database 'ramasql_test_non_esiste'
+  originale: Errore 1049 (SQLSTATE 42000): (conn=12592) Unknown database 'ramasql_test_non_esiste'
   schermata: T2.3-mariadb-5-catalogo-inesistente.png
 
