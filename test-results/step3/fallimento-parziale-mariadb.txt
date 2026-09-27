@@ -1,5 +1,5 @@
 DROP TABLE a, b_manca su MariaDB: errore 1051; tabella a ELIMINATA (applicata in parte)
-cache dei metadati invalidata: [ramasql_test_t3_parziale_mudqnp8r528w/null]; elenco riletto: [c]
+cache dei metadati invalidata: [ramasql_test_t3_parziale_mukd8miihaws/null]; elenco riletto: [c]
 nel registro esportato:
 -- DROP TABLE a, b_manca;
 -- (non riuscita: può essere stata applicata in parte: verifica sul server prima di rieseguire lo script)

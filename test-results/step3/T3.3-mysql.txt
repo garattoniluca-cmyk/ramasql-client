@@ -1,9 +1,9 @@
 T3.3 — navigatore su MySQL
-Cataloghi di test: ramasql_test_ui_nav_e4kjln (fixture biblioteca.sql), ramasql_test_ui_nav_e4kjln_myisam (fixture biblioteca_myisam.sql), procedura conta_libri
+Cataloghi di test: ramasql_test_ui_nav_al2wkg (fixture biblioteca.sql), ramasql_test_ui_nav_al2wkg_myisam (fixture biblioteca_myisam.sql), procedura conta_libri
 
-Cataloghi di sistema: nascosti di default [performance_schema, mysql, information_schema, sys]; «Mostra cataloghi di sistema» li mostra (icona grigia) e li rinasconde
+Cataloghi di sistema: nascosti di default [mysql, information_schema, sys, performance_schema]; «Mostra cataloghi di sistema» li mostra (icona grigia) e li rinasconde
 
-Catalogo ramasql_test_ui_nav_e4kjln (InnoDB)
+Catalogo ramasql_test_ui_nav_al2wkg (InnoDB)
   autori        engine InnoDB icona table.innodb   colonne 4, indici [PRIMARY, ix_autori_cognome], FK []
   editori       engine InnoDB icona table.innodb   colonne 3, indici [PRIMARY, uq_editori_nome], FK []
   libri         engine InnoDB icona table.innodb   colonne 6, indici [PRIMARY, ix_libri_editore, uq_libri_isbn], FK [fk_libri_editori]
@@ -12,7 +12,7 @@ Catalogo ramasql_test_ui_nav_e4kjln (InnoDB)
   soci          engine InnoDB icona table.innodb   colonne 6, indici [PRIMARY, uq_soci_tessera], FK []
   viste: [v_libri_editori, v_prestiti_aperti]
 
-Catalogo ramasql_test_ui_nav_e4kjln_myisam (MyISAM)
+Catalogo ramasql_test_ui_nav_al2wkg_myisam (MyISAM)
   autori        engine MyISAM icona table.myisam   colonne 4, indici [PRIMARY, ix_autori_cognome], FK []
   editori       engine MyISAM icona table.myisam   colonne 3, indici [PRIMARY, uq_editori_nome], FK []
   libri         engine MyISAM icona table.myisam   colonne 6, indici [PRIMARY, ix_libri_editore, uq_libri_isbn], FK []
@@ -20,10 +20,10 @@ Catalogo ramasql_test_ui_nav_e4kjln_myisam (MyISAM)
   prestiti      engine MyISAM icona table.myisam   colonne 5, indici [PRIMARY, ix_prestiti_libro, ix_prestiti_socio], FK []
   soci          engine MyISAM icona table.myisam   colonne 6, indici [PRIMARY, uq_soci_tessera], FK []
   viste: [v_libri_editori, v_prestiti_aperti]
-Routine di ramasql_test_ui_nav_e4kjln: [conta_libri] (sola lettura)
+Routine di ramasql_test_ui_nav_al2wkg: [conta_libri] (sola lettura)
 
-Filtro «libri»: tabelle visibili [ramasql_test_ui_nav_e4kjln.libri, ramasql_test_ui_nav_e4kjln.libri_autori, ramasql_test_ui_nav_e4kjln_myisam.libri, ramasql_test_ui_nav_e4kjln_myisam.libri_autori]; nessuna tabella o catalogo senza corrispondenze
-Filtro «E4KJLN»: solo [ramasql_test_ui_nav_e4kjln, ramasql_test_ui_nav_e4kjln_myisam]; filtro senza corrispondenze: messaggio; filtro vuoto: albero com'era
+Filtro «libri»: tabelle visibili [ramasql_test_ui_nav_al2wkg.libri, ramasql_test_ui_nav_al2wkg.libri_autori, ramasql_test_ui_nav_al2wkg_myisam.libri, ramasql_test_ui_nav_al2wkg_myisam.libri_autori]; nessuna tabella o catalogo senza corrispondenze
+Filtro «AL2WKG»: solo [ramasql_test_ui_nav_al2wkg, ramasql_test_ui_nav_al2wkg_myisam]; filtro senza corrispondenze: messaggio; filtro vuoto: albero com'era
 Mostra SQL di creazione: tabella («CREATE TABLE `libri` (…»), vista, procedura; Copia nome → «libri»
 Registro dopo la navigazione: 0 istruzioni (letture sul canale interno)
 Schermate: T3.3-mysql.png, T3.3-filtro-mysql.png

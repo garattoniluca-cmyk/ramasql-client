@@ -1,5 +1,117 @@
 # JOURNAL.md — Diario cronologico (più recente in alto)
 
+## 2026-09-27 — RESOCONTO dell'esecuzione autonoma degli step 7–8 (`ADR-021`)
+
+**Esito: step 7 e 8 completati.** La **Tappa M2** della roadmap («Visivo») è raggiunta: le query si costruiscono nel diagramma ereditato da SQLeo, con il testo SQL sempre accanto, e le viste si creano, si riaprono e si modificano graficamente. Un commit per step: `Step 7: …`, `Step 8: …` (più un commit per le evidenze rigenerate dalla verifica finale). **Nessun push**: lo farà l'utente dopo la revisione. Gli step 1–6 non sono regrediti (stessa verifica, tutti PASS). Gli step 9–13 non sono stati toccati.
+
+### Output di `scripts\verify.ps1`
+
+```
+Credenziali di integrazione: caricate
+[INFO] BUILD SUCCESS
+Build Maven: OK
+Test eseguiti: 2336 - falliti: 0 - saltati: 0
+
+Step | superati (it)  | soglia (it) | diario       | esito
+1    |   227 (  45)  |    8 (  4)  | completo     | PASS
+2    |   184 (  17)  |    8 (  2)  | completo     | PASS
+3    |   324 (  61)  |   12 (  4)  | completo     | PASS
+4    |   517 (  12)  |   45 (  4)  | completo     | PASS
+5    |   272 (  84)  |   60 ( 20)  | completo     | PASS
+6    |   356 ( 126)  |   45 ( 12)  | completo     | PASS
+7    |   319 ( 144)  |   60 ( 10)  | completo     | PASS
+8    |   128 (  28)  |   30 ( 10)  | completo     | PASS
+
+VERIFY: PASS
+```
+
+### Le revisioni indipendenti, e cosa hanno trovato
+
+Per ciascuno step un sotto-agente revisore ha riletto codice, test ed evidenze senza aver scritto il codice. Allo **Step 7** ha trovato tre difetti bloccanti (menu del join che poteva dire il contrario dell'SQL; elenco delle tabelle fuori vista; testo perso passando alla Grafica con una query senza tabelle) e una serie di debolezze nei test; allo **Step 8** una definizione vuota che riapriva un sorgente vecchio, letture sull'EDT, una seconda *Modifica vista* che cancellava il lavoro, test che non passavano dal menu vero. Tutto corretto e coperto da test: dettaglio nelle voci dei due step qui sotto.
+
+### Decisioni prese dall'agente, da rivedere
+
+- **`ADR-022`** — come il query builder entra nel programma: nessuna connessione passata al codice ereditato (metadati dal client), `USE` del catalogo della scheda prima dell'esecuzione (come il «default schema» di Workbench: cambia il catalogo corrente della sessione, e la barra di stato lo mostra), join descritti in parole semplici, niente FULL JOIN, niente alias automatici.
+- **`ADR-023`** — viste: *Nuova vista* / *Salva come vista…* / *Modifica vista*, `CREATE VIEW` per le nuove e `CREATE OR REPLACE VIEW` per le riaperte (una vista riaperta non si rinomina da lì), archivio dei sorgenti in `%APPDATA%\RamaSQL\viste.json` per `utente@host:porta`, riapertura a tre livelli, opzioni `CHECK OPTION` / `SQL SECURITY` non gestite ma segnalate all'apertura.
+- **Campionario di T7.2** (75 query «da aula» sulla `biblioteca`): l'elenco di esercizi del corso richiesto dalla roadmap non c'era; l'ha scritto l'agente. Va sostituito o integrato con gli esercizi veri.
+- **Salvataggio `.sql` della query visiva** (`DESIGN.md` §3.7): salva il testo della vista SQL, non il diagramma.
+
+### Difetti aperti (dettaglio in `docs/BUGS.md`)
+
+Nuovi degli step 7–8, nessuno bloccante:
+- `BUG-023` — con più tabelle una linea di join può passare dietro un'entità (disposizione automatica ereditata);
+- `BUG-024` — il loader ereditato legge colonne e chiavi esterne sull'EDT; mitigato dal precaricamento in sottofondo all'apertura della scheda;
+- `BUG-025` — l'archivio delle viste non si ripulisce quando una vista si elimina (innocuo per la correttezza).
+
+Restano aperti dagli step precedenti: `BUG-003`, `BUG-008`, `BUG-009`, `BUG-012`, `BUG-013`, `BUG-014`, `BUG-015`, `BUG-017`, `BUG-018`, `BUG-020`, `BUG-021`. Chiusi negli step 7–8: `BUG-004`, `BUG-005`, `BUG-006`, `BUG-007` (ridotto), `BUG-010`, `BUG-011`, `BUG-016`, `BUG-022`.
+
+**Da chiarire con l'utente:** nel catalogo `bibliotecasoft` di MariaDB c'è una tabella `nuova_tabella` (il nome predefinito di *Nuova tabella* del client) che l'inventario degli step precedenti non conta. I test la **leggono** soltanto (la copiano in un catalogo `ramasql_test_` insieme alle altre) e l'utente `ramasql_test` non può scrivere in `bibliotecasoft`: probabilmente è nata da una prova a mano con un altro utente. Non è stata toccata.
+
+### Test N da fare con Navicat (tocca all'utente)
+
+Come per gli step 3–6, i test automatici **distruggono i propri cataloghi**: la prova va ricostruita a mano nel client (una decina di minuti), che è anche il modo di provarlo. I test N degli step 3–6 sono ancora da fare: istruzioni nel resoconto del 2026-09-23 più sotto.
+
+**Preparazione (nel client).** `avvia.cmd` → connessione → un catalogo con la biblioteca (es. `ramasql_test_navicat` degli step 3–6, oppure uno nuovo in cui si esegue `it-tests/fixtures/biblioteca.sql` dall'editor SQL, dopo `USE`). Se la fixture è stata caricata, contiene già le viste `v_prestiti_aperti` e `v_libri_editori`: eliminare `v_prestiti_aperti` dal navigatore (tasto destro → *Elimina*), perché T8.8 vuole quella creata dal client.
+1. **T7.5** — seleziona il catalogo, *Nuova query visiva*; doppio clic su `editori` e `libri` nell'elenco a sinistra del diagramma (il join dalla chiave esterna compare da solo); togli le spunte e lascia `editori.nome`; clic sul pallino del join → «Tutte le righe di editori»; sul campo `anno` di `libri` → *Aggiungi condizione WHERE…* `> 2000`; nell'albero → *Aggiungi espressione…* `COUNT(*)`, *Aggiungi a GROUP BY* su `editori.nome`, *Aggiungi a ORDER BY*; *Esegui*. Copia il testo della vista **SQL**.
+2. **T7.11** — la query della prova d'uso («soci con il numero di prestiti, solo chi ne ha più di 3»): copia il testo della vista **SQL**.
+3. **T8.4** — *Nuova vista*; `prestiti`, `libri`, `soci`; spunta `prestiti.id`, `libri.titolo`, `soci.cognome`, `prestiti.data_prestito`; condizione `data_reso IS NULL`; nome `v_prestiti_aperti`; *Salva vista*. Poi tasto destro sulla vista → *Modifica vista*, spunta anche `soci.nome`, *Salva vista* (diventa `CREATE OR REPLACE`).
+
+**Poi, in Navicat:**
+
+| Test | Cosa guardare |
+|---|---|
+| **T7.12** | *Query* → nuova query sul catalogo, incolla l'SQL copiato ai punti 1 e 2 ed eseguilo: **stesse righe** (numero e valori) che il client ha mostrato nella scheda. Se Navicat rifiuta il testo o dà righe diverse, è un difetto del client |
+| **T8.8** | *Views* → `v_prestiti_aperti`: esiste; *Open View* mostra gli stessi dati che il client mostra con *Apri vista* (compresa la colonna `nome` aggiunta); *Design View* → la definizione è quella attesa (tre tabelle collegate da `id_libro`/`id_socio`, filtro `data_reso IS NULL`) — Navicat mostra la riscrittura del server (nomi qualificati, parentesi), non il testo del client: conta che dica la stessa cosa |
+
+### Prove d'uso da fare con una persona
+
+- **T2.9 «test dei 10 secondi»** (Step 2): procedura in `test-results/step2/T2.9-procedura.md`.
+- **T7.11 prova d'uso dell'editor visivo**: una persona che non l'ha mai visto costruisce «soci con il numero di prestiti, solo chi ne ha più di 3» senza aiuto; procedura, tempi e cosa annotare in `test-results/step7/T7.11-procedura.md`.
+- **Ctrl+V letterale in LibreOffice Calc** (`BUG-003`), ancora da fare dagli step precedenti.
+
+### Come provarlo, e cosa si può fare adesso
+
+Doppio clic su **`avvia.cmd`** (compila e apre il programma). In più rispetto alla Tappa M1:
+
+- **Nuova query visiva** (barra): elenco di tabelle e viste del catalogo a sinistra (doppio clic o trascinamento), diagramma al centro con i join proposti dalle chiavi esterne e descritti in parole semplici (clic sul pallino del join: «Solo le righe che corrispondono», «Tutte le righe di *tabella*»), albero della query per condizioni, espressioni, raggruppamenti, ordinamenti e sottoquery; interruttore **Grafica | SQL** sincronizzato a ogni gesto; un testo che il diagramma non sa disegnare resta intatto, con il motivo scritto in chiaro; *Esegui* dalla pipeline (anteprima e registro), *Salva .sql…*;
+- **viste**: *Nuova vista* (barra), *Salva come vista…* (da una query visiva), *Modifica vista* (tasto destro sulla vista nel navigatore) — il diagramma si riapre com'era; le viste scritte altrove si riaprono nel diagramma quando si può, altrimenti come testo con l'avviso; i dati di una vista si aprono in griglia in sola lettura.
+
+Non c'è ancora (step 9–13, non avviati): importazione CSV/JSON, dump selettivo, modello ER, rifiniture, installer. **Niente gestione delle transazioni** in v1 (`ADR-010`).
+
+---
+
+## 2026-09-27 — Step 8: viste grafiche ✅ (esecuzione autonoma)
+
+*Nuova vista* (barra) apre la query visiva in **modalità vista**: sopra il diagramma una riga con il nome della vista e un solo pulsante primario, *Salva vista*; *Esegui* resta per vedere i dati. La stessa riga compare con *Salva come vista…* da una query visiva qualsiasi. Il salvataggio passa dalla pipeline: ``USE `catalogo` `` + `CREATE VIEW` (vista nuova) o `CREATE OR REPLACE VIEW` (vista riaperta), anteprima, registro. Subito dopo, fuori dall'EDT, la definizione si rilegge dal server e il **sorgente scritto nel client** va nell'archivio `viste.json` insieme a quella definizione. *Modifica vista* (menu del navigatore) riapre a **tre livelli** (`ADR-023`): 1) il sorgente archiviato, se la definizione sul server è ancora quella; 2) la definizione del server normalizzata (`ViewDefinitionNormalizer`: catalogo tolto, alias automatici e parentesi del server semplificati), se il diagramma la sa disegnare; 3) il testo, intatto, con l'avviso del motivo in parole semplici. Le opzioni che la v1 non gestisce (`WITH CHECK OPTION`, `SQL SECURITY INVOKER`) si dicono all'apertura, prima di salvare. Una vista che il server non riesce più a leggere (1356) si spiega in italiano, con la riga del server sotto e la scheda Messaggi davanti. Colonne con lo stesso nome (1060) si segnalano **prima** di mandare il `CREATE`, con i nomi delle colonne.
+
+Il codice delle viste condivide alcuni file con lo Step 7 (`VisualQueryTab`, `WorkTabs`, `MainFrame`, `messages.properties`): i due commit sono divisi per file dove possibile; dove un file serve a entrambi è nel commit dello Step 7.
+
+**Revisione indipendente.** Un sotto-agente revisore ha riletto lo step e ha trovato, tra gli altri, questi difetti, tutti corretti:
+- una definizione vuota (utente senza `SHOW VIEW`) combaciava con una definizione archiviata vuota e riapriva un sorgente vecchio: ora senza definizione non si archivia e non si confronta (`ViewSourceStoreTest`);
+- la chiave dell'archivio era solo `host:porta`: ora `utente@host:porta`;
+- la rilettura e l'archiviazione, e la lettura di prova di una vista non valida, giravano sull'EDT: ora in sottofondo;
+- una seconda *Modifica vista* sulla stessa vista rileggeva e cancellava il lavoro non salvato: ora riporta davanti la scheda così com'è;
+- la scheda appena riaperta risultava «modificata» e alla chiusura chiedeva di salvare: ora no, e chiudendo una vista modificata si chiede *Salva vista / Scarta / Resta*;
+- il normalizzatore staccava `_binary` dalla stringa, e con alcune definizioni lanciava eccezioni: ora mai (casi reali aggiunti);
+- test deboli rinforzati: *Modifica vista* dal menu vero del navigatore, 1050 e 1060, *Salva come vista…*, stato «non modificata», immagini catturate con l'avviso visibile, `CHECK OPTION`, `bibliotecasoft` obbligatorio su MariaDB e copie che non leggono dal catalogo originale, T8.3 con il lettore dei metadati del client.
+
+Validazione (test con `@Tag("step8")`; evidenze in `test-results/step8/`):
+
+| Test | Esito | Evidenza |
+|---|---|---|
+| T8.1 | ✅ | `ViewDdlTest` (U): `CREATE VIEW`, `CREATE OR REPLACE VIEW`, `DROP VIEW`, nomi con backtick raddoppiati, catalogo qualificato (o no, se manca), `;` e spazi finali tolti, testo su più righe conservato, ammesse solo SELECT / WITH / UNION (vuoto, `DELETE`, `UPDATE`, `DROP` rifiutati con un messaggio in italiano), nome obbligatorio; script per la pipeline con `USE` + `CREATE [OR REPLACE]` e titolo in italiano |
+| T8.2 | ✅ | `T82ViewDefinitionNormalizerTest` (U): **26 definizioni reali** lette da `information_schema.VIEWS` di MariaDB e MySQL (`viste-reali-mariadb.tsv`, `viste-reali-mysql.tsv`, dal lavoro di S2c e dalle viste di T8.3): ogni rappresentabile, normalizzata, è accettata dal parser e il catalogo non compare più; nessuna eccezione su nessuna definizione (anche testo rotto, stringhe con il nome del catalogo, `_binary`, join annidati, alias uguale al catalogo). In più `T82ViewReopeningTest` (30, U: i tre livelli) e `ViewSourceStoreTest` (8, U: archivio) |
+| T8.3 | ✅ | `T83VisteSulServerTest` (it, **20 test** = 10 viste × 2 server): create con il generatore del client, definizione riletta con il lettore dei metadati del client (uguale a `VIEW_DEFINITION`), normalizzata, riaperta al livello 2: 8 rappresentabili per server, l'SQL rigenerato dà **le stesse righe della vista** (in ordine per la vista con ORDER BY); 2 (funzione finestra, UNION ALL) restano testo come atteso → `T8.3-esiti.md` |
+| T8.4 | ✅ | `T84T87VisteSulServerTest.t84_t86_…` (M, 2 server, programma vero): `v_prestiti_aperti` costruita nel diagramma da *Nuova vista* (prestiti, libri, soci; `data_reso IS NULL`), *Salva vista* → `CREATE VIEW`, sul server le righe dei prestiti aperti (71); scheda senza modifiche e sorgente nell'archivio; chiusa e riaperta con **Modifica vista dal menu del navigatore**: livello 1, stesse tre tabelle, due join, **stesso SQL**, nessun avviso; aggiunta `soci.nome` (una seconda *Modifica vista* riporta la stessa scheda senza perdere la modifica) → `CREATE OR REPLACE VIEW` → la vista sul server ha la colonna `nome` e la restituisce. Poi: nome già usato → errore 1050 spiegato in italiano, vista esistente intatta; `libri` + `editori` con tutte le colonne → avviso «id» (libri.id, editori.id), **nessun CREATE** mandato né registrato; *Salva come vista…* da una query visiva normale → `CREATE VIEW v_titoli_anni` → `T8.4-T8.6-*.txt`, `T8.4-riaperta-*.png`, `T8.4-colonne-doppie-*.png` |
+| T8.5 | ✅ | `T84T87VisteSulServerTest.t85_…` (M, 2 server): 5 viste create **fuori** dal client con la connessione del test; *Modifica vista*: 3 nel diagramma (livello 2), 2 (funzione finestra, UNION ALL) come testo con l'avviso del motivo (livello 3); per ognuna il testo riaperto, eseguito, dà le righe della vista, e salvata di nuovo (`CREATE OR REPLACE`) la vista resta la stessa; una sesta con `WITH CASCADED CHECK OPTION` mostra all'apertura l'avviso che l'opzione andrebbe persa → `T8.5-*.txt`, `T8.5-*.png` (catturate prima di salvare, con l'avviso visibile) |
+| T8.6 | ✅ | stesso test di T8.4: dati di `v_prestiti_aperti` aperti dal navigatore → griglia **in sola lettura** con la spiegazione («Le viste si leggono soltanto…»), *Conferma* spenta; blocco 2×2 copiato negli appunti (2 righe × 2 colonne) → `T8.4-T8.6-*.txt`, `T8.6-*.png` |
+| T8.7 | ✅ | `T84T87VisteSulServerTest.t87_…` (M, 2 server): eliminata fuori dal client la tabella `collane` usata da `v_collane_editori`, aprire la vista → nel pannello Messaggi prima la spiegazione («La vista non è più valida: usa tabelle, colonne o viste che non esistono più…»), poi la riga del server `[1356]`; scheda Messaggi davanti; nessuna griglia vuota; la lettura fallita è nel registro con esito errore → `T8.7-*.txt`, `T8.7-*.png` |
+| T8.7b | ✅ | `T84T87VisteSulServerTest.t87b_…` (M, 2 server): `v_libri_sopra_media` (condizione con sottoquery costruita nel diagramma), `v_prestiti_aperti` e `v_riepilogo` **costruita sopra** `v_prestiti_aperti` (la vista è nell'elenco con le tabelle, le sue colonne sono quelle della vista); righe verificate sul server; riaperte: nella vista-su-vista `v_prestiti_aperti` è l'entità del diagramma, `v_libri_sopra_media` ha il nodo della sottoquery; eliminata la vista di base, aprire `v_riepilogo` dà 1356 spiegato. Le due viste reali di `bibliotecasoft` (catalogo dell'utente, **solo su MariaDB**, letto soltanto e copiato in un catalogo `ramasql_test_`; le copie non leggono dall'originale) si riaprono nel diagramma (livello 2) e il testo riaperto dà le righe della vista; su MySQL il test registra che il catalogo non c'è → `T8.7b-*.txt`, `T8.7b-*.png` |
+
+**T8.8** (Navicat) resta all'utente: istruzioni nel resoconto finale.
+
+Scelte dell'agente da rivedere: `ADR-023` (salvataggio, archivio, tre livelli). Difetto nuovo, non bloccante: `BUG-025` (l'archivio non si ripulisce quando una vista si elimina).
+
 ## 2026-09-27 — Step 7: query editor visivo (SQLeo) ✅ (esecuzione autonoma)
 
 La scheda **«Query visiva»** si apre dal pulsante *Nuova query visiva* della barra, sul catalogo scelto nel navigatore: a sinistra l'elenco delle tabelle e viste (doppio clic o trascinamento) e l'albero della query, al centro il diagramma, sopra l'interruttore **Grafica | SQL**, sotto i risultati. In Grafica comanda il diagramma e il testo SQL si riscrive **a ogni gesto**; in SQL comanda il testo e, tornando alla Grafica, il diagramma si ricostruisce solo se il testo è rappresentabile *e* il diagramma lo riscrive equivalente — altrimenti il testo resta intatto, con un avviso in parole semplici («contiene una funzione finestra (OVER)…»). L'esecuzione passa dalla pipeline come l'editor SQL: anteprima, registro con origine «Query visiva», preceduta da `USE` del catalogo della scheda (`ADR-022`).

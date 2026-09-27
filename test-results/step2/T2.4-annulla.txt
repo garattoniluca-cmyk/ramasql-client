@@ -1,8 +1,8 @@
 T2.4 (a) — host irraggiungibile 10.255.255.1:3306, poi Annulla
-clic sulla tessera: ritorno in 78 ms (la rete è su un altro thread)
+clic sulla tessera: ritorno in 93 ms (la rete è su un altro thread)
 attesa osservata prima di annullare: 2500 ms, tentativo ancora in corso
-eventi invokeLater serviti dall'EDT durante l'attesa: 100
-latenza massima di un evento sull'EDT: 47 ms (47686 µs; limite 200 ms)
-Annulla → schermata iniziale in 69 ms (limite 1000 ms)
+eventi invokeLater serviti dall'EDT durante l'attesa: 84
+latenza massima di un evento sull'EDT: 62 ms (62625 µs; limite 200 ms)
+Annulla → schermata iniziale in 81 ms (limite 1000 ms)
 finestre d'errore mostrate, anche dopo 8 s: 0
 schermata dell'attesa: T2.4-attesa.png

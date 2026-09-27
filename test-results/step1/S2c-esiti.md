@@ -33,19 +33,19 @@ Generato da `it.ramasql.it.step1.S2cVisteRiletteTest`.
 | fixture | `v09_vista_su_vista` | MySQL | 11 | sì | sì | sì | sì | grafica (L1) |  |  |
 | fixture | `v10_order_limit` | MySQL | 5 | sì | sì | sì | sì | grafica (L1) |  |  |
 | fixture | `v11_distinct` | MySQL | 3 | sì | sì | sì | sì | grafica (L1) |  |  |
-| bibliotecasoft (vista reale) | `v_prestiti_dettaglio` | MariaDB | 5 | n.d. | no | no | sì | editor SQL (L3) | l'SQL rigenerato differisce dall'originale (da: «.libro_id left join generi g on g.id=l.g» ≠ «.libro_id join amministratori a on a.id=») | eseguita: stesse righe della vista (equivalente, ma il testo cambia) |
+| bibliotecasoft (vista reale) | `v_prestiti_dettaglio` | MariaDB | 5 | n.d. | sì | no | sì | grafica (L2) |  |  |
 | bibliotecasoft (vista reale) | `v_statistiche_libri` | MariaDB | 413 | n.d. | sì | no | sì | grafica (L2) |  |  |
 | scuola (schema reale, vista di prova) | `v_alunni_classi` | MySQL | 15 | sì | sì | no | sì | grafica (L1) |  |  |
 | scuola (schema reale, vista di prova) | `v_corsi_per_classe` | MySQL | 5 | sì | sì | no | sì | grafica (L1) |  |  |
 
-**MariaDB:** 12 viste su 13 riaperte dalla definizione del server (senza normalizzatore: 7); con la sorgente locale l'apertura grafica copre 12 su 13; le altre vanno nell'editor SQL senza perdita.
+**MariaDB:** 13 viste su 13 riaperte dalla definizione del server (senza normalizzatore: 7); con la sorgente locale l'apertura grafica copre 13 su 13; le altre vanno nell'editor SQL senza perdita.
 
 **MySQL:** 13 viste su 13 riaperte dalla definizione del server (senza normalizzatore: 6); con la sorgente locale l'apertura grafica copre 13 su 13; le altre vanno nell'editor SQL senza perdita.
 
 Esito atteso fissato nel test PER VISTA e PER SERVER (`ATTESI`, oltre alle soglie): viste della fixture
 L1 = L2 = sì su entrambi i server; `v_statistiche_libri` (MariaDB, reale) L2 = sì; `v_prestiti_dettaglio`
-(MariaDB, reale) L2 = no, motivo «l'SQL rigenerato differisce dall'originale»: il modello rigenera i tre
-join in un ordine diverso, la riscrittura dà le stesse righe ma il testo cambia, quindi la vista si apre
-nell'editor SQL (L3); viste su `scuola` (MySQL) L1 = L2 = sì. Differenze dall'atteso in questa esecuzione: 0.
+(MariaDB, reale) L2 = sì dal 2026-09-27 (prima L2 = no: il modello rigenerava i join in un ordine
+diverso, BUG-005, corretto con l'ordine stabile dei join di `SQLFormatter.sort` nello Step 7);
+viste su `scuola` (MySQL) L1 = L2 = sì. Differenze dall'atteso in questa esecuzione: 0.
 
 Soglie fissate nel test (per server): viste della fixture al livello 2 ≥ 10 su 11, al livello 1 ≥ 10; viste sugli schemi reali al livello 2 ≥ 1 su 2.

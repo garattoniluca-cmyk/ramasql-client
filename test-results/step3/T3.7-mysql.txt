@@ -1,22 +1,22 @@
 T3.7 — conferma rafforzata, su MySQL
-DROP TABLE `ramasql_test_ui_forte_9x5jfq`.`libri`; → livello STRONG, da riscrivere «libri»
+DROP TABLE `ramasql_test_ui_forte_1rvk03`.`libri`; → livello STRONG, da riscrivere «libri»
    «libr» → Esegui disabilitato, clic ignorato
    «LIBRI» → Esegui disabilitato, clic ignorato
    «librix» → Esegui disabilitato, clic ignorato
    «CONFERMO» → Esegui disabilitato, clic ignorato
    «libri» → Esegui abilitato; l'utente preme comunque Annulla
-TRUNCATE TABLE `ramasql_test_ui_forte_9x5jfq`.`prestiti`; → livello STRONG, da riscrivere «prestiti»
+TRUNCATE TABLE `ramasql_test_ui_forte_1rvk03`.`prestiti`; → livello STRONG, da riscrivere «prestiti»
    «prestit» → Esegui disabilitato, clic ignorato
    «PRESTITI» → Esegui disabilitato, clic ignorato
    «prestitix» → Esegui disabilitato, clic ignorato
    «CONFERMO» → Esegui disabilitato, clic ignorato
    «prestiti» → Esegui abilitato; l'utente preme comunque Annulla
-DROP DATABASE `ramasql_test_ui_forte_9x5jfq`; → livello STRONG, da riscrivere «ramasql_test_ui_forte_9x5jfq»
-   «ramasql_test_ui_forte_9x5jf» → Esegui disabilitato, clic ignorato
-   «RAMASQL_TEST_UI_FORTE_9X5JFQ» → Esegui disabilitato, clic ignorato
-   «ramasql_test_ui_forte_9x5jfqx» → Esegui disabilitato, clic ignorato
+DROP DATABASE `ramasql_test_ui_forte_1rvk03`; → livello STRONG, da riscrivere «ramasql_test_ui_forte_1rvk03»
+   «ramasql_test_ui_forte_1rvk0» → Esegui disabilitato, clic ignorato
+   «RAMASQL_TEST_UI_FORTE_1RVK03» → Esegui disabilitato, clic ignorato
+   «ramasql_test_ui_forte_1rvk03x» → Esegui disabilitato, clic ignorato
    «CONFERMO» → Esegui disabilitato, clic ignorato
-   «ramasql_test_ui_forte_9x5jfq» → Esegui abilitato; l'utente preme comunque Annulla
+   «ramasql_test_ui_forte_1rvk03» → Esegui abilitato; l'utente preme comunque Annulla
 Dopo tre anteprime annullate: registro 0 istruzioni; server: catalogo e libri presenti, prestiti 500 righe (invariato)
 Rinomina (non distruttiva): livello CONFIRM, nessun nome da riscrivere, Esegui predefinito
 Svuota prestiti con «prestiti» riscritto: eseguito, registro 1 istruzione, server 0 righe

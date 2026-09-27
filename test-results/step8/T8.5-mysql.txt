@@ -1,0 +1,9 @@
+T8.5 — Modifica vista su 5 viste create fuori dal client, MySQL
+Catalogo di test: ramasql_test_ui_vista85_cs2kxb
+— v_semplice: livello 2 (nel diagramma); eseguita: 24 righe = righe della vista; salvata di nuovo con CREATE OR REPLACE, righe invariate
+— v_join: livello 2 (nel diagramma); eseguita: 178 righe = righe della vista; salvata di nuovo con CREATE OR REPLACE, righe invariate
+— v_aggregata: livello 2 (nel diagramma); eseguita: 21 righe = righe della vista; salvata di nuovo con CREATE OR REPLACE, righe invariate
+— v_finestra: livello 3 (testo, avviso: «Questa vista non si può mostrare nel diagramma: contiene una funzione finestra (OVER): il diagramma non la sa disegnare. La trovi qui come testo SQL, intatta: puoi modificarla e salvarla lo stesso.»); eseguita: 200 righe = righe della vista; salvata di nuovo con CREATE OR REPLACE, righe invariate
+— v_union: livello 3 (testo, avviso: «Questa vista non si può mostrare nel diagramma: unisce più SELECT con UNION: il diagramma ne mostra una sola. La trovi qui come testo SQL, intatta: puoi modificarla e salvarla lo stesso.»); eseguita: 150 righe = righe della vista; salvata di nuovo con CREATE OR REPLACE, righe invariate
+— v_con_check (WITH CASCADED CHECK OPTION): livello 2, avviso all'apertura: «Questa vista ha opzioni che qui non si gestiscono (WITH CASCADED CHECK OPTION): salvandola da qui torneranno ai valori predefiniti.»
+Esito: SUPERATO

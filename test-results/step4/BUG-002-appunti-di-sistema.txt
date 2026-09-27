@@ -16,4 +16,4 @@ Esito: solo il flavor grezzo lascia il LF da solo dentro la cella.
 
 Da un altro programma (PowerShell SetText, testo in stile Excel) → Ctrl+V sulla riga d'inserimento: celle [[Zeta, Bianchi, prima
 seconda], [Omega, Neri, null]]
-Gli appunti dell'utente sono stati salvati prima del test (48 formati) e rimessi dopo.
+Gli appunti dell'utente sono stati salvati prima del test (115 formati) e rimessi dopo.

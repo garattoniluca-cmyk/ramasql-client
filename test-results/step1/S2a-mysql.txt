@@ -7,38 +7,38 @@ Colonne lette dai metadati JDBC:
   libri_autori: [id_libro, id_autore]
   autori: [id, nome, cognome, nazionalita, anno_nascita]
 Join proposti dalle chiavi esterne del server:
-  fk_libri_editori: editori.`id` = libri.`id_editore`
-  fk_la_libri: libri.`id` = libri_autori.`id_libro`
-  fk_la_autori: autori.`id` = libri_autori.`id_autore`
+  fk_libri_editori: editori.id = libri.id_editore
+  fk_la_libri: libri.id = libri_autori.id_libro
+  fk_la_autori: autori.id = libri_autori.id_autore
 Avvisi del query builder: []
 
 SQL generato (toString(true)):
 SELECT
-	libri.`titolo` AS libri_titolo,
-	editori.`nome` AS editori_nome,
-	COUNT(autori.`id`) AS n_autori
+	`libri`.`titolo`,
+	`editori`.`nome`,
+	COUNT(`autori`.`id`) AS n_autori
 FROM
-	`editori` editori
-	INNER JOIN `libri` libri
-	 ON editori.`id` = libri.`id_editore`
-	INNER JOIN `libri_autori` libri_autori
-	 ON libri.`id` = libri_autori.`id_libro`
-	INNER JOIN `autori` autori
-	 ON libri_autori.`id_autore` = autori.`id`
+	`editori`
+	INNER JOIN `libri`
+	 ON `editori`.`id` = `libri`.`id_editore`
+	INNER JOIN `libri_autori`
+	 ON `libri`.`id` = `libri_autori`.`id_libro`
+	INNER JOIN `autori`
+	 ON `libri_autori`.`id_autore` = `autori`.`id`
 WHERE
-	libri.`anno` > 1960
+	`libri`.`anno` > 1960
 GROUP BY
-	libri.`titolo`,
-	editori.`nome`
+	`libri`.`titolo`,
+	`editori`.`nome`
 ORDER BY
-	editori.`nome` DESC,
-	libri.`titolo` ASC
+	`editori`.`nome` DESC,
+	`libri`.`titolo` ASC
 
 SQL di riferimento scritto a mano:
 SELECT l.titolo, e.nome, COUNT(a.id) AS n_autori FROM libri l JOIN editori e ON l.id_editore = e.id JOIN libri_autori la ON la.id_libro = l.id JOIN autori a ON la.id_autore = a.id WHERE l.anno > 1960 GROUP BY l.titolo, e.nome ORDER BY e.nome DESC, l.titolo ASC
 
 Risultato dell'SQL generato su MySQL:
-libri_titolo | editori_nome | n_autori
+titolo | nome | n_autori
 Diceria dell'untore | Sellerio | 1
 Il cane di terracotta | Sellerio | 1
 La forma dell'acqua | Sellerio | 1
@@ -58,7 +58,7 @@ Storia del nuovo cognome | Edizioni e/o | 1
 (16 righe)
 
 Risultato dell'SQL generato su MariaDB:
-libri_titolo | editori_nome | n_autori
+titolo | nome | n_autori
 Diceria dell'untore | Sellerio | 1
 Il cane di terracotta | Sellerio | 1
 La forma dell'acqua | Sellerio | 1

@@ -255,3 +255,14 @@ Data: 2026-09-27 · Stato: accettata — decisa dall'agente, da rivedere (Step 7
 
 **Motivi.** Riusare l'editor collaudato evita una seconda esecuzione e una seconda gestione degli errori; tenere il query builder lontano da JDBC mantiene vera la regola «ogni SQL del client passa dal client»; gli alias automatici e il FULL JOIN producevano SQL che uno studente non scriverebbe o che il server rifiuta.
 
+## ADR-023 — Viste: salvataggio, archivio dei sorgenti, riapertura a tre livelli
+Data: 2026-09-27 · Stato: accettata — decisa dall'agente, da rivedere (Step 8, `DESIGN.md` §3.8, `FEASIBILITY.md` F-06)
+
+**Decisione.**
+1. *Nuova vista* (barra) apre la query visiva in **modalità vista**: una riga con «Nome della vista» e *Salva vista*. La stessa riga compare con *Salva come vista…* da una query visiva qualsiasi. Nessuna opzione ALGORITHM / SQL SECURITY / CHECK OPTION ([dopo]).
+2. Una vista nuova si salva con `CREATE VIEW` (se il nome è già usato, l'errore 1050 del server lo dice); una vista riaperta con *Modifica vista* con `CREATE OR REPLACE VIEW`, e da lì non si rinomina. Prima del `CREATE` c'è ``USE `catalogo` ``: i nomi non qualificati della SELECT il server li risolve nel catalogo corrente della sessione, non in quello della vista (trovato scrivendo T8.4: senza, la vista fallirebbe o userebbe le tabelle di un altro catalogo).
+3. **Archivio dei sorgenti** in `%APPDATA%\RamaSQL\viste.json` (`ViewSourceStore`, con `formatVersion`): per indirizzo del profilo (`utente@host:porta`), catalogo e vista, il testo scritto dall'utente **e** la definizione riletta dal server subito dopo il salvataggio. Il sorgente vale solo se la definizione sul server è ancora quella: se qualcuno ha cambiato la vista da un altro programma, si passa al livello 2.
+4. **Riapertura a tre livelli** (`ViewReopening`): 1) sorgente archiviato; 2) definizione del server normalizzata (`ViewDefinitionNormalizer`, ora codice di prodotto in `core`) e disegnata se il parser la rappresenta; 3) altrimenti il testo, con l'avviso del motivo — si può comunque modificare e salvare.
+5. Una vista che il server non riesce a leggere (1356: usa tabelle o colonne sparite) si segnala con l'errore del server spiegato in italiano, invece di un generico «non trovata».
+
+**Motivi.** Il server non conserva il testo scritto: senza archivio la vista di uno studente tornerebbe riscritta e irriconoscibile. Confrontare la definizione evita di riaprire un testo vecchio dopo una modifica fatta altrove.

@@ -1,0 +1,8 @@
+T8.7b — viste nidificate e viste reali, MySQL
+Catalogo di test: ramasql_test_ui_vista87b_9i46o5
+Create nel diagramma: v_libri_sopra_media (sottoquery), v_prestiti_aperti, v_riepilogo (sopra v_prestiti_aperti); righe verificate sul server
+Riaperte: v_riepilogo (livello 1, entità del diagramma: v_prestiti_aperti), v_libri_sopra_media (livello 1, con il nodo della sottoquery)
+Eliminata v_prestiti_aperti: aprendo v_riepilogo → «Non riesco a leggere la vista «v_riepilogo»: La vista non è più valida: usa tabelle, colonne o viste che non esistono più (forse sono state eliminate o rinominate). Si corregge ricreando ciò che manca, oppure con «Modifica vista».
+[1356] (conn=11362) View 'ramasql_test_ui_vista87b_9i46o5.v_riepilogo' references invalid table(s) or column(s) or function(s) or definer/invoker of view lack rights to use them»
+bibliotecasoft non c'è su MySQL (catalogo dell'utente solo su MariaDB): parte delle viste reali non applicabile qui
+Esito: SUPERATO

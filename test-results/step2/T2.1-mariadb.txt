@@ -4,5 +4,5 @@ SELECT VERSION() letto dal test = 11.5.2-MariaDB
 Session.serverInfo() = ServerInfo[kind=MARIADB, versionText=11.5.2-MariaDB, major=11, minor=5, patch=2]
 barra di stato = MariaDB 11.5.2
 autocommit (principale, servizio) = true, true
-CONNECTION_ID principale = 5835, di servizio = 5836
+CONNECTION_ID principale = 11701, di servizio = 11702
 Session.toString() = Session[Test MariaDB, ramasql_test@127.0.0.1:3306, MariaDB 11.5.2]
