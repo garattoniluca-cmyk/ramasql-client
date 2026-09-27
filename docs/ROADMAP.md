@@ -280,7 +280,7 @@ A ─ 0 ─ 1 (spike) ─ 2 ─ 3 ─┬─ 4 ─┬─ 5 ─ 6 ─────�
 | T11.12 | **N** | Navicat → ER Diagram / *Reverse Database to Model* su `biblioteca` e su `biblioteca_myisam` | su `biblioteca` le relazioni di Navicat = relazioni **fisiche** del client; su `biblioteca_myisam` Navicat non ne mostra nessuna mentre il client mostra quelle logiche → è la conferma del requisito 8 («indipendente dalle chiavi esterne») |
 
 ## Step 12 — Rifiniture per l'aula e guida rapida
-**Task:** spiegazioni in italiano degli errori frequenti · dimensione carattere · guida rapida · «Informazioni su» con licenze · revisione «alla Apple» di ogni schermata (cosa si può togliere?) · giro sui difetti in `BUGS.md`.
+**Task:** spiegazioni in italiano degli errori frequenti · **sistema di suggerimenti (tooltip) esplicativi su tutto il programma, comprese le singole voci delle liste a discesa** (`ADR-020`, indicazione dell'utente 2026-09-27: «fondamentale in un ambito come questo») · dimensione carattere · guida rapida · «Informazioni su» con licenze · revisione «alla Apple» di ogni schermata (cosa si può togliere?) · giro sui difetti in `BUGS.md`.
 
 | ID | Tipo | Procedura | Risultato atteso |
 |---|---|---|---|
@@ -292,6 +292,12 @@ A ─ 0 ─ 1 (spike) ─ 2 ─ 3 ─┬─ 4 ─┬─ 5 ─ 6 ─────�
 | T12.6 | M | carattere al massimo su proiettore 1024×768 e su portatile 1366×768 | nessuna finestra di dialogo esce dallo schermo |
 | T12.7 | M | revisione «alla Apple»: per ogni schermata, elenco dei controlli visibili e domanda «serve a uno degli 9 requisiti?» | ciò che non serve è rimosso; barra strumenti ≤ 10 pulsanti; impostazioni = 4 voci |
 | T12.8 | M | «Informazioni su» | GPL-3, attribuzioni SQLeonardo/SQLeo, elenco librerie e licenze, dove trovare i sorgenti |
+| T12.9 | U | **copertura dei suggerimenti**: si costruisce ogni schermata e si visita ogni componente con cui l'utente interagisce (pulsanti, voci di menu, campi, caselle, liste a discesa, intestazioni di colonna, linguette, nodi del navigatore, celle della griglia) | ogni componente ha il suo suggerimento, preso dai file di risorse; **zero mancanti** (il test elenca quelli senza) |
+| T12.10 | U | **suggerimenti sulle voci delle liste a discesa**: tipo di colonna, engine, charset e collation, tipo d'indice, ON DELETE / ON UPDATE, tabella riferita, impostazioni | **ogni voce** ha una spiegazione propria, non una generica per l'intera lista; nessuna voce senza testo |
+| T12.11 | U | **qualità dei testi**: per ogni suggerimento, lunghezza, assenza di segnaposto, italiano | ogni testo è un trafiletto completo — cosa fa, quando usarlo, cosa comporta (almeno due frasi per le scelte con conseguenze, es. MyISAM, CASCADE, SET NULL); niente «TODO», niente testo inglese, niente duplicati copiati fra voci diverse |
+| T12.12 | M | passare con il mouse su ogni voce delle liste a discesa dell'editor di tabelle (tipo, engine, collation, azioni FK, tipo d'indice) | accanto alla voce compare la sua spiegazione, senza coprirla; si legge prima di scegliere |
+| T12.13 | M | suggerimenti **al proiettore** (1024×768, carattere al massimo) e **da tastiera** | testo a capo entro una larghezza leggibile, mai fuori dallo schermo, resta visibile il tempo di leggerlo; raggiungibile anche senza mouse (vedi T12.4) |
+| T12.14 | M | prova con uno studente che non conosce il programma: scegliere fra InnoDB e MyISAM, e fra CASCADE e RESTRICT, **leggendo solo i suggerimenti** | sa dire perché ha scelto; se non ci riesce, il testo si riscrive |
 
 ## Step 13 — Installer e distribuzione
 **Quando:** solo dopo una versione stabile (indicazione dell'utente). **Richiede:** D-05 (firma), D-07 (aggiornamenti), un PC dell'aula o una macchina virtuale Windows pulita. Include lo spike d'installazione prima previsto nello Step 1 (jlink → jpackage → Inno Setup, utente senza admin, ZIP da chiavetta).

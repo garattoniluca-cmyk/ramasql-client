@@ -214,3 +214,31 @@ Data: 2026-09-23 · Stato: accettata — decisa dall'agente, da rivedere (Step 4
 **Motivi.** Tenere le implementazioni di produzione in un solo pacchetto lascia i componenti verificabili da soli (test veloci, senza database) e permette ai test M di pilotare il **programma vero** contro i due server. Far passare anche le letture dal registro costa poco e serve alla didattica: in aula si vede sempre l'SQL che il client ha eseguito, comprese le `SELECT` che riempiono la griglia.
 
 **Conseguenze.** I test d'interfaccia contro i server condividono un pacchetto di supporto (`it.ramasql.app.servertest`: `DbServer`, `ClientApp`, `Probe`) che avvia il programma vero senza mostrare finestre e verifica gli esiti con una connessione separata.
+
+## ADR-020 — Suggerimenti esplicativi su tutto il programma, anche sulle voci delle liste
+Data: 2026-09-27 · Stato: **accettata — decisa dall'utente** (Step 12)
+
+**Decisione dell'utente:** «un sistema di tooltip quando il mouse va sopra, su tutto il programma e persino sul contenuto delle liste a discesa, che spieghi con un trafiletto di testo completo tutte le caratteristiche della scelta che si sta facendo. Questo sistema è fondamentale in un ambito come questo.»
+
+**Come lo si realizza (scelte tecniche, da rivedere quando si fa lo Step 12):**
+1. **Un solo meccanismo** nel pacchetto `theme` (un gestore dei suggerimenti e un unico stile, `DESIGN-SYSTEM.md` §3.9), usato da tutti i componenti: niente `setToolTipText` sparsi con stili diversi.
+2. **Voci delle liste a discesa**: un renderer comune per le `JComboBox` che mostra il suggerimento della voce evidenziata accanto alla lista aperta. Serve anche a liste costruite dal server (collation, tabelle del catalogo): la spiegazione si compone dai dati (es. charset, sensibilità a maiuscole e accenti) quando non esiste un testo scritto a mano.
+3. **Testi solo nei file di risorse**, con chiavi prevedibili (`<componente>.tooltip`, `<lista>.<voce>.tooltip`), così si traducono e si correggono senza toccare il codice.
+4. **Copertura garantita da un test** (T12.9–T12.11): un componente interattivo senza suggerimento, una voce di lista senza spiegazione o un testo troppo povero fanno fallire la build. È l'unico modo perché la regola regga nel tempo, a ogni schermata nuova degli step 7–11.
+5. **Anche da tastiera** (Ctrl+F1), per coerenza con T12.4 e con l'accessibilità.
+
+**Nota sulla tempistica.** Il lavoro è pianificato nello Step 12, ma gli step 7–11 aggiungeranno molte schermate nuove: conviene che da subito ogni componente nuovo nasca **con** il suo suggerimento, altrimenti allo Step 12 si dovrà scrivere tutto in una volta. Da concordare con l'utente se anticipare il meccanismo (punti 1–3).
+
+## ADR-021 — Esecuzione autonoma degli step 7–12 con /goal e /loop
+Data: 2026-09-27 · Stato: **accettata — decisa dall'utente**
+
+**Decisione dell'utente:** lanciare di notte, in autonomia, tutti gli step dal 7 al 12, «con tutte le verifiche e i test del caso», per avere al mattino la versione fino allo Step 12. Stesso schema di `ADR-014` (step 1–6): contratto in `.claude/goal.md`, giro di lavoro in `.claude/loop.md`, giudice unico `scripts/verify.ps1`.
+
+**Cosa cambia rispetto agli step 1–6:**
+1. **`scripts/verify.ps1` esteso agli step 7–12**, con soglie nuove congelate il 2026-09-27 (tabella in `goal.md`) e il controllo del diario fino allo step 12. Le soglie degli step 1–6 **non cambiano**.
+2. **Le lezioni degli step 1–6 diventano regole** del contratto: ogni riga M si prova con il programma vero contro i due server (niente componenti collegati solo a finte), revisore indipendente a ogni step, una sola corsa Maven per volta, evidenze che dichiarano il fallimento.
+3. **Adattamenti decisi prima di partire**, per non bloccarsi di notte: il campionario di query dello Step 7 lo costruisce l'agente (in attesa dell'elenco dell'utente); il dump totale dello Step 10 si prova su cataloghi `ramasql_test_*` e mai su quelli reali; la metà «Navicat» di T10.8 resta all'utente se non ha lasciato un dump in `test-inputs/local/`.
+4. **Prove che richiedono una persona**: T2.9, T7.11, T12.14 (e la metà Navicat di T10.8 alle condizioni dette) — righe «predisposto» nel diario, elencate nel resoconto.
+
+**Rischio dichiarato:** gli step 7 e 11 sono i più grandi della roadmap (L). Sei step in una notte sono un obiettivo ambizioso: se alle 12 ore di lavoro non sono finiti tutti, il contratto prevede di fermarsi con gli step chiusi committati e il resoconto di ciò che manca.
+

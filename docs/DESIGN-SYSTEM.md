@@ -94,6 +94,16 @@ Raggio 12, padding 24, titolo `heading`, testo `body`, al massimo **una decision
 ### 3.8 Barra di stato
 26 px, `bg.window`, bordo superiore `border.subtle`. A sinistra punto verde + «Connesso a *nome*» + `utente@host:porta` in `text.secondary`; a destra pillola del server (petrolio/arancio) con la versione e il catalogo corrente con icona cilindro.
 
+### 3.9 Suggerimenti (tooltip)
+Uno stile unico in tutto il programma, pensato per essere **letto**, non intravisto.
+- **Forma**: riquadro `bg.surface`, bordo 1 px `border.default`, raggio 6, ombra leggera, padding 10×12; **larghezza massima 360 px** con a-capo automatico (mai una riga lunga che attraversa lo schermo).
+- **Contenuto**: in alto il **nome** della cosa in `emphasis` (es. «CASCADE»), sotto il **trafiletto** in `small`, `text.primary`: *cosa fa* → *quando usarlo* → *cosa comporta*. Per le scelte con conseguenze sui dati una riga finale in `warning` («Attenzione: …»). Dove aiuta, l'SQL corrispondente in carattere monospazio (es. `ON DELETE CASCADE`).
+- **Tempi**: compare dopo 500 ms di sosta, resta finché il puntatore è sopra (almeno 20 s: il tempo di leggerlo ad alta voce in classe), sparisce appena ci si sposta.
+- **Voci delle liste a discesa**: il suggerimento della voce evidenziata compare **accanto** alla lista aperta, allineato alla voce, senza coprire le altre; cambia seguendo il mouse o le frecce della tastiera.
+- **Tastiera**: il suggerimento dell'elemento con il focus si apre con **Ctrl+F1** (lo stesso tasto di Workbench e dell'uso comune per «dimmi di più») e si chiude con Esc.
+- **Proiettore**: segue la dimensione del carattere scelta nelle impostazioni; se non entra sullo schermo si sposta, non si taglia.
+- **Testi**: sempre nei file di risorse (chiavi `<componente>.tooltip` per i componenti, `<lista>.<voce>.tooltip` per le voci delle liste), mai nel codice. Stile di scrittura del §4.
+
 ## 4. Scrittura (ux-copy)
 Frasi brevi, in seconda persona, verbi d'azione nei pulsanti («Conferma», «Elimina tabella», «Connetti»), niente gergo tecnico dove non serve, il gergo SQL dove serve (è ciò che si insegna). Errori: *cosa è successo* + *cosa fare*, poi il messaggio originale.
 

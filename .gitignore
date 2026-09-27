@@ -30,3 +30,6 @@ local DBs.txt
 
 # sorgenti originali di SQLeo clonati per l'estrazione (il codice estratto sta in sqleo-qb/)
 spikes/sqleo-upstream/
+
+# file di prova forniti dall'utente (es. un dump prodotto da Navicat): restano sul PC
+test-inputs/local/

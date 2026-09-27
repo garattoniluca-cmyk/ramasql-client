@@ -1,5 +1,16 @@
 # JOURNAL.md — Diario cronologico (più recente in alto)
 
+## 2026-09-27 — Preparazione dell'esecuzione autonoma degli step 7–12 (`ADR-021`)
+
+Richiesta dell'utente: lanciare di notte, in autonomia, gli step 7–12, per avere al mattino la versione fino allo Step 12. Preparati il contratto (`.claude/goal.md`, con le lezioni degli step 1–6 trasformate in regole), il giro di lavoro (`.claude/loop.md`) e `ADR-021`; adattamenti decisi prima di partire: campionario di query dello Step 7 costruito dall'agente, dump totale dello Step 10 solo su cataloghi `ramasql_test_*`, metà «Navicat» di T10.8 all'utente se non lascia un dump in `test-inputs/local/` (cartella esclusa da git).
+**Da completare prima del lancio:** l'estensione di `scripts/verify.ps1` agli step 7–12 (nuove soglie congelate, controllo del diario fino allo step 12). La modifica del verificatore è stata bloccata dal sistema di permessi come operazione delicata, ed è giusto che la approvi l'utente: senza di essa il verificatore controllerebbe solo gli step 1–6 e il goal risulterebbe raggiunto a vuoto.
+
+## 2026-09-27 — Indicazioni dell'utente dopo la chiusura degli step 1–6
+
+- **Password dei server locali**: sono solo di sviluppo e vanno mostrate all'utente quando servono (le avevo tenute fuori dalla chat per eccesso di zelo: la regola 8 riguarda git e i documenti, non il proprietario del PC). Provate tutte e quattro contro i server: funzionano. In produzione si useranno password robuste e un altro server → `DESIGN.md` §6.
+- **Dati degli studenti**: solo nome e cognome; il resto è sulle piattaforme istituzionali; sul server solo lezioni e test, da consegnare e mostrare a fine anno. Nessun dato sensibile → `DESIGN.md` §6.
+- **Suggerimenti (tooltip) su tutto il programma, anche sulle singole voci delle liste a discesa**, con un trafiletto completo che spiega la scelta: «fondamentale in un ambito come questo» → Step 12 (compito + test T12.9–T12.14), `DESIGN.md` §1-bis e §2, `DESIGN-SYSTEM.md` §3.9, `ADR-020`. Da decidere con l'utente se anticipare il meccanismo, così le schermate degli step 7–11 nascono già con i loro suggerimenti.
+
 ## 2026-09-23 — RESOCONTO dell'esecuzione autonoma degli step 1–6 (`ADR-014`)
 
 **Esito: step 1, 2, 3, 4, 5 e 6 completati.** La **Tappa M1** della roadmap («client di base, già usabile in aula») è raggiunta: la biblioteca si costruisce dall'inizio alla fine **solo con il client** — catalogo, tabelle, indici, chiavi esterne, dati — e il registro SQL esportato, rieseguito su un catalogo vuoto, dà due cataloghi identici (metadati e `CHECKSUM TABLE`). Un commit per step: `Step 1` … `Step 6`. **Nessun push**: lo farà l'utente dopo la revisione.
