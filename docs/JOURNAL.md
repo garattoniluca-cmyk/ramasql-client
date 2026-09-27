@@ -1,9 +1,9 @@
 # JOURNAL.md — Diario cronologico (più recente in alto)
 
-## 2026-09-27 — Preparazione dell'esecuzione autonoma degli step 7–12 (`ADR-021`)
+## 2026-09-27 — Preparazione dell'esecuzione autonoma degli step 7–8 (`ADR-021`)
 
-Richiesta dell'utente: lanciare di notte, in autonomia, gli step 7–12, per avere al mattino la versione fino allo Step 12. Preparati il contratto (`.claude/goal.md`, con le lezioni degli step 1–6 trasformate in regole), il giro di lavoro (`.claude/loop.md`) e `ADR-021`; adattamenti decisi prima di partire: campionario di query dello Step 7 costruito dall'agente, dump totale dello Step 10 solo su cataloghi `ramasql_test_*`, metà «Navicat» di T10.8 all'utente se non lascia un dump in `test-inputs/local/` (cartella esclusa da git).
-**Da completare prima del lancio:** l'estensione di `scripts/verify.ps1` agli step 7–12 (nuove soglie congelate, controllo del diario fino allo step 12). La modifica del verificatore è stata bloccata dal sistema di permessi come operazione delicata, ed è giusto che la approvi l'utente: senza di essa il verificatore controllerebbe solo gli step 1–6 e il goal risulterebbe raggiunto a vuoto.
+Richiesta dell'utente: lanciare di notte, in autonomia, gli step successivi. Chiesti prima fino allo Step 12, poi ridotti dall'utente **fino allo Step 8 compreso** (query editor visivo e viste grafiche). Preparati il contratto (`.claude/goal.md`, con le lezioni degli step 1–6 trasformate in regole), il giro di lavoro (`.claude/loop.md`) e `ADR-021`; adattamento deciso prima di partire: il campionario di query dello Step 7 lo costruisce l'agente, in attesa dell'elenco di esercizi dell'utente.
+Resta da fare prima del lancio l'estensione di `scripts/verify.ps1` agli step 7–8 (soglie nuove congelate, controllo del diario fino allo step 8): senza di essa il verificatore controllerebbe solo gli step 1–6 e il goal risulterebbe raggiunto a vuoto. La modifica del verificatore richiede l'approvazione dell'utente.
 
 ## 2026-09-27 — Indicazioni dell'utente dopo la chiusura degli step 1–6
 

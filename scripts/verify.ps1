@@ -8,11 +8,12 @@
   3. Legge i report JUnit (target/test-report/open-test-report.xml di ogni modulo) e conta,
      per ogni step, i test SUPERATI con @Tag("stepN"); quelli con anche @Tag("it") sono i test
      d'integrazione contro MariaDB E MySQL. I test saltati non contano.
-  4. Controlla in docs/JOURNAL.md che ogni test U/I/M degli step 1-6 elencato in docs/ROADMAP.md
+  4. Controlla in docs/JOURNAL.md che ogni test U/I/M degli step 1-8 elencato in docs/ROADMAP.md
      compaia in una riga di tabella con l'esito "OK" (segno di spunta verde).
   Ultima riga: "VERIFY: PASS" oppure "VERIFY: FAIL".
 
-  SOGLIE CONGELATE il 2026-09-21 (ADR-014): e' vietato abbassarle o cambiare la logica di conteggio.
+  SOGLIE CONGELATE il 2026-09-21 per gli step 1-6 (ADR-014) e il 2026-09-27 per gli step 7-8 (ADR-021):
+  e' vietato abbassarle o cambiare la logica di conteggio.
 #>
 param([switch]$SkipBuild)
 
@@ -29,6 +30,9 @@ $soglie = [ordered]@{
     step4 = @{ Tot = 45; It = 4  }   # separatore istruzioni, DML, appunti a blocchi, griglia
     step5 = @{ Tot = 60; It = 20 }   # TableDiff (>=60 casi) + andata/ritorno sui due server
     step6 = @{ Tot = 45; It = 12 }   # indici, FK (16 combinazioni), controlli, verifica sul server
+    # --- aggiunte il 2026-09-27 su richiesta dell'utente (ADR-021), congelate come le precedenti ---
+    step7 = @{ Tot = 60; It = 10 }   # query builder: campionario >= 40 query (T7.2) + esecuzione sui due server (T7.3)
+    step8 = @{ Tot = 30; It = 10 }   # viste: generatore, normalizzatore, 10 viste sui due server (T8.3)
 }
 
 # --- 1. JDK 25 e credenziali di test -------------------------------------------------------------
@@ -109,7 +113,7 @@ $journal = Get-Content -LiteralPath (Join-Path $root 'docs\JOURNAL.md') -Encodin
 $step = 0; $idPerStep = @{}
 foreach ($riga in $roadmap) {
     if ($riga -match '^## Step (\d+)\b') { $step = [int]$Matches[1]; continue }
-    if ($step -ge 1 -and $step -le 6 -and $riga -match '^\|\s*((T\d+\.\d+b?)|(S\d[a-d]?))\s*\|\s*(U|I|M|M\+U|U\+I)\s*\|') {
+    if ($step -ge 1 -and $step -le 8 -and $riga -match '^\|\s*((T\d+\.\d+b?)|(S\d[a-d]?))\s*\|\s*(U|I|M|M\+U|U\+I)\s*\|') {
         if (-not $idPerStep[$step]) { $idPerStep[$step] = @() }
         $idPerStep[$step] += $Matches[1]
     }
