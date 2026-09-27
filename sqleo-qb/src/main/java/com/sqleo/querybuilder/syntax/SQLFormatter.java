@@ -18,6 +18,9 @@
  *
  *
  * Modificato per RamaSQL Client (2026-09-21): posToAttribute non scrive piu' la posizione delle entita' nell'SQL (dipendeva da Preferences e dalle finestre interne di SQLeo).
+ * Modificato per RamaSQL Client (2026-09-27): sort dei join riscritto con ordine stabile (BUG-005): l'ordine originale
+ * spostava anche join gia' in ordine valido e, con join misti INNER/LEFT, cambiava il testo della query (che risultava
+ * non rappresentabile); tolto moveUp, usato solo dal vecchio sort.
  */
 
 package com.sqleo.querybuilder.syntax;
@@ -232,50 +235,70 @@ public class SQLFormatter implements _ReservedWords
 		}
 	}
 	
+	/*
+	 * RamaSQL (2026-09-27, BUG-005): ordine STABILE dei join. Si tiene l'ordine in cui i join sono scritti (o sono stati
+	 * aggiunti nel diagramma) e si sposta un join solo quando non si aggancia a nessuna tabella gia' dichiarata dai
+	 * precedenti: si prende il primo join in attesa che si aggancia; se nessuno si aggancia si apre un nuovo gruppo
+	 * (FROM separato da virgola) col primo in attesa. Una seconda condizione fra le stesse due tabelle segue subito il
+	 * join di quella coppia (diventa "AND ..." della sua ON), come nell'originale.
+	 * L'algoritmo originale (con moveUp, tolti) raggruppava i join per tabella in comune e
+	 * spostava anche join gia' in un ordine valido: "l JOIN la, LEFT JOIN p, JOIN a (su la), LEFT JOIN s (su p)" usciva
+	 * come "l JOIN la, LEFT JOIN p, LEFT JOIN s, JOIN a", cioe' il testo dell'utente cambiava e la query risultava non
+	 * rappresentabile; con join misti INNER/LEFT l'ordine dei join e' parte del significato.
+	 */
 	private static void sort(QueryTokens._TableReference tokens[])
 	{
-		for(int i=0; i<tokens.length-1; i++)
+		ArrayList<Integer> slots = new ArrayList<Integer>();
+		ArrayList<QueryTokens.Join> pending = new ArrayList<QueryTokens.Join>();
+		for(int i=0; i<tokens.length; i++)
 		{
 			if(tokens[i] instanceof QueryTokens.Join)
 			{
-				QueryTokens.Join joinI = (QueryTokens.Join)tokens[i];
-				for(int j=i+1,k=i; j<tokens.length; j++)
-				{
-					if(tokens[j] instanceof QueryTokens.Join)
-					{
-						QueryTokens.Join joinJ = (QueryTokens.Join)tokens[j];
-						
-						if((joinI.getPrimary().getTable().getReference().equals(joinJ.getPrimary().getTable().getReference())
-						&& joinI.getForeign().getTable().getReference().equals(joinJ.getForeign().getTable().getReference()))
-						|| (joinI.getPrimary().getTable().getReference().equals(joinJ.getForeign().getTable().getReference())
-						&& joinI.getForeign().getTable().getReference().equals(joinJ.getPrimary().getTable().getReference())))
-						{
-							moveUp(tokens,j,i+1);
-							k++;
-						}
-						else if(joinI.getPrimary().getTable().getReference().equals(joinJ.getPrimary().getTable().getReference())
-						|| joinI.getForeign().getTable().getReference().equals(joinJ.getForeign().getTable().getReference())
-						|| joinI.getPrimary().getTable().getReference().equals(joinJ.getForeign().getTable().getReference())
-						|| joinI.getForeign().getTable().getReference().equals(joinJ.getPrimary().getTable().getReference()))
-						{
-							moveUp(tokens,j,++k);
-						}
-					}
-				}				
+				slots.add(Integer.valueOf(i));
+				pending.add((QueryTokens.Join)tokens[i]);
 			}
 		}
+		ArrayList<String> declared = new ArrayList<String>();
+		ArrayList<QueryTokens.Join> ordered = new ArrayList<QueryTokens.Join>();
+		while(!pending.isEmpty())
+		{
+			int pick = 0;
+			for(int j=0; j<pending.size(); j++)
+			{
+				QueryTokens.Join candidate = pending.get(j);
+				if(declared.contains(joinRef(candidate,true)) || declared.contains(joinRef(candidate,false)))
+				{
+					pick = j;
+					break;
+				}
+			}
+			QueryTokens.Join join = pending.remove(pick);
+			ordered.add(join);
+			if(!declared.contains(joinRef(join,true))) declared.add(joinRef(join,true));
+			if(!declared.contains(joinRef(join,false))) declared.add(joinRef(join,false));
+			for(int j=0; j<pending.size();)
+			{
+				QueryTokens.Join other = pending.get(j);
+				boolean samePair = (joinRef(join,true).equals(joinRef(other,true)) && joinRef(join,false).equals(joinRef(other,false)))
+					|| (joinRef(join,true).equals(joinRef(other,false)) && joinRef(join,false).equals(joinRef(other,true)));
+				if(samePair)
+					ordered.add(pending.remove(j));
+				else
+					j++;
+			}
+		}
+		for(int k=0; k<slots.size(); k++)
+			tokens[slots.get(k).intValue()] = ordered.get(k);
 	}
 
-	private static void moveUp(Object tokens[], int idxOld, int idxNew)
+	/* RamaSQL: riferimento (alias o nome) della tabella primaria o esterna di un join, mai null */
+	private static String joinRef(QueryTokens.Join join, boolean primary)
 	{
-		Object token = tokens[idxOld];
-		for(int i=idxOld-1; i>=idxNew; i--)
-		{
-			tokens[i+1] = tokens[i];
-		}
-		tokens[idxNew] = token;
+		QueryTokens.Column c = primary ? join.getPrimary() : join.getForeign();
+		String ref = c == null || c.getTable() == null ? null : c.getTable().getReference();
+		return ref == null ? "" : ref;
 	}
-	
+
 	public static String stripQuote(String s)
 	{
 		if(s.startsWith(QueryBuilder.identifierQuoteString)) s = s.substring(1);

@@ -129,7 +129,10 @@ public final class TableGridDataSource implements GridDataSource {
             return Texts.get("grid.read.noAnswer");
         }
         StatementResult.ServerError e = result.error();
-        return e.code() == 0 ? e.message() : "[" + e.code() + "] " + e.message();
+        String original = e.code() == 0 ? e.message() : "[" + e.code() + "] " + e.message();
+        // la spiegazione in italiano, quando c'è (es. 1356: vista non più valida, Step 8), poi il messaggio del server
+        return it.ramasql.app.editor.ErrorExplainer.explain(e.code())
+                .map(x -> Texts.get("grid.read.errorExplained", x, original)).orElse(original);
     }
 
     /** La lettura di una pagina non è riuscita: chi apre la griglia mostra il messaggio del server. */

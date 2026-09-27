@@ -63,9 +63,13 @@ public final class QbSql {
     /** Analizza, rigenera e confronta. Non lancia mai eccezioni. */
     public static synchronized Result check(String sql) {
         List<String> warnings = new ArrayList<>();
-        QbHost previous = QbRuntime.host();
-        QbRuntime.setHost(new WarningCollector(previous, warnings));
-        try {
+        // gli avvisi del parser si raccolgono con una facciata del solo thread corrente (2026-09-27, BUG-007): prima si
+        // sostituiva per un attimo la facciata di tutto il processo, che le altre schede stavano usando
+        return QbRuntime.withThreadHost(new WarningCollector(QbRuntime.host(), warnings), () -> checkWith(sql, warnings));
+    }
+
+    private static Result checkWith(String sql, List<String> warnings) {
+        {
             QueryModel model;
             String regenerated;
             try {
@@ -87,9 +91,16 @@ public final class QbSql {
             }
             return new Result(false, model, regenerated, warnings,
                     "l'SQL rigenerato differisce dall'originale (da: «" + firstDifference(a, b) + "»)");
-        } finally {
-            QbRuntime.setHost(previous);
         }
+    }
+
+    /**
+     * Due testi SQL sono la stessa query per il confronto di {@link #check}: stessa forma normale, a meno dell'ordine
+     * degli operandi delle uguaglianze semplici. Serve a verificare che il diagramma, dopo aver caricato un testo,
+     * lo riscriva equivalente (Step 7): se no, il testo resta com'è.
+     */
+    public static boolean equivalent(String a, String b) {
+        return canonicalEqualities(normalize(a)).equals(canonicalEqualities(normalize(b)));
     }
 
     /** Parole che aprono un'istruzione diversa da SELECT: fuori da apici e backtick non possono comparire in una SELECT. */

@@ -22,6 +22,8 @@
  *
  *
  * Modificato per RamaSQL Client (2026-09-21): rimossa l'azione save to definition file (definizione manuale dei metadati); l'opzione archi/linee si chiede alla facciata (QbOption.RELATION_ARCS); linee dei join in grigio medio (in origine grigio chiaro, poco leggibile su bianco) e ancore scalate; la posizione dei campi si calcola con SwingUtilities.convertPoint invece di getLocationOnScreen, che falliva (eccezione ignorata, join non disegnato) quando il diagramma non era ancora a schermo.
+ * Modificato per RamaSQL Client (2026-09-27): il cambio del tipo di join avvisa il QueryBuilder (fireQueryChanged,
+ * BUG-006); colori e spessore delle linee dalla facciata (QbHost.color, scala) invece che fissi (BUG-004).
  */
 
 package com.sqleo.querybuilder;
@@ -53,11 +55,27 @@ import com.sqleo.querybuilder.syntax.QueryTokens.Column;
 
 public class DiagramRelation extends JPanel
 {
-	public static Color highlightColor = Color.black;
-	public static Color normalColor = Color.lightGray;
+	// RamaSQL (2026-09-27, BUG-004): colori e tratti dalla facciata e scalati (in origine: nero, grigio chiaro, verde, 2 px fissi)
+	private static Color color(it.ramasql.qb.QbColor c)
+	{
+		return QbRuntime.host().color(c);
+	}
+
+	/** Colore di mezza linea: il lato di cui si tengono tutte le righe (join esterno) ha il colore dei join esterni. */
+	private Color sideColor(boolean allRows)
+	{
+		if(allRows) return color(it.ramasql.qb.QbColor.JOIN_ALL_ROWS);
+		return color(isHighlight() ? it.ramasql.qb.QbColor.LINE_HIGHLIGHT : it.ramasql.qb.QbColor.LINE);
+	}
 
 	private static Stroke highlightStroke = new BasicStroke((float) (2f));
 	private static Stroke normalStroke = new BasicStroke((float) (2f));
+
+	private Stroke stroke()
+	{
+		float scale = QbRuntime.scale(100) / 100f;
+		return new BasicStroke((isHighlight() ? 2.25f : 1.5f) * scale, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND);
+	}
 
 	QueryTokens.Join querytoken;
 
@@ -119,6 +137,7 @@ public class DiagramRelation extends JPanel
 		querytoken.setType(jointype);
 		querytoken.getCondition().setOperator(operator);
 		onPropertyChanged();
+		if(owner!=null && owner.getBuilder()!=null) owner.getBuilder().fireQueryChanged(); // RamaSQL (2026-09-27)
 	}
 
 	private void onPropertyChanged()
@@ -129,18 +148,18 @@ public class DiagramRelation extends JPanel
 
 		anchor.setToolTipText(tip);
 
+		// RamaSQL (2026-09-27, BUG-004): nodo d'accento per il join interno, ambra per quelli esterni (in origine rosso/giallo/verde)
 		switch (querytoken.getType())
 		{
 		case QueryTokens.Join.LEFT_OUTER:
 		case QueryTokens.Join.RIGHT_OUTER:
-			anchor.setBackground(Color.yellow);
-			break;
 		case QueryTokens.Join.FULL_OUTER:
-			anchor.setBackground(Color.green);
+			anchor.setBackground(color(it.ramasql.qb.QbColor.JOIN_OUTER));
 			break;
 		default:
-			anchor.setBackground(Color.red);
+			anchor.setBackground(color(it.ramasql.qb.QbColor.JOIN_INNER));
 		}
+		anchor.setToolTipText(joinDescription() + " — " + tip);
 		
 		this.doResize();
 		this.repaint();
@@ -220,8 +239,8 @@ public class DiagramRelation extends JPanel
 	
 			if (px2 < fx1)
 			{
-				plusColor = this.isRight() || this.isFull() ? isHighlight() ? Color.green.darker() : Color.green  : isHighlight() ? Color.black: Color.gray;
-				minusColor = this.isLeft() || this.isFull() ? isHighlight() ? Color.green.darker() : Color.green  : isHighlight() ? Color.black: Color.gray;
+				plusColor = sideColor(allRowsOfPrimaryEntity());
+				minusColor = sideColor(allRowsOfForeignEntity());
 
 				serie[0].x = px2;
 				serie[0].y = py;
@@ -235,8 +254,8 @@ public class DiagramRelation extends JPanel
 			}
 			else if (px1 > fx2)
 			{
-				plusColor = this.isLeft() || this.isFull() ? isHighlight() ? Color.green.darker() : Color.green  : isHighlight()?Color.black:Color.gray;
-				minusColor = this.isRight() || this.isFull() ? isHighlight() ? Color.green.darker() : Color.green  : isHighlight()?Color.black:Color.gray;
+				plusColor = sideColor(allRowsOfForeignEntity());
+				minusColor = sideColor(allRowsOfPrimaryEntity());
 
 				serie[0].x = fx2;
 				serie[0].y = fy;
@@ -250,8 +269,8 @@ public class DiagramRelation extends JPanel
 			}
 			else
 			{
-				plusColor = this.isRight() || this.isFull() ? isHighlight() ? Color.green.darker() : Color.green  : isHighlight()?Color.black:Color.gray;
-				minusColor = this.isLeft() || this.isFull() ? isHighlight() ? Color.green.darker() : Color.green  : isHighlight()?Color.black:Color.gray;
+				plusColor = sideColor(allRowsOfPrimaryEntity());
+				minusColor = sideColor(allRowsOfForeignEntity());
 
 				serie[0].x = px2;
 				serie[0].y = py;
@@ -297,14 +316,14 @@ public class DiagramRelation extends JPanel
 		int xStart = primaryEntity.getLocation().x + primaryEntity.getSize().width;
 
 		if(xStart < xEnd){
-			plusColor = this.isRight() || this.isFull() ? isHighlight() ? Color.green.darker() : Color.green  : isHighlight() ? Color.black: Color.gray;
-			minusColor = this.isLeft() || this.isFull() ? isHighlight() ? Color.green.darker() : Color.green  : isHighlight() ? Color.black: Color.gray;
+			plusColor = sideColor(allRowsOfPrimaryEntity());
+			minusColor = sideColor(allRowsOfForeignEntity());
 		}else if (xStart > xMax){
-			plusColor = this.isLeft() || this.isFull() ? isHighlight() ? Color.green.darker() : Color.green  : isHighlight()?Color.black:Color.gray;
-			minusColor = this.isRight() || this.isFull() ? isHighlight() ? Color.green.darker() : Color.green  : isHighlight()?Color.black:Color.gray;
+			plusColor = sideColor(allRowsOfForeignEntity());
+			minusColor = sideColor(allRowsOfPrimaryEntity());
 		}else {
-			plusColor = this.isRight() || this.isFull() ? isHighlight() ? Color.green.darker() : Color.green  : isHighlight() ? Color.black: Color.gray;
-			minusColor = this.isLeft() || this.isFull() ? isHighlight() ? Color.green.darker() : Color.green  : isHighlight() ? Color.black: Color.gray;
+			plusColor = sideColor(allRowsOfPrimaryEntity());
+			minusColor = sideColor(allRowsOfForeignEntity());
 		}
 
 		if(xEnd < xMin)
@@ -467,7 +486,7 @@ public class DiagramRelation extends JPanel
 	
 	protected void paintLinear(Graphics g)
 	{
-		((Graphics2D) g).setStroke(isHighlight() ? highlightStroke : normalStroke);
+		((Graphics2D) g).setStroke(stroke());
 		((Graphics2D) g).setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 		 
 		 g.setColor(plusColor);
@@ -479,6 +498,57 @@ public class DiagramRelation extends JPanel
 		 g.drawLine(serie[2].x,serie[2].y,serie[3].x,serie[3].y);
 
 		super.paintChildren(g);
+	}
+
+	/** RamaSQL (2026-09-27): che righe tiene il join, in parole semplici (suggerimento del nodo e menu). */
+	String joinDescription()
+	{
+		if(isLeft())
+			return I18n.getFormattedString("querybuilder.join.allRowsOf","Tutte le righe di {0}", new Object[]{primaryEntityName()});
+		if(isRight())
+			return I18n.getFormattedString("querybuilder.join.allRowsOf","Tutte le righe di {0}", new Object[]{foreignEntityName()});
+		return I18n.getString("querybuilder.join.matchingOnly","Solo le righe che corrispondono");
+	}
+
+	/*
+	 * RamaSQL (2026-09-27): i nomi e il verso si leggono dal TOKEN del join, cioe' da cio' che finisce nell'SQL. Scrivendo il
+	 * FROM, il formatter puo' girare il token (primaria <-> esterna, LEFT <-> RIGHT) se la sua tabella primaria non e' ancora
+	 * dichiarata; l'entita' «primaria» del diagramma invece resta quella di quando il join e' nato. Leggere il verso dalle
+	 * entita' faceva dire al menu «tutte le righe di X» mentre l'SQL teneva tutte le righe dell'altra tabella.
+	 */
+	String primaryEntityName()
+	{
+		return displayName(querytoken == null ? null : querytoken.getPrimary().getTable());
+	}
+
+	String foreignEntityName()
+	{
+		return displayName(querytoken == null ? null : querytoken.getForeign().getTable());
+	}
+
+	private static String displayName(QueryTokens.Table t)
+	{
+		if(t == null) return "";
+		String n = t.getAlias() != null ? t.getAlias() : t.getName();
+		return com.sqleo.querybuilder.syntax.SQLFormatter.stripQuote(n);
+	}
+
+	/** Il token ha ancora come primaria l'entita' primaria del diagramma (non e' stato girato dal formatter). */
+	private boolean tokenFollowsDiagram()
+	{
+		if(querytoken == null || primaryEntity == null) return true;
+		return displayName(querytoken.getPrimary().getTable()).equalsIgnoreCase(displayName(primaryEntity.getQueryToken()));
+	}
+
+	/** Si tengono tutte le righe dell'entita' primaria del diagramma (per il colore della mezza linea dal suo lato). */
+	private boolean allRowsOfPrimaryEntity()
+	{
+		return isFull() || (tokenFollowsDiagram() ? isLeft() : isRight());
+	}
+
+	private boolean allRowsOfForeignEntity()
+	{
+		return isFull() || (tokenFollowsDiagram() ? isRight() : isLeft());
 	}
 
 	private boolean isLeft(){
@@ -500,29 +570,36 @@ public class DiagramRelation extends JPanel
 		Anchor()
 		{
 			addMouseListener(this);
-			setBorder(LineBorder.createBlackLineBorder());
-			setBackground(Color.red);
-			setOpaque(true);
-			setSize(it.ramasql.qb.QbRuntime.scale(10), it.ramasql.qb.QbRuntime.scale(10)); // RamaSQL: in origine 10x10 px fissi
+			// RamaSQL (2026-09-27, BUG-004): pallino pieno con anello bianco, disegnato (in origine quadratino con bordo nero)
+			setOpaque(false);
+			setName("qb.join.anchor");
+			setCursor(java.awt.Cursor.getPredefinedCursor(java.awt.Cursor.HAND_CURSOR));
+			setSize(it.ramasql.qb.QbRuntime.scale(14), it.ramasql.qb.QbRuntime.scale(14)); // RamaSQL: in origine 10x10 px fissi
+		}
+
+		protected void paintComponent(Graphics g)
+		{
+			Graphics2D g2 = (Graphics2D) g.create();
+			try
+			{
+				g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+				float ring = QbRuntime.scale(100) / 100f * 2f;
+				g2.setColor(color(it.ramasql.qb.QbColor.CANVAS));
+				g2.fill(new java.awt.geom.Ellipse2D.Float(0, 0, getWidth(), getHeight()));
+				g2.setColor(getBackground());
+				g2.fill(new java.awt.geom.Ellipse2D.Float(ring, ring, getWidth() - 2 * ring, getHeight() - 2 * ring));
+			}
+			finally
+			{
+				g2.dispose();
+			}
 		}
 
 		public void mouseClicked(MouseEvent me)
 		{
-			if (SwingUtilities.isRightMouseButton(me))
-			{
-				JPopupMenu popup = new JPopupMenu();
-				popup.add(new ActionEdit());
-				popup.addSeparator();
-				popup.add(new ActionRemove());
-
-				popup.show(this, me.getX(), me.getY());
-			}
-                        else if (me.getClickCount() == 2)
-                        {
-                            new  ActionEdit().actionPerformed(new ActionEvent(this,0,""));
-                        }
-			// else // We want the highlight always...
+			// RamaSQL (2026-09-27): un clic apre il menu del join (in origine: tasto destro, o doppio clic per la maschera)
 			DiagramRelation.this.owner.setHighlight(DiagramRelation.this);
+			joinMenu().show(this, me.getX(), me.getY());
 		}
 
 		public void mouseEntered(MouseEvent e)
@@ -541,11 +618,42 @@ public class DiagramRelation extends JPanel
 		{
 		}
 	}
+	/**
+	 * RamaSQL (2026-09-27): il menu del join, in parole semplici — quali righe si tengono (le voci dicono i nomi delle
+	 * tabelle), la condizione, «Togli il join». Niente FULL OUTER JOIN: MySQL e MariaDB non lo conoscono.
+	 */
+	JPopupMenu joinMenu()
+	{
+		JPopupMenu popup = new JPopupMenu();
+		javax.swing.ButtonGroup group = new javax.swing.ButtonGroup();
+		int[] types = {QueryTokens.Join.INNER, QueryTokens.Join.LEFT_OUTER, QueryTokens.Join.RIGHT_OUTER};
+		String[] labels = {
+				I18n.getString("querybuilder.join.matchingOnly","Solo le righe che corrispondono"),
+				I18n.getFormattedString("querybuilder.join.allRowsOf","Tutte le righe di {0}", new Object[]{primaryEntityName()}),
+				I18n.getFormattedString("querybuilder.join.allRowsOf","Tutte le righe di {0}", new Object[]{foreignEntityName()})};
+		String[] tips = {"querybuilder.join.matchingOnly.tooltip", "querybuilder.join.allRowsOf.tooltip",
+				"querybuilder.join.allRowsOf.tooltip"};
+		for(int i=0; i<types.length; i++)
+		{
+			final int type = types[i];
+			javax.swing.JRadioButtonMenuItem item = new javax.swing.JRadioButtonMenuItem(labels[i], querytoken.getType()==type);
+			item.setName("qb.join.kind." + i);
+			item.setToolTipText(I18n.getString(tips[i], ""));
+			item.addActionListener(e -> setValues(type, querytoken.getCondition().getOperator()));
+			group.add(item);
+			popup.add(item);
+		}
+		popup.addSeparator();
+		popup.add(new ActionEdit());
+		popup.add(new ActionRemove());
+		return popup;
+	}
+
 	private class ActionEdit extends AbstractAction
 	{
 		ActionEdit()
 		{
-			super(I18n.getString("querybuilder.menu.edit", "edit..."));
+			super(I18n.getString("querybuilder.join.condition", "edit...")); // RamaSQL (2026-09-27): «Condizione…»
 		}
 
 		public void actionPerformed(ActionEvent e)

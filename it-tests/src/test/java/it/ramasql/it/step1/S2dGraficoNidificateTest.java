@@ -9,8 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.formdev.flatlaf.FlatLightLaf;
-import com.sqleo.querybuilder.QbAccessoDiProva;
-import com.sqleo.querybuilder.QbAccessoDiProva.NodoDiQuery;
+import it.ramasql.it.step1.QbProva.NodoDiQuery;
 import com.sqleo.querybuilder.QueryActions;
 import com.sqleo.querybuilder.QueryBuilder;
 import it.ramasql.it.ItServers;
@@ -311,15 +310,15 @@ class S2dGraficoNidificateTest {
             frame.validate();
 
             qb.setQueryModel(QbSql.parse(caso.sql()));
-            List<NodoDiQuery> nodi = QbAccessoDiProva.nodiDiQuery(qb);
-            List<String> esterno = QbAccessoDiProva.entitaNelDiagramma(qb);
+            List<NodoDiQuery> nodi = QbProva.nodiDiQuery(qb);
+            List<String> esterno = QbProva.entitaNelDiagramma(qb);
 
             // selezione del nodo della sottoquery: il diagramma passa a quel livello
-            QbAccessoDiProva.selezionaNodo(qb, caso.nodo());
-            List<String> interno = QbAccessoDiProva.entitaNelDiagramma(qb);
+            QbProva.selezionaNodo(qb, caso.nodo());
+            List<String> interno = QbProva.entitaNelDiagramma(qb);
             // modifica dal diagramma della sottoquery: condizione sul campo (menu del campo, «add where condition»)
-            QbAccessoDiProva.aggiungiWhere(qb, caso.tabella(), caso.colonna(), caso.operatore(), caso.valore());
-            String sqlDelNodo = QbAccessoDiProva.sqlDelNodoSelezionato(qb);
+            QbProva.aggiungiWhere(qb, caso.tabella(), caso.colonna(), caso.operatore(), caso.valore());
+            String sqlDelNodo = QbProva.sqlDelNodoSelezionato(qb);
 
             qb.getActionMap().get(QueryActions.ENTITIES_ARRANGE_GRID).actionPerformed(new ActionEvent(qb, 0, "disponi"));
             frame.getRootPane().setSize(size);
@@ -336,8 +335,8 @@ class S2dGraficoNidificateTest {
             }
 
             // ritorno alla query principale
-            QbAccessoDiProva.selezionaNodo(qb, 0);
-            List<String> esternoDopo = QbAccessoDiProva.entitaNelDiagramma(qb);
+            QbProva.selezionaNodo(qb, 0);
+            List<String> esternoDopo = QbProva.entitaNelDiagramma(qb);
 
             return new Costruzione(nodi, esterno, interno, sqlDelNodo, esternoDopo,
                     qb.getQueryModel().toString(true), qb.getQueryModel().toString(false), avvisi);

@@ -52,6 +52,7 @@ public final class App {
         ProfileStore.Opening opening = ProfileStore.openRecovering(dataDirectory);
         ConnectionController connections = new ConnectionController(opening.store(), prompts);
         MainFrame frame = new MainFrame(connections, settings, prompts, workspacePrompts);
+        frame.setViewSources(new it.ramasql.core.connection.ViewSourceStore(dataDirectory));
         connections.attach(frame);
         AppSettings.Loading loading = settings.loading();
         if (loading.hasProblem()) {

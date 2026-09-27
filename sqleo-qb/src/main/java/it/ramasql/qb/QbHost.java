@@ -42,4 +42,19 @@ public interface QbHost {
 
     /** Suggerimenti di join per una tabella: FK reali + relazioni logiche del modello ER. Mai {@code null}. */
     List<JoinHint> joinHints(String table);
+
+    /**
+     * Metadati per il diagramma (tabelle, colonne, chiavi esterne). Predefinito: letti dalla {@link #connection()}
+     * con {@link JdbcQbMetadata}; {@code null} se non c'è connessione (diagramma senza colonne). Il programma lo
+     * ridefinisce con il suo canale dei metadati, così il query builder non interroga il server da sé ({@code BUG-016}).
+     */
+    default QbMetadata metadata() {
+        Connection c = connection();
+        return c == null ? null : new com.sqleo.querybuilder.JdbcQbMetadata(c, catalog());
+    }
+
+    /** Colore del diagramma; predefinito: il token di {@code DESIGN-SYSTEM.md}. */
+    default java.awt.Color color(QbColor c) {
+        return c.defaultColor();
+    }
 }

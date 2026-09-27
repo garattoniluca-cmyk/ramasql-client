@@ -18,6 +18,7 @@
  *
  *
  * Modificato per RamaSQL Client (2026-09-21): icona chiesta alla facciata (QbRuntime); rimosse le azioni Show content e Show definition, che aprivano finestre interne di SQLeo (ClientContent, ClientDefinition): nel client quelle funzioni stanno fuori dal query builder.
+ * Modificato per RamaSQL Client (2026-09-27): intestazione con il nome senza backtick e l'alias solo se diverso dal nome.
  */
 
 package com.sqleo.querybuilder;
@@ -124,7 +125,11 @@ public class DiagramEntity extends DiagramAbstractEntity
 		// ticket #55 (display table AND alias in header)
 		// getHeaderMenu().setText(querytoken.getReference());
 		// getHeaderMenu().setToolTipText(querytoken.isAliasSet() ? querytoken.toString() : null);
-		getHeaderMenu().setText(querytoken.isAliasSet() ? querytoken.toString() : querytoken.getReference());
+		// RamaSQL (2026-09-27): nome senza backtick e alias solo se diverso dal nome (in origine: «`libri` libri»)
+		String name = com.sqleo.querybuilder.syntax.SQLFormatter.stripQuote(querytoken.getName());
+		String alias = querytoken.isAliasSet() ? com.sqleo.querybuilder.syntax.SQLFormatter.stripQuote(querytoken.getAlias()) : null;
+		getHeaderMenu().setText(alias == null || alias.equalsIgnoreCase(name) ? name : name + "  " + alias);
+		getHeaderMenu().setToolTipText(querytoken.toString());
 
 		pack();
 	}	

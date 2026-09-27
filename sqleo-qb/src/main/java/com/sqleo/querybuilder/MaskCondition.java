@@ -16,6 +16,8 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
+ * Modificato per RamaSQL Client (2026-09-27): la casella SUBQUERY si attiva anche con gli operatori di confronto
+ * (=, <, >, <=, >=, <>, !=), non solo con IN ed EXISTS; lo stato dei campi si ricalcola anche all'apertura.
  */
 
 package com.sqleo.querybuilder;
@@ -158,8 +160,11 @@ public class MaskCondition extends BaseMask implements ItemListener ,ChangeListe
 				if(((QueryTokens.DefaultExpression)querytoken.getRight()).isEmpty())
 					right.setText("");
 		}
+		// RamaSQL (2026-09-27): lo stato dei campi si ricalcola anche all'apertura; se l'operatore era gia' quello
+		// selezionato («=», il primo) nessun evento lo faceva e la casella SUBQUERY restava spenta
+		onChanged();
 	}
-	
+
 	private boolean isExistsSelected()
 	{
 		return operator.getSelectedItem().toString().equals("EXISTS") || operator.getSelectedItem().toString().equals("NOT EXISTS");
@@ -170,9 +175,24 @@ public class MaskCondition extends BaseMask implements ItemListener ,ChangeListe
 		return operator.getSelectedItem().toString().equals("IN") || operator.getSelectedItem().toString().equals("NOT IN");
 	}
 	
+	// RamaSQL (2026-09-27): la sottoquery vale anche per i confronti («prezzo > (SELECT AVG…)»), che il modello e il
+	// parser rappresentano gia'; in origine la casella SUBQUERY si attivava solo con IN ed EXISTS
+	/** RamaSQL (2026-09-27): per la facciata e i test */
+	boolean isSubqueryEnabled()
+	{
+		return subquery.isEnabled();
+	}
+
+	private boolean isComparisonSelected()
+	{
+		String op = operator.getSelectedItem().toString();
+		return op.equals("=") || op.equals("<") || op.equals(">") || op.equals("<=") || op.equals(">=")
+				|| op.equals("<>") || op.equals("!=");
+	}
+
 	private void onChanged()
 	{
-		subquery.setEnabled(isExistsSelected() || isInSelected());
+		subquery.setEnabled(isExistsSelected() || isInSelected() || isComparisonSelected());
 		
 		left.setEnabled(!isExistsSelected());
 		right.setEnabled(!subquery.isSelected());

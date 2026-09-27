@@ -20,6 +20,8 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
+ * Modificato per RamaSQL Client (2026-09-27): con la lista SELECT vuota e almeno una tabella nel FROM si scrive
+ * «SELECT *» (in origine «SELECT FROM …», SQL non valido, dopo aver tolto tutte le spunte nel diagramma).
  */
 
 package com.sqleo.querybuilder.syntax;
@@ -224,7 +226,7 @@ public class QuerySpecification implements Cloneable
 		
 		if(selectList.size() > 0)
 			syntax = syntax + concat + SQLFormatter.concat(this.getSelectList(),wrap,offset);
-		else if(isAsteriskSet())
+		else if(isAsteriskSet() || fromClause.size() > 0) // RamaSQL (2026-09-27): senza colonne spuntate «SELECT *», non «SELECT FROM …»
 			syntax = syntax + SQLFormatter.SPACE + "*";
 		
 		String indentPrefix = SQLFormatter.indent(offset) + (offset>0? SQLFormatter.SPACE : "");

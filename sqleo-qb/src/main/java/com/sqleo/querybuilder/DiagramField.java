@@ -18,6 +18,8 @@
  *
  *
  * Modificato per RamaSQL Client (2026-09-21): icona e dimensioni scalate chieste alla facciata (QbRuntime) invece che ad Application e Preferences; rimossa la trasformazione a tabella incrociata (pseudo-funzione eseguibile solo da SQLeo); la concatenazione di gruppo usa GROUP_CONCAT nativo di MySQL/MariaDB. Modificato per RamaSQL Client (2026-09-22): margine a destra del nome del campo (4 px scalati): il nome piu' lungo di un'entita' toccava il bordo del riquadro (controllo del margine di 2 px nello spike S5). Modificato per RamaSQL Client (2026-09-22): le icone del campo in WHERE si chiedono alla facciata (QbIcon.QB_WHERE, QbIcon.QB_KEYANDWHERE) invece che ai campi statici del renderer dell'albero, riscritto da zero.
+ * Modificato per RamaSQL Client (2026-09-27): con l'icona del filtro l'entita' si allarga, se serve, invece di troncare il
+ * nome del campo (BUG-011).
  */
 
 package com.sqleo.querybuilder;
@@ -125,7 +127,10 @@ public class DiagramField extends JPanel implements ItemListener, MouseListener,
 
 		getCheckboxComponent().addItemListener(this);
 		getCheckboxComponent().addMouseListener(this);
-		getCheckboxComponent().setPreferredSize(QbRuntime.scaledDimension(20, 8));
+		// RamaSQL (2026-09-27): larghezza scalata, altezza quella dell'icona della casella (in origine 8 px scalati: piu'
+		// bassa dell'icona, cosi' a 150% le caselle si toccavano e sfioravano il nome)
+		getCheckboxComponent().setPreferredSize(new java.awt.Dimension(QbRuntime.scale(22),
+				getCheckboxComponent().getPreferredSize().height));
 		getCheckboxComponent().setBorderPainted(false);
 		getCheckboxComponent().setFocusPainted(false);
 		getCheckboxComponent().setOpaque(false);
@@ -367,10 +372,25 @@ public class DiagramField extends JPanel implements ItemListener, MouseListener,
 	public void setWhereIcon(){
 		inWhereClause = true;
 		labelComponent.setIcon(QbRuntime.host().icon(primaryKey ? QbIcon.QB_KEYANDWHERE : QbIcon.QB_WHERE));
+		repack(); // RamaSQL (2026-09-27, BUG-011)
 	}
 	public void resetWhereIcon(){
 		inWhereClause = false;
 		labelComponent.setIcon(primaryKey ? keyIcon : null);
+		repack(); // RamaSQL (2026-09-27, BUG-011)
+	}
+
+	// RamaSQL (2026-09-27, BUG-011): l'icona del filtro occupa spazio; se l'entita' non si allarga il nome del campo
+	// viene troncato («data_restit…»). Si allarga solo se serve: la larghezza scelta dall'utente non si stringe.
+	private void repack(){
+		DiagramAbstractEntity entity = getOwner();
+		if(entity == null) return;
+		java.awt.Dimension preferred = entity.getPreferredSize();
+		if(entity.getWidth() > 0 && preferred.width > entity.getWidth()){
+			entity.setSize(preferred.width, Math.max(entity.getHeight(), preferred.height));
+			entity.validate();
+			if(entity.builder != null && entity.builder.diagram != null) entity.builder.diagram.doResize();
+		}
 	}
 	public boolean isInWhereClause(){
 		return inWhereClause;

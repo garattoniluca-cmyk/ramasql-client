@@ -1,0 +1,8 @@
+T7.10 — controllo GPL del modulo sqleo-qb
+file ereditati controllati: 50 (intestazione originale GPL-2.0-or-later intatta)
+di cui modificati, con nota «Modificato per RamaSQL Client (data)» e citati in UPSTREAM.md: 28
+file nostri nel pacchetto com.sqleo (intestazione GPL-3.0-or-later): 4
+confrontati con il clone dell'originale (spikes/sqleo-upstream): 50 file — intestazioni originali identiche; i file senza nota identici all'originale
+ogni file sotto com/sqleo elencato in UPSTREAM.md: sì
+problemi: nessuno
+Esito: SUPERATO

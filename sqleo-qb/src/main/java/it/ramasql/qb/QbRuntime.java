@@ -15,12 +15,39 @@ import java.util.Objects;
 public final class QbRuntime {
 
     private static volatile QbHost host = new BasicQbHost();
+    /**
+     * Facciata valida solo per il thread corrente, per il tempo di un'operazione ({@link QbSql#check} la usa per
+     * raccogliere gli avvisi del parser): così non si sostituisce la facciata di tutto il processo, che le altre schede
+     * stanno usando (rischio R-06, {@code BUG-007}).
+     */
+    private static final ThreadLocal<QbHost> OVERRIDE = new ThreadLocal<>();
 
     private QbRuntime() {
     }
 
     public static QbHost host() {
+        QbHost local = OVERRIDE.get();
+        return local != null ? local : host;
+    }
+
+    /** La facciata di processo, ignorando l'eventuale sostituzione del thread corrente. */
+    public static QbHost processHost() {
         return host;
+    }
+
+    /** Esegue {@code action} con {@code local} come facciata del solo thread corrente. */
+    public static <T> T withThreadHost(QbHost local, java.util.function.Supplier<T> action) {
+        QbHost previous = OVERRIDE.get();
+        OVERRIDE.set(Objects.requireNonNull(local, "local"));
+        try {
+            return action.get();
+        } finally {
+            if (previous == null) {
+                OVERRIDE.remove();
+            } else {
+                OVERRIDE.set(previous);
+            }
+        }
     }
 
     public static void setHost(QbHost newHost) {

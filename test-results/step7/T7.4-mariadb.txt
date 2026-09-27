@@ -1,0 +1,40 @@
+T7.4 — cinque tabelle nella query visiva su MariaDB
+Catalogo di test: ramasql_test_ui_visual74_spbo66
+Elenco a sinistra del diagramma: [autori, editori, libri, libri_autori, prestiti, soci, v_libri_editori, v_prestiti_aperti] (9 righe visibili; diagramma alto 265 px su 397)
+Tabelle aggiunte con il doppio clic sull'elenco
+Tabelle nel diagramma: [libri, editori, libri_autori, autori, prestiti] (nessun avviso)
+Join proposti dal diagramma: [fk_libri_autori_autori: autori.id = libri_autori.id_autore, fk_libri_autori_libri: libri.id = libri_autori.id_libro, fk_libri_editori: editori.id = libri.id_editore, fk_prestiti_libri: libri.id = prestiti.id_libro]
+FK lette dal server (information_schema.KEY_COLUMN_USAGE): [fk_libri_autori_autori: autori.id = libri_autori.id_autore, fk_libri_autori_libri: libri.id = libri_autori.id_libro, fk_libri_editori: editori.id = libri.id_editore, fk_prestiti_libri: libri.id = prestiti.id_libro]
+SQL della vista testo:
+SELECT
+	`libri`.`id`,
+	`libri`.`titolo`,
+	`libri`.`isbn`,
+	`libri`.`anno`,
+	`libri`.`prezzo`,
+	`libri`.`id_editore`,
+	`editori`.`id`,
+	`editori`.`nome`,
+	`editori`.`citta`,
+	`libri_autori`.`id_libro`,
+	`libri_autori`.`id_autore`,
+	`autori`.`id`,
+	`autori`.`cognome`,
+	`autori`.`nome`,
+	`autori`.`nazionalita`,
+	`prestiti`.`id`,
+	`prestiti`.`id_libro`,
+	`prestiti`.`id_socio`,
+	`prestiti`.`data_prestito`,
+	`prestiti`.`data_reso`
+FROM
+	`editori`
+	INNER JOIN `libri`
+	 ON `editori`.`id` = `libri`.`id_editore`
+	INNER JOIN `libri_autori`
+	 ON `libri`.`id` = `libri_autori`.`id_libro`
+	INNER JOIN `autori`
+	 ON `libri_autori`.`id_autore` = `autori`.`id`
+	INNER JOIN `prestiti`
+	 ON `libri`.`id` = `prestiti`.`id_libro`
+Esito: SUPERATO

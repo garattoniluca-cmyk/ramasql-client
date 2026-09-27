@@ -101,6 +101,7 @@ public final class MainFrame extends JFrame implements ShellView {
     private final transient WorkspacePrompts workspacePrompts;
     private final transient SqlLog sqlLog = new SqlLog();
     private transient SessionWorkspace workspace;
+    private transient it.ramasql.core.connection.ViewSourceStore viewSources;
 
     private final CardLayout screens = new CardLayout();
     private final JPanel screenHost = new JPanel(screens);
@@ -141,6 +142,7 @@ public final class MainFrame extends JFrame implements ShellView {
         navigatorPanel.setOnDesignTable((catalog, table) -> openTableEditor(catalog, table));
         navigatorPanel.setOnNewTable(catalog -> openTableEditor(catalog, null));
         navigatorPanel.setOnOpenView(this::openView);
+        navigatorPanel.setOnEditView(this::editView);
         navigatorPanel.setOnSelection(this::updateToolbar);
         settings.addListener(changed -> {
             if (workspace != null) {
@@ -343,6 +345,18 @@ public final class MainFrame extends JFrame implements ShellView {
         connectButton().setToolTipText(Texts.get("toolbar.connect.tooltip"));
         connectButton().addActionListener(e -> connectOrDisconnect());
         button("newQuery").addActionListener(e -> openSqlEditor());
+        button("newVisualQuery").addActionListener(e -> {
+            String catalog = navigatorPanel.selectedCatalog();
+            if (catalog != null && !catalog.isBlank()) {
+                openVisualQuery(catalog);
+            }
+        });
+        button("newView").addActionListener(e -> {
+            String catalog = navigatorPanel.selectedCatalog();
+            if (catalog != null && !catalog.isBlank()) {
+                newView(catalog);
+            }
+        });
         button("newTable").addActionListener(e -> {
             String catalog = navigatorPanel.selectedCatalog();
             if (catalog != null && !catalog.isBlank()) {
@@ -353,12 +367,16 @@ public final class MainFrame extends JFrame implements ShellView {
             SqlEditor editor = tabs.selectedEditor();
             if (editor != null) {
                 editor.runCurrent();
+            } else if (tabs.selectedVisualQuery() != null) {
+                tabs.selectedVisualQuery().run();
             }
         });
         button("stop").addActionListener(e -> {
             SqlEditor editor = tabs.selectedEditor();
             if (editor != null) {
                 editor.cancelRun();
+            } else if (tabs.selectedVisualQuery() != null) {
+                tabs.selectedVisualQuery().cancelRun();
             }
         });
         workTabs.addChangeListener(e -> updateToolbar());
@@ -514,6 +532,10 @@ public final class MainFrame extends JFrame implements ShellView {
         if (workspace == null) {
             return null;
         }
+        if (view.columns().isEmpty()) {
+            probeView(view.catalog(), view.name());
+            return null;
+        }
         DataGrid grid;
         try {
             grid = tabs.openView(workspace, view.catalog(), view.name(), view.columns(),
@@ -525,6 +547,47 @@ public final class MainFrame extends JFrame implements ShellView {
         }
         updateToolbar();
         return grid;
+    }
+
+    /**
+     * Una vista di cui il server non restituisce le colonne: la si legge (una riga, dall'esecutore: la lettura finisce
+     * nel registro come quelle della griglia) per mostrare l'errore vero del server, con la spiegazione in italiano —
+     * tipicamente 1356, «la vista usa tabelle o colonne che non esistono più».
+     */
+    private void probeView(String catalog, String view) {
+        it.ramasql.core.exec.SqlScript probe = it.ramasql.core.exec.SqlScript.of(Texts.get("grid.read.title", view),
+                it.ramasql.core.exec.SqlOrigin.GRID.label(),
+                "SELECT * FROM " + it.ramasql.core.sqlgen.SqlIdentifiers.qualified(catalog, view) + " LIMIT 1");
+        SessionWorkspace ws = workspace;
+        // fuori dall'EDT: l'esecutore può essere occupato da una query lunga di un'altra scheda
+        ws.executor().submit(probe, null, 1).whenComplete((result, error) -> javax.swing.SwingUtilities.invokeLater(() -> {
+            if (ws != workspace) {
+                return;   // la connessione è cambiata nel frattempo
+            }
+            var failure = result == null ? java.util.Optional.<it.ramasql.core.exec.StatementResult>empty()
+                    : result.results().stream().filter(r -> !r.isOk()).findFirst();
+            if (failure.isPresent() && failure.get().error() != null) {
+                var e = failure.get().error();
+                // prima la spiegazione in italiano, sotto il messaggio originale del server; e la scheda Messaggi davanti
+                String spiegazione = it.ramasql.app.editor.ErrorExplainer.explain(e.code()).orElse(e.message());
+                sqlPanel.message(PipelineView.MessageKind.ERROR, Texts.get("view.read.failed", view, spiegazione)
+                        + "\n" + Texts.get("error.serverLine", e.code(), e.message()));
+                sqlPanel.setSelectedIndex(2);
+                return;
+            }
+            // la lettura riesce: la vista è tornata valida (le colonne in cache erano vecchie); si rilegge e si apre
+            ws.reader().invalidate(catalog, view);
+            try {
+                java.util.List<it.ramasql.core.metadata.ColumnDef> columns = ws.reader().viewColumns(catalog, view);
+                if (!columns.isEmpty()) {
+                    openView(new NavigatorPanel.ViewToOpen(catalog, view, columns));
+                    return;
+                }
+            } catch (java.sql.SQLException ignored) {
+                // si dice sotto
+            }
+            sqlPanel.message(PipelineView.MessageKind.WARNING, Texts.get("view.noColumns", view));
+        }));
     }
 
     /** Apre l'editor di struttura: {@code table} nullo = tabella nuova nel catalogo. */
@@ -550,6 +613,152 @@ public final class MainFrame extends JFrame implements ShellView {
         editor.addPropertyChangeListener(SqlEditor.PROPERTY_RUNNING, e -> updateToolbar());
         updateToolbar();
         return editor;
+    }
+
+    /**
+     * Apre una scheda «Query visiva N» sul catalogo dato (Step 7). Gli avvisi del query builder vanno nella scheda
+     * Messaggi del pannello SQL.
+     */
+    public it.ramasql.app.visual.VisualQueryTab openVisualQuery(String catalog) {
+        if (workspace == null || catalog == null || catalog.isBlank()) {
+            return null;
+        }
+        it.ramasql.app.visual.VisualQueryTab tab = tabs.openVisualQuery(workspace, catalog,
+                settings.settings().rowLimit(), workspacePrompts.editorPrompts(), workspacePrompts.gridPrompts(),
+                new MetadataCompletionSource(workspace.reader(), () -> catalog), this::queryBuilderAlert,
+                viewSaver());
+        watch(tab);
+        updateToolbar();
+        return tab;
+    }
+
+    // ---------------------------------------------------------------- viste (Step 8)
+
+    /** Archivio dei sorgenti originali delle viste (lo imposta l'avvio del programma). */
+    public void setViewSources(it.ramasql.core.connection.ViewSourceStore store) {
+        this.viewSources = store;
+    }
+
+    public it.ramasql.core.connection.ViewSourceStore viewSources() {
+        return viewSources;
+    }
+
+    /**
+     * Collega una scheda visiva alla finestra: «Esegui»/«Interrompi» della barra seguono l'esecuzione; il catalogo della
+     * barra di stato segue il {@code USE} della query visiva; una vista salvata compare nell'elenco di tutte le schede
+     * visive.
+     */
+    private void watch(it.ramasql.app.visual.VisualQueryTab tab) {
+        tab.addPropertyChangeListener(SqlEditor.PROPERTY_RUNNING, e -> {
+            updateToolbar();
+            if (Boolean.FALSE.equals(e.getNewValue())) {
+                // la query visiva esegue «USE catalogo»: da qui in poi è il catalogo corrente della sessione (come il
+                // «default schema» di Workbench), anche per le schede Editor SQL; la barra di stato lo dice
+                statusCatalog.setText(Texts.get("status.catalog", tab.catalog()));
+            }
+        });
+        tab.addPropertyChangeListener(it.ramasql.app.visual.VisualQueryTab.PROPERTY_VIEW_SAVED, e -> {
+            statusCatalog.setText(Texts.get("status.catalog", tab.catalog()));   // anche il salvataggio fa «USE»
+            // una «Nuova vista N» appena salvata diventa la scheda di quella vista (Modifica vista la ritrova)
+            tabs.becomeViewEditor(tab, tab.catalog(), String.valueOf(e.getNewValue()));
+            for (java.awt.Component c : workTabs.getComponents()) {
+                if (c instanceof it.ramasql.app.visual.VisualQueryTab v) {
+                    v.refreshObjects();
+                }
+            }
+        });
+    }
+
+    private void queryBuilderAlert(String text) {
+        sqlPanel.message(PipelineView.MessageKind.WARNING, text);
+    }
+
+    private it.ramasql.app.visual.ViewSaver viewSaver() {
+        return new it.ramasql.app.workspace.PipelineViewSaver(workspace.pipeline(), workspace.reader(), viewSources,
+                workspace.session().profile().address(), sqlPanel);
+    }
+
+    /** «Nuova vista»: la query visiva in modalità vista, sul catalogo dato. */
+    public it.ramasql.app.visual.VisualQueryTab newView(String catalog) {
+        if (workspace == null || catalog == null || catalog.isBlank()) {
+            return null;
+        }
+        it.ramasql.app.visual.VisualQueryTab tab = tabs.openViewEditor(workspace, catalog, null,
+                settings.settings().rowLimit(), workspacePrompts.editorPrompts(), workspacePrompts.gridPrompts(),
+                new MetadataCompletionSource(workspace.reader(), () -> catalog), this::queryBuilderAlert,
+                viewSaver());
+        watch(tab);
+        updateToolbar();
+        return tab;
+    }
+
+    /** Esito di «Modifica vista»: la scheda aperta e il livello con cui si è riaperta la vista. */
+    public record ViewEditing(it.ramasql.app.visual.VisualQueryTab tab, it.ramasql.app.visual.ViewReopening reopening) {
+    }
+
+    /**
+     * «Modifica vista» ({@code DESIGN.md} §3.8): riapre la vista con la strategia a tre livelli — sorgente originale
+     * archiviato (se la definizione sul server non è cambiata), definizione del server normalizzata, oppure testo con
+     * un avviso — nella query visiva in modalità vista; il salvataggio è un {@code CREATE OR REPLACE VIEW}.
+     *
+     * @return {@code null} se la vista non c'è (messaggio nel pannello)
+     */
+    public ViewEditing editView(String catalog, String view) {
+        if (workspace == null) {
+            return null;
+        }
+        it.ramasql.app.visual.VisualQueryTab aperta = tabs.findViewEditor(catalog, view);
+        if (aperta != null) {
+            // c'è già: la si riporta davanti così com'è (rileggere cancellerebbe il lavoro non salvato)
+            tabs.select(aperta);
+            return new ViewEditing(aperta, null);
+        }
+        java.util.Optional<it.ramasql.core.metadata.ViewDef> def;
+        try {
+            workspace.reader().invalidate(catalog, view);   // solo la vista: il resto del catalogo resta in cache
+            def = workspace.reader().view(catalog, view);
+        } catch (java.sql.SQLException e) {
+            sqlPanel.message(PipelineView.MessageKind.ERROR, Texts.get("nav.load.error", e.getMessage()));
+            return null;
+        }
+        if (def.isEmpty()) {
+            sqlPanel.message(PipelineView.MessageKind.WARNING, Texts.get("nav.table.missing"));
+            return null;
+        }
+        String definition = def.get().selectSql();
+        java.util.Optional<String> source = viewSources == null ? java.util.Optional.empty()
+                : viewSources.sourceFor(workspace.session().profile().address(), catalog, view, definition);
+        it.ramasql.app.visual.ViewReopening reopening = it.ramasql.app.visual.ViewReopening.decide(source, definition,
+                catalog);
+        it.ramasql.app.visual.VisualQueryTab tab = tabs.openViewEditor(workspace, catalog, view,
+                settings.settings().rowLimit(), workspacePrompts.editorPrompts(), workspacePrompts.gridPrompts(),
+                new MetadataCompletionSource(workspace.reader(), () -> catalog), this::queryBuilderAlert,
+                viewSaver());
+        boolean disegnata = tab.setSql(reopening.sql());
+        java.util.List<String> avvisi = new java.util.ArrayList<>();
+        if (!disegnata) {   // non si disegna: la scheda resta sul testo con l'avviso del motivo
+            avvisi.add(Texts.get("visual.view.textOnly", it.ramasql.app.visual.VisualReasons.of(reopening.sql(),
+                    it.ramasql.qb.QbSql.check(reopening.sql()))));
+        }
+        // opzioni che la v1 non gestisce: salvando da qui (CREATE OR REPLACE) tornerebbero ai valori predefiniti
+        it.ramasql.core.metadata.ViewDef d = def.get();
+        java.util.List<String> opzioni = new java.util.ArrayList<>();
+        if (!"NONE".equalsIgnoreCase(d.checkOption())) {
+            opzioni.add("WITH " + d.checkOption() + " CHECK OPTION");
+        }
+        if ("INVOKER".equalsIgnoreCase(d.securityType())) {
+            opzioni.add("SQL SECURITY INVOKER");
+        }
+        if (!opzioni.isEmpty()) {
+            avvisi.add(Texts.get("visual.view.optionsLost", String.join(", ", opzioni)));
+        }
+        if (!avvisi.isEmpty()) {
+            tab.notice(String.join("\n", avvisi));
+        }
+        tab.markViewUnchanged();   // appena riaperta: niente da salvare
+        watch(tab);
+        updateToolbar();
+        return new ViewEditing(tab, reopening);
     }
 
     /** Lettore dei metadati, esecutore e pipeline per la sessione appena aperta; il navigatore inizia a leggere. */
@@ -647,10 +856,19 @@ public final class MainFrame extends JFrame implements ShellView {
         enable(button("newTable"), connected && catalog != null && !catalog.isBlank(),
                 Texts.get("toolbar.newTable.tooltip"),
                 connected ? Texts.get("toolbar.disabled.noCatalog") : Texts.get("toolbar.disabled.notConnected"));
+        enable(button("newVisualQuery"), connected && catalog != null && !catalog.isBlank(),
+                Texts.get("toolbar.newVisualQuery.tooltip"),
+                connected ? Texts.get("toolbar.disabled.noCatalog") : Texts.get("toolbar.disabled.notConnected"));
+        enable(button("newView"), connected && catalog != null && !catalog.isBlank(),
+                Texts.get("toolbar.newView.tooltip"),
+                connected ? Texts.get("toolbar.disabled.noCatalog") : Texts.get("toolbar.disabled.notConnected"));
         SqlEditor editor = tabs.selectedEditor();
-        enable(button("run"), editor != null && !editor.isRunning(), Texts.get("toolbar.run.tooltip"),
-                editor == null ? Texts.get("toolbar.disabled.noEditor") : Texts.get("toolbar.disabled.running"));
-        enable(button("stop"), editor != null && editor.isRunning(), Texts.get("toolbar.stop.tooltip"),
+        it.ramasql.app.visual.VisualQueryTab visual = tabs.selectedVisualQuery();
+        boolean hasRunner = editor != null || visual != null;
+        boolean running = editor != null ? editor.isRunning() : visual != null && visual.isRunning();
+        enable(button("run"), hasRunner && !running, Texts.get("toolbar.run.tooltip"),
+                !hasRunner ? Texts.get("toolbar.disabled.noEditor") : Texts.get("toolbar.disabled.running"));
+        enable(button("stop"), hasRunner && running, Texts.get("toolbar.stop.tooltip"),
                 Texts.get("toolbar.disabled.nothingRunning"));
     }
 

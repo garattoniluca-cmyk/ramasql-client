@@ -124,10 +124,11 @@ class S2cVisteRiletteTest {
         }
         // viste REALI di bibliotecasoft (MariaDB): la sorgente scritta dall'autore non è disponibile (livello 1 n.d.)
         ATTESI.put("MARIADB:v_statistiche_libri", new Atteso(null, true, null));
-        // v_prestiti_dettaglio (JOIN amministratori e LEFT JOIN generi dopo JOIN libri): il modello rigenera i join in
-        // un ordine diverso; la riscrittura è equivalente (stesse righe) ma il testo cambia → «non rappresentabile»,
-        // si apre nell'editor SQL (livello 3), senza perdita.
-        ATTESI.put("MARIADB:v_prestiti_dettaglio", new Atteso(null, false, "l'SQL rigenerato differisce dall'originale"));
+        // v_prestiti_dettaglio (JOIN amministratori e LEFT JOIN generi dopo JOIN libri): fino al 2026-09-27 il modello
+        // rigenerava i join in un ordine diverso (BUG-005, SQLFormatter.sort) e la vista risultava «non rappresentabile»
+        // (livello 3). Con l'ordine stabile dei join (Step 7, T7.2) si riapre dalla definizione del server: attesa
+        // aggiornata consapevolmente; il livello 2 resta verificato sulle righe (SQL rigenerato = righe della vista).
+        ATTESI.put("MARIADB:v_prestiti_dettaglio", new Atteso(null, true, null));
         // viste scritte sopra lo schema reale scuola (MySQL)
         for (String vista : VISTE_SCUOLA.keySet()) {
             ATTESI.put("MYSQL:" + vista, new Atteso(true, true, null));
@@ -465,9 +466,9 @@ class S2cVisteRiletteTest {
         }
         md.append("Esito atteso fissato nel test PER VISTA e PER SERVER (`ATTESI`, oltre alle soglie): viste della fixture\n")
                 .append("L1 = L2 = sì su entrambi i server; `v_statistiche_libri` (MariaDB, reale) L2 = sì; `v_prestiti_dettaglio`\n")
-                .append("(MariaDB, reale) L2 = no, motivo «l'SQL rigenerato differisce dall'originale»: il modello rigenera i tre\n")
-                .append("join in un ordine diverso, la riscrittura dà le stesse righe ma il testo cambia, quindi la vista si apre\n")
-                .append("nell'editor SQL (L3); viste su `scuola` (MySQL) L1 = L2 = sì. Differenze dall'atteso in questa esecuzione: ")
+                .append("(MariaDB, reale) L2 = sì dal 2026-09-27 (prima L2 = no: il modello rigenerava i join in un ordine\n")
+                .append("diverso, BUG-005, corretto con l'ordine stabile dei join di `SQLFormatter.sort` nello Step 7);\n")
+                .append("viste su `scuola` (MySQL) L1 = L2 = sì. Differenze dall'atteso in questa esecuzione: ")
                 .append(differenzeDagliAttesi(ESITI).size()).append(".\n\n");
         md.append("Soglie fissate nel test (per server): viste della fixture al livello 2 ≥ ").append(SOGLIA_FIXTURE_LIVELLO_2)
                 .append(" su ").append(VISTE_FIXTURE.size()).append(", al livello 1 ≥ ").append(SOGLIA_FIXTURE_LIVELLO_1)

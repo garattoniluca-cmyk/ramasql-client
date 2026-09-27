@@ -18,6 +18,8 @@
  *
  *
  * Modificato per RamaSQL Client (2026-09-21): dimensioni scalate chieste alla facciata (QbRuntime.scaledDimension) invece che a Preferences.
+ * Modificato per RamaSQL Client (2026-09-27): la maschera cambia solo l'operatore; il tipo di join (le due caselle «tutte le
+ * righe di…», che insieme davano un FULL OUTER JOIN sconosciuto a MySQL/MariaDB) si sceglie dal menu del nodo del join.
  */
 
 package com.sqleo.querybuilder;
@@ -57,7 +59,7 @@ public class MaskJoin extends BaseMask
 		JLabel primary = new JLabel(relation.primaryField.querytoken.getIdentifier(), JLabel.CENTER);
 		JLabel foreign = new JLabel(relation.foreignField.querytoken.getIdentifier(), JLabel.CENTER);
 		
-		Border border = new CompoundBorder(LineBorder.createBlackLineBorder(), new EmptyBorder(3,4,3,4));
+		Border border = new CompoundBorder(new LineBorder(it.ramasql.qb.QbRuntime.host().color(it.ramasql.qb.QbColor.BORDER)), new EmptyBorder(3,4,3,4)); // RamaSQL (2026-09-27): bordo del token, non nero
 		primary.setBorder(border);
 		primary.setOpaque(true);
 		primary.setBackground(ViewDiagram.BGCOLOR_START_JOIN);
@@ -102,6 +104,8 @@ public class MaskJoin extends BaseMask
 		pane.add(allRight);
 		gbl.setConstraints(allRight, gbc);
 
+		allLeft.setVisible(false);   // RamaSQL (2026-09-27): vedi onConfirm
+		allRight.setVisible(false);
 		add(pane);
 	}
 	
@@ -113,12 +117,9 @@ public class MaskJoin extends BaseMask
 	protected void onShow(){}
 	protected boolean onConfirm()
 	{
-		int jointype = 0;
-		
-		jointype += allLeft.isSelected() ? QueryTokens.Join.LEFT_OUTER : 0;
-		jointype += allRight.isSelected() ? QueryTokens.Join.RIGHT_OUTER : 0;
-		
-		relation.setValues(jointype,operator.getSelectedItem().toString());
+		// RamaSQL (2026-09-27): il tipo di join si sceglie dal menu del nodo; qui resta quello attuale (niente FULL OUTER JOIN,
+		// che MySQL e MariaDB non conoscono: in origine si otteneva spuntando le due caselle)
+		relation.setValues(relation.querytoken.getType(),operator.getSelectedItem().toString());
 		
 		return true;
 	}

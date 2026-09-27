@@ -1,0 +1,77 @@
+T7.5 — gesti sul diagramma ed esecuzione su MySQL
+Catalogo di test: ramasql_test_ui_visual75_ak0o66
+gesto 1 — tabelle editori e libri:
+SELECT
+	`editori`.`id`,
+	`editori`.`nome`,
+	`editori`.`citta`,
+	`libri`.`id`,
+	`libri`.`titolo`,
+	`libri`.`isbn`,
+	`libri`.`anno`,
+	`libri`.`prezzo`,
+	`libri`.`id_editore`
+FROM
+	`editori`
+	INNER JOIN `libri`
+	 ON `editori`.`id` = `libri`.`id_editore`
+
+gesto 2 — solo editori.nome:
+SELECT
+	`editori`.`nome`
+FROM
+	`editori`
+	INNER JOIN `libri`
+	 ON `editori`.`id` = `libri`.`id_editore`
+
+gesto 3 — join «tutte le righe di editori» (clic sulla voce del menu del join):
+SELECT
+	`editori`.`nome`
+FROM
+	`editori`
+	LEFT OUTER JOIN `libri`
+	 ON `editori`.`id` = `libri`.`id_editore`
+  eseguita: 179 righe, compreso «Editore senza libri»
+
+gesto 4 — filtro anno > 2000:
+SELECT
+	`editori`.`nome`
+FROM
+	`editori`
+	LEFT OUTER JOIN `libri`
+	 ON `editori`.`id` = `libri`.`id_editore`
+WHERE
+	`libri`.`anno` > 2000
+
+gesto 5 — COUNT(*) per editore:
+SELECT
+	`editori`.`nome`,
+	COUNT(*) AS numero_libri
+FROM
+	`editori`
+	LEFT OUTER JOIN `libri`
+	 ON `editori`.`id` = `libri`.`id_editore`
+WHERE
+	`libri`.`anno` > 2000
+GROUP BY
+	`editori`.`nome`
+
+gesto 6 — ordinamento per nome:
+SELECT
+	`editori`.`nome`,
+	COUNT(*) AS numero_libri
+FROM
+	`editori`
+	LEFT OUTER JOIN `libri`
+	 ON `editori`.`id` = `libri`.`id_editore`
+WHERE
+	`libri`.`anno` > 2000
+GROUP BY
+	`editori`.`nome`
+ORDER BY
+	`editori`.`nome` ASC
+
+Esecuzione: USE `ramasql_test_ui_visual75_ak0o66` + la query; registro: 2 righe con origine «Query visiva»
+Righe mostrate (16): [[Adelphi, 1], [Città Nuova, 2], [E/O, 1], [Einaudi, 1], [Feltrinelli, 2], [Guanda, 1], [Iperborea, 2], [L'Orma, 1], [Laterza, 1], [Longanesi, 2], [Marsilio, 1], [Mondadori, 1], [Neri Pozza, 1], [Rizzoli, 1], [Sellerio, 1], [Zanichelli, 1]]
+Righe della stessa domanda scritta a mano, lette con una connessione separata: [[Adelphi, 1], [Città Nuova, 2], [E/O, 1], [Einaudi, 1], [Feltrinelli, 2], [Guanda, 1], [Iperborea, 2], [L'Orma, 1], [Laterza, 1], [Longanesi, 2], [Marsilio, 1], [Mondadori, 1], [Neri Pozza, 1], [Rizzoli, 1], [Sellerio, 1], [Zanichelli, 1]]
+Esito: SUPERATO

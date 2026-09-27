@@ -129,6 +129,10 @@ public class QueryModelTreeCellRenderer extends DefaultTreeCellRenderer {
                 text = subqueryText() + text.substring(SUBQUERY_LABEL.length());
             }
         }
+        // i backtick servono all'SQL, non a chi legge l'albero (2026-09-27); dentro una stringa tra apici restano
+        if (text.indexOf('`') >= 0 && text.indexOf('\'') < 0) {
+            text = text.replace("`", "");
+        }
         return text;
     }
 

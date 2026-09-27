@@ -54,6 +54,7 @@ public final class WorkTabs {
     /** Il titolo di ogni scheda, per aggiornarlo quando la tabella cambia nome o viene creata. */
     private final java.util.Map<Component, JLabel> titles = new java.util.HashMap<>();
     private int queryCounter;
+    private int visualCounter;
     private int newTableCounter;
 
     public WorkTabs(JTabbedPane tabs, WorkspacePrompts prompts) {
@@ -116,6 +117,73 @@ public final class WorkTabs {
         editor.setName(tabName("query", null, String.valueOf(queryCounter)));
         add(editor, title, null);
         return editor;
+    }
+
+    /**
+     * Apre una scheda «Query visiva N» sul catalogo dato (Step 7): diagramma del query builder e testo SQL
+     * sincronizzati; l'esecuzione passa dalla pipeline come quella dell'editor SQL.
+     *
+     * @param alerts dove finiscono gli avvisi del query builder (il pannello Messaggi)
+     */
+    public it.ramasql.app.visual.VisualQueryTab openVisualQuery(SessionWorkspace workspace, String catalog,
+            int rowLimit, EditorPrompts editorPrompts, GridPrompts gridPrompts, CompletionSource completion,
+            java.util.function.Consumer<String> alerts, it.ramasql.app.visual.ViewSaver viewSaver) {
+        return openVisual(workspace, catalog, Texts.get("tabs.visual.title", ++visualCounter),
+                "visual." + visualCounter, rowLimit, editorPrompts, gridPrompts, completion, alerts, viewSaver);
+    }
+
+    /**
+     * Apre la query visiva in <b>modalità vista</b> (Step 8): per una vista nuova ({@code view} nullo, «Nuova vista»)
+     * o per modificarne una esistente («Modifica vista», che ha una scheda sola: un secondo clic la riporta davanti).
+     */
+    public it.ramasql.app.visual.VisualQueryTab openViewEditor(SessionWorkspace workspace, String catalog, String view,
+            int rowLimit, EditorPrompts editorPrompts, GridPrompts gridPrompts, CompletionSource completion,
+            java.util.function.Consumer<String> alerts, it.ramasql.app.visual.ViewSaver viewSaver) {
+        if (view != null) {
+            Component existing = find(tabName("viewEditor", catalog, view));
+            if (existing instanceof it.ramasql.app.visual.VisualQueryTab tab) {
+                tabs.setSelectedComponent(tab);
+                return tab;
+            }
+        }
+        String title = view == null ? Texts.get("tabs.view.new", ++visualCounter) : Texts.get("tabs.view.title", view);
+        String key = view == null ? "visual." + visualCounter : null;
+        it.ramasql.app.visual.VisualQueryTab tab = openVisual(workspace, catalog, title, key, rowLimit, editorPrompts,
+                gridPrompts, completion, alerts, viewSaver);
+        if (view != null) {
+            tab.setName(tabName("viewEditor", catalog, view));
+        }
+        tab.enterViewMode(view, view != null);
+        return tab;
+    }
+
+    /** La scheda di modifica di quella vista, se è aperta; {@code null} altrimenti. */
+    public it.ramasql.app.visual.VisualQueryTab findViewEditor(String catalog, String view) {
+        return find(tabName("viewEditor", catalog, view)) instanceof it.ramasql.app.visual.VisualQueryTab t ? t : null;
+    }
+
+    /** Dopo il primo salvataggio una «Nuova vista N» diventa la scheda di quella vista: «Vista nome». */
+    public void becomeViewEditor(it.ramasql.app.visual.VisualQueryTab tab, String catalog, String view) {
+        tab.setName(tabName("viewEditor", catalog, view));
+        retitle(tab, Texts.get("tabs.view.title", view));
+    }
+
+    public void select(Component tab) {
+        tabs.setSelectedComponent(tab);
+    }
+
+    private it.ramasql.app.visual.VisualQueryTab openVisual(SessionWorkspace workspace, String catalog, String title,
+            String key, int rowLimit, EditorPrompts editorPrompts, GridPrompts gridPrompts, CompletionSource completion,
+            java.util.function.Consumer<String> alerts, it.ramasql.app.visual.ViewSaver viewSaver) {
+        it.ramasql.app.visual.VisualQueryTab tab = new it.ramasql.app.visual.VisualQueryTab(title, catalog,
+                workspace.reader(), new PipelineSqlRunner(workspace.pipeline()),
+                completion == null ? CompletionSource.empty() : completion, editorPrompts, gridPrompts, rowLimit,
+                alerts, viewSaver);
+        if (key != null) {
+            tab.setName(tabName("visual", catalog, key));
+        }
+        add(tab, title, catalog);
+        return tab;
     }
 
     /**
@@ -187,6 +255,29 @@ public final class WorkTabs {
             }
             editor.dispose();
         }
+        if (tab instanceof it.ramasql.app.visual.VisualQueryTab visual) {
+            if (visual.isRunning() && prompts.askPendingOnClose(Texts.get("tabs.close.running"))
+                    == WorkspacePrompts.PendingChoice.STAY) {
+                return false;
+            }
+            if (visual.isViewMode() && visual.isModified()) {
+                // una vista con modifiche non salvate: salvarla sul server, scartarle o restare (non un file .sql)
+                switch (prompts.askPendingOnClose(Texts.get("visual.view.close.question", visual.viewName()))) {
+                    case STAY -> {
+                        return false;
+                    }
+                    case CONFIRM -> {
+                        visual.saveView();   // come per la griglia: si salva e la scheda resta, per vedere l'esito
+                        return false;
+                    }
+                    case DISCARD -> { }
+                }
+            }
+            if (!visual.canClose()) {
+                return false;
+            }
+            visual.dispose();
+        }
         if (tab instanceof TableEditor editor && editor.isModified()) {
             switch (prompts.askPendingOnClose(Texts.get("tableeditor.close.question", editor.editedTable().name()))) {
                 case STAY -> {
@@ -220,6 +311,8 @@ public final class WorkTabs {
                 conLavoro.add(titleOf(c));
             } else if (c instanceof TableEditor e && e.isModified()) {
                 conLavoro.add(titleOf(c));
+            } else if (c instanceof it.ramasql.app.visual.VisualQueryTab v && v.isModified()) {
+                conLavoro.add(titleOf(c));
             }
         }
         if (conLavoro.isEmpty()) {
@@ -239,6 +332,8 @@ public final class WorkTabs {
         for (Component c : tabs.getComponents()) {
             if (c instanceof SqlEditor editor) {
                 editor.dispose();
+            } else if (c instanceof it.ramasql.app.visual.VisualQueryTab visual) {
+                visual.dispose();
             }
         }
         titles.clear();
@@ -255,6 +350,11 @@ public final class WorkTabs {
     /** L'editor SQL in primo piano; {@code null} se la scheda davanti non è un editor. */
     public SqlEditor selectedEditor() {
         return tabs.getSelectedComponent() instanceof SqlEditor e ? e : null;
+    }
+
+    /** La query visiva in primo piano; {@code null} se la scheda davanti è un'altra. */
+    public it.ramasql.app.visual.VisualQueryTab selectedVisualQuery() {
+        return tabs.getSelectedComponent() instanceof it.ramasql.app.visual.VisualQueryTab v ? v : null;
     }
 
     /** Le griglie di data-entry aperte, nell'ordine delle schede. */

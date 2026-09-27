@@ -108,7 +108,7 @@ Schede, sul modello di Workbench ridotto all'essenziale:
 - Scheda «Query visiva»: elenco tabelle/viste del catalogo a sinistra → si trascinano nel **diagramma**; i **join** si disegnano tra i campi (o si propongono da FK e relazioni logiche del modello ER); clic sul join per tipo (INNER/LEFT/RIGHT) e condizione.
 - Albero della query: SELECT (colonne, espressioni, alias, aggregati, DISTINCT) · FROM · WHERE · GROUP BY · HAVING · ORDER BY; sottoquery e tabelle derivate per quanto SQLeo supporta; `LIMIT`.
 - Vista **SQL** sincronizzata (§3.4); dal testo si torna al grafico se il parser lo consente, altrimenti avviso non bloccante.
-- Esegui → griglia risultati. Salva come `.sql` (il diagramma si ricostruisce dal testo; l'impaginazione si salva in un commento di coda o file affiancato — da decidere nello Step 7).
+- Esegui → griglia risultati. Salva come `.sql`: si salva solo il testo; il diagramma si ricostruisce dal testo, l'impaginazione non si salva (deciso nello Step 7, `ADR-022`).
 - Pulsante **«Salva come vista…»** (→ §3.8).
 - Rimozioni rispetto a SQLeo: limite 3 tabelle, versione «completa», pivot, riferimenti a DBMS diversi, definizione manuale dei metadati.
 

@@ -22,6 +22,7 @@
  *
  *
  * Modificato per RamaSQL Client (2026-09-21): tolta la filigrana col nome del programma originale dall'immagine esportata del diagramma (dipendeva da _Version).
+ * Modificato per RamaSQL Client (2026-09-27): colori del fondo e dei campi dalla facciata (QbHost.color, BUG-004).
  */
 
 package com.sqleo.querybuilder;
@@ -61,9 +62,10 @@ import com.sqleo.querybuilder.syntax.QueryTokens;
 
 public class ViewDiagram extends BorderLayoutPanel
 {
-	static Color BGCOLOR_DEFAULT	= Color.white;
-	static Color BGCOLOR_JOINED		= new Color(225,235,224);
-	static Color BGCOLOR_START_JOIN = new Color(255,230,230);
+	// RamaSQL (2026-09-27, BUG-004): colori dalla facciata, cioe' dai token del programma (in origine bianco, verdino, rosa fissi)
+	static Color BGCOLOR_DEFAULT	= it.ramasql.qb.QbRuntime.host().color(it.ramasql.qb.QbColor.FIELD);
+	static Color BGCOLOR_JOINED		= it.ramasql.qb.QbRuntime.host().color(it.ramasql.qb.QbColor.FIELD_JOINED);
+	static Color BGCOLOR_START_JOIN = it.ramasql.qb.QbRuntime.host().color(it.ramasql.qb.QbColor.FIELD_JOIN_START);
 	
 	private static int FRAME_OFFSET = 50;
 	
@@ -91,7 +93,7 @@ public class ViewDiagram extends BorderLayoutPanel
 			protected void paintComponent(Graphics g) {
 				super.paintComponent(g);
 				// tiket #223: set white background color for designer with all L&F
-				g.setColor(backgroundColor!=null? backgroundColor :  Color.WHITE);
+				g.setColor(backgroundColor!=null? backgroundColor : it.ramasql.qb.QbRuntime.host().color(it.ramasql.qb.QbColor.CANVAS));
 		        g.fillRect(0, 0, getWidth(), getHeight());
 			};
 		};

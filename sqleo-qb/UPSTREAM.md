@@ -37,8 +37,9 @@ Percorsi relativi a `src/` dell'originale, copiati in `sqleo-qb/src/main/java/`.
 | `DiagramQuery.java` | M | `ViewObjects.java` | M |
 | `DiagramRelation.java` | M | `ViewSyntax.java` | = |
 | `MaskAlias.java` | M | `beans/Entity.java`, `beans/EntityField.java`, `beans/Tag.java` | = |
-| `MaskCondition.java` | = | `dnd/*.java` (6 file) | = (`dnd/TransferableObject.java`: **S**) |
-| `MaskExpression.java` | M | `syntax/DerivedTable.java`, `QueryExpression.java`, `QuerySpecification.java`, `QueryTokens.java`, `SubQuery.java`, `_ReservedWords.java` | = |
+| `MaskCondition.java` | M | `dnd/DragMouseAdapter.java`, `dnd/EntityDropTargetListener.java`, `dnd/EntityTransferHandler.java`, `dnd/RelationDropTargetListener.java`, `dnd/RelationTransferHandler.java` | = (`dnd/TransferableObject.java`: **S**) |
+| `MaskExpression.java` | M | `syntax/DerivedTable.java`, `QueryExpression.java`, `QueryTokens.java`, `SubQuery.java`, `_ReservedWords.java` | = |
+| | | `syntax/QuerySpecification.java` | M (2026-09-27) |
 | `MaskJoin.java` | M | `syntax/SQLFormatter.java`, `syntax/SQLParser.java` | M |
 
 `com/sqleo/common/` (9 file, il minimo che serve al pacchetto sopra):
@@ -91,8 +92,40 @@ Interventi di tipo ricorrente:
 | `querybuilder/QueryModel.java` | **aggiunta la clausola `LIMIT`** (`getLimit`/`setLimit`, resa in `toString`) |
 | `querybuilder/ViewDiagram.java` | R: filigrana col nome del programma originale nell'immagine esportata |
 | `querybuilder/ViewObjects.java` | F: elenco degli oggetti letto dal catalogo della facciata |
-| `querybuilder/syntax/SQLFormatter.java` | R: scrittura della posizione delle entità nell'SQL come commento (dipendeva da `Preferences` e dalle finestre MDI) |
+| `querybuilder/syntax/SQLFormatter.java` | R: scrittura della posizione delle entità nell'SQL come commento (dipendeva da `Preferences` e dalle finestre MDI); **2026-09-27 (Step 7, BUG-005): `sort` dei join riscritto con ordine stabile** — l'originale raggruppava i join per tabella in comune e spostava anche join già in un ordine valido: `l JOIN la … LEFT JOIN p … JOIN a (su la) … LEFT JOIN s (su p)` usciva come `… LEFT JOIN p … LEFT JOIN s … JOIN a`, testo diverso e query dichiarata non rappresentabile (con join misti INNER/LEFT l'ordine è parte del significato). Ora si tiene l'ordine scritto e si sposta un join solo se non si aggancia a nessuna tabella già dichiarata (relazioni disegnate «a pezzi» nel diagramma); una seconda condizione fra le stesse due tabelle segue ancora il join della sua coppia. Tolto `moveUp`, usato solo dal vecchio `sort`. Effetto: la vista reale `v_prestiti_dettaglio` di `bibliotecasoft` si riapre graficamente (attesa di `S2cVisteRiletteTest` aggiornata). Test: `T72OrdineDeiJoinTest`, `T72CampionarioTest` (Q54), `T73CampionarioSuiServerTest` |
 | `querybuilder/syntax/SQLParser.java` | F: avvisi (una finestra di conferma è diventata un avviso); R: sintassi di join esterno `(+)` di un altro DBMS; **`LIMIT` letto nel modello** (`doParseLimit`; dentro una sottoquery resta non supportato, con avviso); **corretto** l'ultimo `DESC` di `ORDER BY` perso davanti a `LIMIT`; **stato statico azzerato a ogni analisi** (le CTE di una query contaminavano la successiva); **corretto il verso dei join** (spike S2c): con la `ON` scritta «tabella_aggiunta.col = tabella_precedente.col» il parser metteva come «primaria» la tabella aggiunta, e `a LEFT JOIN b ON b.x = a.y` veniva rigenerato come `b LEFT JOIN a` (significato diverso); ora gli operandi si scambiano (operatore specchiato per `<`, `>`, `<=`, `>=`) — `doParseFrom`, variabile `joinedRef`, e `mirrorOperator`. Test: `S2cVersoDeiJoinTest`. Di conseguenza `QbSql.check` (codice nostro) considera uguali `a = b` e `b = a` per operandi semplici (`QbSqlUguaglianzeTest`) |
+
+### Modifiche dello Step 7 (2026-09-27)
+
+Ogni file qui sotto porta nell'intestazione la nota «Modificato per RamaSQL Client (2026-09-27): …» e, nel codice, un
+commento `RamaSQL (2026-09-27…)` accanto a ogni punto toccato.
+
+| File | Cosa e perché |
+|---|---|
+| `querybuilder/QueryBuilder.java` | `metadata()` (metadati dalla facciata, `BUG-016`); ascoltatori di modifica `addQueryChangeListener`/`fireQueryChanged` (la vista SQL del client si aggiorna a ogni gesto, `BUG-006`); `hideSyntaxTab()` (la scheda SQL interna si nasconde: la vista SQL è quella del client, `BUG-006`); larghezza iniziale del pannello di sinistra (albero ed elenco restavano larghi pochi pixel); `autoAliasColumns` spento |
+| `querybuilder/DiagramLoader.java` | tabelle, colonne, chiavi primarie ed esterne da `QbHost.metadata()` invece che da `DatabaseMetaData` (`BUG-016`); tolti i metodi JDBC rimasti senza uso; alias automatico di una tabella solo se è già nel diagramma (in origine sempre: «`libri` libri») |
+| `querybuilder/ViewObjects.java` | elenco di tabelle e viste da `QbHost.metadata()`; tolte le due liste a discesa (schema, che in MySQL/MariaDB non esiste, e tipo); `objectNames()` |
+| `querybuilder/MaskReferences.java` | tabelle referenziate/referenzianti da `QbHost.metadata()` |
+| `querybuilder/ViewBrowser.java` | ogni aggiornamento dell'albero della query avvisa il `QueryBuilder` (`fireQueryChanged`) |
+| `querybuilder/DiagramRelation.java` | colori e spessore delle linee dalla facciata e scalati (`BUG-004`); nodo del join rotondo; un clic apre il menu del join con parole semplici («Solo le righe che corrispondono», «Tutte le righe di …»), niente FULL OUTER JOIN; il cambio di tipo avvisa il `QueryBuilder` |
+| `querybuilder/MaskJoin.java` | cambia solo l'operatore (il tipo si sceglie dal menu del nodo; le due caselle davano un FULL OUTER JOIN sconosciuto a MySQL/MariaDB); bordo del token |
+| `querybuilder/DiagramAbstractEntity.java` | intestazione unica con nome e «×» (barra del titolo vuota tolta, `BUG-004`); nessun alias automatico sulle colonne |
+| `querybuilder/DiagramEntity.java` | nome senza backtick, alias solo se diverso dal nome |
+| `querybuilder/DiagramField.java` | con l'icona del filtro l'entità si allarga se serve, invece di troncare il nome del campo (`BUG-011`) |
+| `querybuilder/ViewDiagram.java` | colori del fondo e dei campi dalla facciata (`BUG-004`) |
+| `querybuilder/QueryModelTreeCellRenderer.java` (riscrittura nostra) | l'albero della query mostra i nomi senza backtick |
+| `querybuilder/MaskCondition.java` | la casella SUBQUERY si attiva anche con gli operatori di confronto (`prezzo > (SELECT AVG…)`), non solo con IN ed EXISTS; lo stato dei campi si ricalcola all'apertura (con `=`, il primo operatore, la casella restava spenta) |
+| `querybuilder/syntax/QuerySpecification.java` | con la lista SELECT vuota e almeno una tabella si scrive `SELECT *` (in origine `SELECT FROM …`, SQL non valido, dopo aver tolto tutte le spunte) |
+
+Correzioni dopo la revisione indipendente dello Step 7 (stessa data, stesse note nelle intestazioni):
+`DiagramRelation` legge il verso del join dal **token** (quello che finisce nell'SQL, che il formatter può girare) per
+il menu, il suggerimento e il colore delle mezze linee, non dall'entità «primaria» del diagramma: prima il menu poteva
+dire «Tutte le righe di X» mentre l'SQL teneva tutte le righe dell'altra tabella; `QueryBuilder`: elenco delle tabelle in
+alto (70% della colonna di sinistra), colore e testo italiano per colonne e tabelle mancanti, attesa limitata delle
+notifiche durante un caricamento; `DiagramLoader`: avvisi alla facciata della scheda, in italiano; `DiagramField`:
+altezza della casella di spunta pari a quella della sua icona (a 150% le righe si toccavano). Codice nostro: `QbRuntime`
+con una facciata «del solo thread corrente» usata da `QbSql.check` per raccogliere gli avvisi (prima sostituiva per un
+attimo la facciata di tutto il processo), `QbSql.equivalent`.
 
 ## Rimosso rispetto all'originale
 
@@ -114,7 +147,8 @@ delle finestre interne di SQLeo a parola intera sono stati riformulati («finest
 `DiagramEntity`, `SQLFormatter` e `QbHost`; in `DiagramLoader.checkTable` è stato eliminato il blocco **già commentato
 nell'originale** (`// fix ticket #119`) che chiamava l'avviso della classe `Application`; nelle note di modifica e nei
 Javadoc nostri non compare più la forma `Application.` seguita da un membro. Tutte le note «Modificato per RamaSQL
-Client» dei 27 file modificati riportano la data completa **2026-09-21** (GPLv2 §2a).
+Client» dei 27 file modificati riportano la data completa **2026-09-21** (GPLv2 §2a). Le modifiche successive
+aggiungono sotto l'intestazione una nota con la propria data (es. `syntax/SQLFormatter.java`, 2026-09-27, BUG-005).
 
 ## Problema di licenza risolto (trovato e risolto il 2026-09-22)
 
@@ -146,3 +180,12 @@ non resta alcuna immagine (`LicenzeERisorseTest`, `QbDrawnIconTest`).
 `it/ramasql/qb/`: `QbHost` (facciata), `BasicQbHost`, `QbRuntime`, `QbIcon`, `QbDrawnIcon` (icone disegnate), `QbOption`, `JoinHint`, `QbSql`
 (SQL → modello → SQL, `isRepresentable`), `QbParseException`; risorsa `qb_it.properties`. Riscritture pulite del 2026-09-22 (stessi nomi dei file ereditati sostituiti):
 `com/sqleo/querybuilder/QueryModelTreeCellRenderer.java`, `com/sqleo/querybuilder/dnd/TransferableObject.java`.
+
+Aggiunte dello Step 7 (2026-09-27): `it/ramasql/qb/QbMetadata` (metadati che il diagramma chiede alla facciata,
+`BUG-016`), `it/ramasql/qb/QbColor` (colori del diagramma, token di `DESIGN-SYSTEM.md`, `BUG-004`); nel pacchetto del
+query builder, per raggiungerne i membri di pacchetto: `com/sqleo/querybuilder/QbOperations.java` (facciata operativa del
+diagramma per il programma e per i test: aggiungere tabelle, spuntare colonne, cambiare il tipo dei join, filtri,
+raggruppamenti, ordinamenti, sottoquery, lettura dello stato; `BUG-006`) e `com/sqleo/querybuilder/JdbcQbMetadata.java`
+(la vecchia lettura con `DatabaseMetaData` di `DiagramLoader`, raccolta qui come ripiego per chi passa solo una
+connessione JDBC: le prove del modulo; il programma non la usa). La classe di prova `QbAccessoDiProva`, che stava nel
+pacchetto `com.sqleo.querybuilder` dentro il modulo `it-tests` (pacchetto diviso su due moduli), è stata eliminata.

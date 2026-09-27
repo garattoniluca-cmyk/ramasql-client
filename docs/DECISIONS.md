@@ -240,3 +240,18 @@ Data: 2026-09-27 · Stato: **accettata — decisa dall'utente**
 3. **Adattamento deciso prima di partire:** il campionario di query dello Step 7 lo costruisce l'agente, in attesa dell'elenco di esercizi dell'utente.
 4. **Prove che richiedono una persona:** T2.9 e T7.11 — righe «predisposto» nel diario, elencate nel resoconto. Test N: T7.12 e T8.8, all'utente.
 5. Gli step 9–13 non si toccano; i suggerimenti su tutto il programma (`ADR-020`) restano allo Step 12.
+
+## ADR-022 — Query visiva: come il query builder di SQLeo entra nel programma
+Data: 2026-09-27 · Stato: accettata — decisa dall'agente, da rivedere (Step 7, `DESIGN.md` §3.7, `ARCHITECTURE.md` §5)
+
+**Decisione.**
+1. **Una scheda, due viste sincronizzate.** La scheda «Query visiva» incorpora l'editor SQL dello Step 4 (esecuzione, risultati, errori spiegati, salvataggio `.sql`) e mette il diagramma al posto del testo quando si sceglie *Grafica*. In Grafica comanda il diagramma: a ogni gesto il testo si rigenera (`QueryBuilder.fireQueryChanged`). In SQL comanda il testo: tornando alla Grafica passa da `QbSql.check` e il diagramma si ricostruisce solo se è rappresentabile; altrimenti si resta sul testo, intatto, con un avviso (regola di `BUG-005`: al diagramma non arriva mai un modello che `check` rifiuta). La scheda SQL interna del query builder è nascosta.
+2. **Il query builder non parla con il server.** La facciata del programma (`AppQbHost`) non gli passa alcuna connessione: tabelle, colonne e chiavi esterne arrivano dal canale dei metadati del client (`QbHost.metadata()`, lo stesso del navigatore, con la sua cache) — chiude `BUG-016`. La vecchia lettura con `DatabaseMetaData` resta, raccolta in `JdbcQbMetadata`, solo per chi passa una connessione JDBC (le prove del modulo).
+3. **Esecuzione nel catalogo della scheda.** Il query builder scrive i nomi senza catalogo (`FROM libri`), come uno studente; la sessione però può essere in un altro catalogo o in nessuno. Prima della query si esegue ``USE `catalogo` ``: è un'istruzione vera, nell'anteprima e nel registro (nessun SQL nascosto). Origine nel registro: «Query visiva».
+4. **SQL «da studente».** Niente alias automatici sulle colonne (`editori.nome AS editori_nome` in SQLeo) né sulle tabelle (`` `libri` libri ``): l'alias di tabella nasce solo se la stessa tabella entra due volte.
+5. **Join in parole semplici.** Un clic sul nodo del join apre un menu: «Solo le righe che corrispondono» (INNER), «Tutte le righe di *tabella*» (LEFT/RIGHT), «Condizione…», «Togli il join». Niente FULL OUTER JOIN (MySQL e MariaDB non lo conoscono; in SQLeo si otteneva spuntando le due caselle della maschera).
+6. **Resa dai token.** Colori del diagramma chiesti alla facciata (`QbColor` → `Tokens`), intestazione unica delle entità (nome e «×», niente barra del titolo vuota), nodi dei join rotondi, linee scalate, albero della query senza backtick.
+7. **Salvataggio `.sql`:** solo il testo; il diagramma si ricostruisce dal testo quando lo si riapre (niente impaginazione salvata: era la decisione rimasta aperta in `DESIGN.md` §3.7).
+
+**Motivi.** Riusare l'editor collaudato evita una seconda esecuzione e una seconda gestione degli errori; tenere il query builder lontano da JDBC mantiene vera la regola «ogni SQL del client passa dal client»; gli alias automatici e il FULL JOIN producevano SQL che uno studente non scriverebbe o che il server rifiuta.
+

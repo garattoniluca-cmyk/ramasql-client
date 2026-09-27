@@ -1,0 +1,21 @@
+T7.4b — menu del join e verso dell'SQL su MariaDB
+Catalogo di test: ramasql_test_ui_visual74b_tsv2ax
+SQL prima della scelta:
+SELECT
+	`autori`.`cognome`,
+	`libri_autori`.`id_libro`
+FROM
+	`autori`
+	INNER JOIN `libri_autori`
+	 ON `autori`.`id` = `libri_autori`.`id_autore`
+Voci del menu del join: «Solo le righe che corrispondono» «Tutte le righe di autori» «Tutte le righe di libri_autori» «Condizione…» «Togli» 
+Scelta «Tutte le righe di autori»:
+SELECT
+	`autori`.`cognome`,
+	`libri_autori`.`id_libro`
+FROM
+	`autori`
+	LEFT OUTER JOIN `libri_autori`
+	 ON `autori`.`id` = `libri_autori`.`id_autore`
+Righe: 233, compreso l'autore senza libri (Senzalibri)
+Esito: SUPERATO

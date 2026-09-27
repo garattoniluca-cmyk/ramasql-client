@@ -22,6 +22,8 @@
  *
  *
  * Modificato per RamaSQL Client (2026-09-21): rimossa la definizione manuale dei metadati (ManualDBMetaData); metadati JDBC letti per catalogo (MySQL/MariaDB non hanno schemi); dimensioni scalate chieste alla facciata.
+ * Modificato per RamaSQL Client (2026-09-27): tabelle referenziate e referenzianti dai metadati della facciata
+ * (QbHost.metadata(), BUG-016) invece che da DatabaseMetaData.
  */
 
 package com.sqleo.querybuilder;
@@ -138,27 +140,19 @@ public class MaskReferences extends BaseMask
 	}
 
 
-	private void loadImportedKeysAuto(DefaultListModel model,DatabaseMetaData dbmd,String catalog,String schema)
-	throws SQLException{
-		ResultSet rs = dbmd.getImportedKeys(catalog, schema, item.getQueryToken().getName());		
-		while(rs.next())
-		{
-			String pkschema = rs.getString(2);
-			String pktable	= rs.getString(3).trim();
-			loadImportedKeysInternal(pkschema,pktable,model);
-		}
-		rs.close();
-	}
-	
+	// RamaSQL (2026-09-27, BUG-016): chiavi esterne dai metadati della facciata (in origine: DatabaseMetaData)
 	private void loadImportedKeys()
 		throws SQLException
 	{
 		DefaultListModel model = new DefaultListModel();
-		DatabaseMetaData dbmd = item.builder.getConnection().getMetaData();
-		
-		String schema = item.builder.getQueryModel().getSchema() == null ? item.getQueryToken().getSchema() : item.builder.getQueryModel().getSchema();
-		String catalog = schema != null ? schema : builder.getHost().catalog(); schema = null; // RamaSQL: in MySQL/MariaDB il prefisso e' il catalogo JDBC
-		loadImportedKeysAuto(model,dbmd,catalog,schema);
+		it.ramasql.qb.QbMetadata md = item.builder.metadata();
+		if(md!=null)
+		{
+			String schema = item.builder.getQueryModel().getSchema() == null ? item.getQueryToken().getSchema() : item.builder.getQueryModel().getSchema();
+			String catalog = schema != null ? schema : builder.getHost().catalog(); // RamaSQL: in MySQL/MariaDB il prefisso e' il catalogo
+			for(it.ramasql.qb.QbMetadata.ForeignKey fk : md.importedKeys(catalog, item.getQueryToken().getName()))
+				loadImportedKeysInternal(null, fk.primaryTable(), model);
+		}
 		primaryTables.setModel(model);
 	}
 	
@@ -173,27 +167,18 @@ public class MaskReferences extends BaseMask
 			if(!model.contains(fkElement)) model.addElement(fkElement);
 		}
 	}
-	private void loadExportedKeysAuto(DefaultListModel model,DatabaseMetaData dbmd,String catalog,String schema)
-	throws SQLException{
-		ResultSet rs = dbmd.getExportedKeys(catalog, schema, item.getQueryToken().getName());		
-		while(rs.next())
-		{
-			String fkschema = rs.getString(6);
-			String fktable	= rs.getString(7).trim();
-			loadExportedKeysInternal(fkschema,fktable,model);
-		}
-		rs.close();
-	}
 	private void loadExportedKeys()
 		throws SQLException
 	{
 		DefaultListModel model = new DefaultListModel();
-		DatabaseMetaData dbmd = item.builder.getConnection().getMetaData();
-		
-		String schema = item.builder.getQueryModel().getSchema() == null ? item.getQueryToken().getSchema() : item.builder.getQueryModel().getSchema();
-		String catalog = schema != null ? schema : builder.getHost().catalog(); schema = null; // RamaSQL: in MySQL/MariaDB il prefisso e' il catalogo JDBC
-		
-		loadExportedKeysAuto(model,dbmd,catalog,schema);
+		it.ramasql.qb.QbMetadata md = item.builder.metadata();
+		if(md!=null)
+		{
+			String schema = item.builder.getQueryModel().getSchema() == null ? item.getQueryToken().getSchema() : item.builder.getQueryModel().getSchema();
+			String catalog = schema != null ? schema : builder.getHost().catalog(); // RamaSQL: in MySQL/MariaDB il prefisso e' il catalogo
+			for(it.ramasql.qb.QbMetadata.ForeignKey fk : md.exportedKeys(catalog, item.getQueryToken().getName()))
+				loadExportedKeysInternal(null, fk.foreignTable(), model);
+		}
 		foreignTables.setModel(model);
 	}
 }

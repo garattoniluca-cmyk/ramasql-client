@@ -1,0 +1,18 @@
+T7.6 e T7.7 su MariaDB
+Catalogo di test: ramasql_test_ui_visual76_q52szv
+T7.6 — SQL del diagramma:
+SELECT
+	`libri`.`titolo`
+FROM
+	`libri`
+scritto a mano nella vista SQL:
+SELECT
+	`libri`.`titolo`,
+	`libri`.`anno`
+FROM
+	`libri`
+tornando alla Grafica, colonne spuntate di libri: [titolo, anno]
+T7.7 — SELECT titolo, prezzo, ROW_NUMBER() OVER (ORDER BY prezzo DESC, id) AS posizione FROM libri ORDER BY posizione
+  avviso: «Questa query non si può mostrare nel diagramma: contiene una funzione finestra (OVER): il diagramma non la sa disegnare. Il testo resta com'è: la puoi modificare ed eseguire qui.»
+  testo intatto; eseguita: 200 righe, uguali a quelle lette dal server con una connessione separata
+Esito: SUPERATO

@@ -18,6 +18,8 @@
  *
  *
  * Modificato per RamaSQL Client (2026-09-21): altezza di riga scalata chiesta alla facciata (QbRuntime.scale) invece che a Preferences.
+ * Modificato per RamaSQL Client (2026-09-27): ogni aggiornamento dell'albero della query avvisa il QueryBuilder che la
+ * query puo' essere cambiata (fireQueryChanged, BUG-006): cosi' la vista SQL del client si aggiorna a ogni gesto.
  */
 
 package com.sqleo.querybuilder;
@@ -94,11 +96,13 @@ public class ViewBrowser extends BorderLayoutPanel implements TreeSelectionListe
 	public void nodeChanged(TreeNode node)
 	{
 		((DefaultTreeModel)tree.getModel()).nodeChanged(node);
+		builder.fireQueryChanged(); // RamaSQL (2026-09-27)
 	}
-	
+
 	void reload(TreeNode node)
 	{
 		((DefaultTreeModel)tree.getModel()).reload(node);
+		builder.fireQueryChanged(); // RamaSQL (2026-09-27)
 	}
 
 	void refreshSelection()

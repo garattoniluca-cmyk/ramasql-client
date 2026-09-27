@@ -10,7 +10,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.formdev.flatlaf.FlatLightLaf;
 import com.sqleo.querybuilder.DiagramLoader;
-import com.sqleo.querybuilder.QbAccessoDiProva;
 import com.sqleo.querybuilder.QueryActions;
 import com.sqleo.querybuilder.QueryBuilder;
 import com.sqleo.querybuilder.QueryModel;
@@ -216,14 +215,14 @@ class S2aGraficoSqlTest {
                 DiagramLoader.run(DiagramLoader.DEFAULT, qb, new QueryTokens.Table(null, t), true);
             }
             // 2) campi spuntati, espressione di aggregazione, condizione, raggruppamento, ordinamento
-            QbAccessoDiProva.seleziona(qb, "libri", "titolo");
-            QbAccessoDiProva.seleziona(qb, "editori", "nome");
-            QbAccessoDiProva.aggiungiEspressione(qb, "COUNT", "autori", "id", "n_autori");
-            QbAccessoDiProva.aggiungiWhere(qb, "libri", "anno", ">", "1960");
-            QbAccessoDiProva.aggiungiGroupBy(qb, "libri", "titolo");
-            QbAccessoDiProva.aggiungiGroupBy(qb, "editori", "nome");
-            QbAccessoDiProva.aggiungiOrderBy(qb, "editori", "nome", false);
-            QbAccessoDiProva.aggiungiOrderBy(qb, "libri", "titolo", true);
+            QbProva.seleziona(qb, "libri", "titolo");
+            QbProva.seleziona(qb, "editori", "nome");
+            QbProva.aggiungiEspressione(qb, "COUNT", "autori", "id", "n_autori");
+            QbProva.aggiungiWhere(qb, "libri", "anno", ">", "1960");
+            QbProva.aggiungiGroupBy(qb, "libri", "titolo");
+            QbProva.aggiungiGroupBy(qb, "editori", "nome");
+            QbProva.aggiungiOrderBy(qb, "editori", "nome", false);
+            QbProva.aggiungiOrderBy(qb, "libri", "titolo", true);
 
             qb.getActionMap().get(QueryActions.ENTITIES_ARRANGE_GRID).actionPerformed(new ActionEvent(qb, 0, "disponi"));
             frame.validate();
@@ -238,11 +237,11 @@ class S2aGraficoSqlTest {
 
             List<String> colonne = new ArrayList<>();
             for (String t : TABELLE) {
-                assertNotNull(QbAccessoDiProva.entita(qb, t), "tabella non caricata nel diagramma: " + t);
-                colonne.add(t + ": " + QbAccessoDiProva.colonne(qb, t));
+                assertNotNull(QbProva.entita(qb, t), "tabella non caricata nel diagramma: " + t);
+                colonne.add(t + ": " + QbProva.colonne(qb, t));
             }
             QueryModel modello = qb.getQueryModel();
-            return new Costruita(QbAccessoDiProva.tabelleNelDiagramma(qb), colonne, QbAccessoDiProva.join(qb),
+            return new Costruita(QbProva.tabelleNelDiagramma(qb), colonne, QbProva.join(qb),
                     modello.toString(false), modello.toString(true), avvisi);
         } finally {
             frame.dispose();

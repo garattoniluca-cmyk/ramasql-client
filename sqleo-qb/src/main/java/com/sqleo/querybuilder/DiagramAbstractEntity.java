@@ -18,6 +18,8 @@
  *
  *
  * Modificato per RamaSQL Client (2026-09-21): titolo vuoto e nessuna icona nella barra delle entita' (sotto FlatLaf si vedeva il nome della classe); ricerca dei campi senza badare ai backtick.
+ * Modificato per RamaSQL Client (2026-09-27): intestazione unica con nome e «×» (barra del titolo tolta), colori dalla
+ * facciata (BUG-004); nessun alias automatico sulle colonne (QueryBuilder.autoAliasColumns).
  */
 
 package com.sqleo.querybuilder;
@@ -71,6 +73,35 @@ public abstract class DiagramAbstractEntity extends JInternalFrame
 		header.addSeparator();
 		header.add(new ActionSelectAll());
 		header.add(new ActionDeselectAll());
+
+		// RamaSQL (2026-09-27, BUG-004): un'intestazione sola — nome della tabella (menu) e «×» sulla stessa riga, su
+		// fondo bg.sunken; la barra del titolo dell'internal frame, che restava vuota, si toglie
+		javax.swing.JButton close = new javax.swing.JButton("×");
+		close.setName("qb.entity.close");
+		close.setToolTipText(I18n.getString("querybuilder.entity.close", "Togli la tabella dalla query"));
+		close.putClientProperty("JButton.buttonType", "toolBarButton");
+		close.setFocusable(false);
+		close.addActionListener(e -> doDefaultCloseAction());
+		getJMenuBar().add(javax.swing.Box.createHorizontalGlue());
+		getJMenuBar().add(close);
+		getJMenuBar().setBackground(it.ramasql.qb.QbRuntime.host().color(it.ramasql.qb.QbColor.HEADER));
+		getJMenuBar().setBorder(javax.swing.BorderFactory.createMatteBorder(0, 0, 1, 0,
+				it.ramasql.qb.QbRuntime.host().color(it.ramasql.qb.QbColor.BORDER)));
+		header.setFont(header.getFont().deriveFont(java.awt.Font.BOLD));
+		hideTitleBar();
+	}
+
+	// RamaSQL (2026-09-27): senza barra del titolo (il Look and Feel la rimette a ogni cambio di tema)
+	public void updateUI()
+	{
+		super.updateUI();
+		hideTitleBar();
+	}
+
+	private void hideTitleBar()
+	{
+		if(getUI() instanceof javax.swing.plaf.basic.BasicInternalFrameUI ui)
+			ui.setNorthPane(null);
 	}
 	
 	abstract void onCreate();
@@ -92,7 +123,9 @@ public abstract class DiagramAbstractEntity extends JInternalFrame
 	{
 		// fix #78 do not autoalias fields in subqueries	
 		// if(QueryBuilder.autoAlias || queryItem instanceof BrowserItems.DiagramQueryTreeItem)
-		if(QueryBuilder.autoAlias )
+		// RamaSQL (2026-09-27): nessun alias automatico sulle colonne (in origine «t.col AS t_col» su ogni colonna
+		// spuntata): l'SQL resta quello che scriverebbe uno studente; l'alias si aggiunge a mano dove serve
+		if(QueryBuilder.autoAlias && QueryBuilder.autoAliasColumns)
 		{
 			String alias = this.getQueryToken().getReference() + "." + field.querytoken.getName();
 			if (alias.length() > QueryBuilder.maxColumnNameLength && QueryBuilder.maxColumnNameLength > 0)

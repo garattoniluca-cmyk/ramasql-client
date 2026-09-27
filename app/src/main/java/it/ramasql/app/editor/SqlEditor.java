@@ -121,6 +121,15 @@ public final class SqlEditor extends JPanel {
 
     private final SqlTextArea textArea = new SqlTextArea();
     private final RTextScrollPane scroll;
+    /** Sopra i risultati: il testo oppure, nella query visiva, il diagramma ({@link #setAlternateView}). */
+    private final java.awt.CardLayout editorCardLayout = new java.awt.CardLayout();
+    private final JPanel editorCards = new JPanel(editorCardLayout);
+    private static final String CARD_TEXT = "text";
+    private static final String CARD_ALTERNATE = "alternate";
+    private JComponent alternateView;
+    private boolean alternateShown;
+    private JPanel toolbar;
+    private JSplitPane editorSplit;
     private final FindBar findBar;
     private final ResultsPanel results;
     private final AutoCompletion autoCompletion;
@@ -182,13 +191,29 @@ public final class SqlEditor extends JPanel {
         JPanel editorPart = new JPanel(new BorderLayout());
         editorPart.add(findBar, BorderLayout.NORTH);
         editorPart.add(scroll, BorderLayout.CENTER);
-        JSplitPane split = new JSplitPane(JSplitPane.VERTICAL_SPLIT, editorPart, results);
+        editorCards.add(editorPart, CARD_TEXT);
+        JSplitPane split = new JSplitPane(JSplitPane.VERTICAL_SPLIT, editorCards, results) {
+            private static final long serialVersionUID = 1L;
+            private boolean placed;
+
+            @Override
+            public void doLayout() {
+                // con la vista alternativa (il diagramma) la parte sopra prende tre quarti dell'altezza al primo layout
+                if (!placed && alternateView != null && getHeight() > 0) {
+                    placed = true;
+                    setDividerLocation((int) (getHeight() * 0.75));
+                }
+                super.doLayout();
+            }
+        };
+        editorSplit = split;
         split.setName("sqlEditor.split");
         split.setResizeWeight(0.6);
         split.setBorder(BorderFactory.createEmptyBorder());
         split.setContinuousLayout(true);
 
-        add(buildToolbar(), BorderLayout.NORTH);
+        toolbar = buildToolbar();
+        add(toolbar, BorderLayout.NORTH);
         add(split, BorderLayout.CENTER);
         installKeys();
         applyFontSize(initialFontSize());
@@ -762,6 +787,43 @@ public final class SqlEditor extends JPanel {
     }
 
     // ---------------------------------------------------------------- lettura
+
+    /**
+     * Un'altra vista dello stesso script, che prende il posto del testo sopra i risultati (la vista grafica della
+     * query visiva, Step 7). Esecuzione, risultati e salvataggio restano quelli dell'editor, sul testo.
+     */
+    public void setAlternateView(JComponent view) {
+        if (alternateView != null) {
+            editorCards.remove(alternateView);
+        }
+        alternateView = view;
+        if (view != null) {
+            editorCards.add(view, CARD_ALTERNATE);
+            // il diagramma vuole spazio: sopra i risultati prende circa due terzi dell'altezza (vedi doLayout dello split)
+            editorSplit.setResizeWeight(0.75);
+        }
+        showAlternateView(alternateShown && view != null);
+    }
+
+    /** Mostra la vista alternativa ({@code true}) o il testo ({@code false}). */
+    public void showAlternateView(boolean show) {
+        alternateShown = show && alternateView != null;
+        editorCardLayout.show(editorCards, alternateShown ? CARD_ALTERNATE : CARD_TEXT);
+    }
+
+    public boolean isAlternateViewShown() {
+        return alternateShown;
+    }
+
+    /** Il testo attuale conta come «salvato» (chi incorpora l'editor salva altrove, es. una vista sul server). */
+    public void setUnmodified() {
+        changeFileState(file, false);
+    }
+
+    /** Nasconde la barra dell'editor (Esegui, Apri, Salva): chi lo incorpora ha la sua. */
+    public void setToolbarVisible(boolean visible) {
+        toolbar.setVisible(visible);
+    }
 
     public RSyntaxTextArea textArea() {
         return textArea;

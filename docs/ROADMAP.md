@@ -16,7 +16,7 @@ Stato: ✅ completato · 🔄 in corso · ⏳ da fare
 | 4 | Editor SQL raw e **data-entry** (griglia, appunti a blocchi, conferma esplicita) | L | ✅ 2026-09-23 |
 | 5 | Editor di tabelle (colonne, opzioni, engine) | L | ✅ 2026-09-23 |
 | 6 | **Indici, chiavi esterne, integrità referenziale** (con verifica sul server) | M | ✅ 2026-09-23 (Tappa M1) |
-| 7 | Query editor visivo (integrazione SQLeo) | L | ⏳ |
+| 7 | Query editor visivo (integrazione SQLeo) | L | ✅ 2026-09-27 |
 | 8 | Viste grafiche | M | ⏳ |
 | 9 | Importazione CSV e JSON | M | ⏳ |
 | 10 | Dump selettivo/totale e ripristino | M | ⏳ |

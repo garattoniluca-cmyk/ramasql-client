@@ -676,19 +676,24 @@ public final class NavigatorPanel extends JPanel {
         this.onOpenView = handler == null ? v -> { } : handler;
     }
 
+    /** Chi apre la vista nella query visiva per modificarla (Step 8, «Modifica vista»). */
+    private BiConsumer<String, String> onEditView = (c, v) -> { };
+
+    public void setOnEditView(BiConsumer<String, String> handler) {
+        this.onEditView = handler == null ? (c, v) -> { } : handler;
+    }
+
     /** «Apri vista»: le colonne si leggono in background, poi la scheda si apre in sola lettura. */
     public void openView(String catalog, String view) {
         if (workspace == null) {
             return;
         }
         MetadataReader reader = workspace.reader();
-        background(() -> reader.viewColumns(catalog, view), columns -> {
-            if (columns.isEmpty()) {
-                view().message(PipelineView.MessageKind.WARNING, Texts.get("nav.table.missing"));
-            } else {
-                onOpenView.accept(new ViewToOpen(catalog, view, columns));
-            }
-        }, error -> view().message(PipelineView.MessageKind.ERROR, Texts.get("nav.load.error", describe(error))),
+        // senza colonne (vista non più valida, o sparita) la scheda prova lo stesso a leggerla: così l'utente vede
+        // l'errore vero del server, spiegato (Step 8, T8.7), invece di un generico «non trovata»
+        background(() -> reader.viewColumns(catalog, view), columns -> onOpenView.accept(
+                new ViewToOpen(catalog, view, columns)),
+                error -> view().message(PipelineView.MessageKind.ERROR, Texts.get("nav.load.error", describe(error))),
                 sessionEpoch);
     }
 
@@ -767,6 +772,7 @@ public final class NavigatorPanel extends JPanel {
             }
             case VIEW -> {
                 menu.add(item("nav.menu.openView", () -> openView(n.catalog(), n.name())));
+                menu.add(item("nav.menu.editView", () -> onEditView.accept(n.catalog(), n.name())));
                 menu.addSeparator();
                 menu.add(item("nav.menu.dropView", () -> propose(TreeScripts.dropView(n.catalog(), n.name()))));
                 menu.addSeparator();

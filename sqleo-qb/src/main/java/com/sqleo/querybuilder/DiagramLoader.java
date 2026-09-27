@@ -22,6 +22,9 @@
  *
  *
  * Modificato per RamaSQL Client (2026-09-21): (1) rimosso il limite di 3 tabelle per diagramma con la relativa richiesta a pagamento (createAndJoin); (2) rimossa la definizione manuale dei metadati (file di join definiti a mano); (3) caricamento sincrono: tolti la finestra modale di attesa e il thread, che modificava componenti Swing fuori dall EDT e poteva bloccarsi se il thread finiva prima di show(); ora funziona anche senza finestra antenata; (4) avvisi tramite la facciata QbHost; (5) metadati JDBC letti per catalogo (MySQL/MariaDB non hanno schemi) e join automatici anche da QbHost.joinHints; (6) senza connessione checkTable non lancia piu NullPointerException; (7) tolto da checkTable il blocco gia commentato in origine (fix ticket #119) che chiamava gli avvisi della classe Application di SQLeo.
+ * Modificato per RamaSQL Client (2026-09-27): tabelle, colonne, chiavi primarie e chiavi esterne chieste alla facciata
+ * (QbHost.metadata(), BUG-016) invece che a DatabaseMetaData; tolti i metodi JDBC rimasti senza uso; una tabella riceve un
+ * alias automatico solo se e' gia' nel diagramma (in origine sempre: «`libri` libri»).
  */
 
 package com.sqleo.querybuilder;
@@ -29,12 +32,8 @@ package com.sqleo.querybuilder;
 import java.awt.Color;
 import java.awt.Dialog;
 import java.awt.Frame;
-import java.sql.DatabaseMetaData;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Hashtable;
-import java.util.ListIterator;
 
 import javax.swing.JDialog;
 import javax.swing.JLabel;
@@ -43,6 +42,7 @@ import javax.swing.SwingUtilities;
 
 import com.sqleo.common.util.I18n;
 import it.ramasql.qb.JoinHint;
+import it.ramasql.qb.QbMetadata;
 import it.ramasql.qb.QbRuntime;
 import com.sqleo.querybuilder.syntax.QueryTokens;
 
@@ -108,7 +108,10 @@ public class DiagramLoader extends JDialog implements Runnable
 		{
 			// #394 Designer: reversing query doesn't warn on closed connection 
 			// System.out.println("[ DiagramLoader::run ]\n" + sqle);
-			QbRuntime.host().alert("[ DiagramLoader::run ]\n" + sqle);
+			// RamaSQL (2026-09-27): alla facciata della scheda (che lo porta nel pannello Messaggi), in italiano; in origine
+			// alla facciata di processo, che nel programma non ha una scheda a cui dirlo
+			builder.getHost().alert(I18n.getFormattedString("querybuilder.message.metadataError",
+					"Cannot read the metadata: {0}", new Object[]{sqle.getMessage()}));
 		}
 		finally
 		{
@@ -126,8 +129,14 @@ public class DiagramLoader extends JDialog implements Runnable
 		// if(( QueryBuilder.autoAlias || (builder.browser.getQueryItem() instanceof BrowserItems.DiagramQueryTreeItem)) && table.getAlias()==null)
 		if( QueryBuilder.autoAlias && table.getAlias()==null)
 		{
+			// RamaSQL (2026-09-27): l'alias serve solo se la tabella c'e' gia' (in origine: sempre, «`libri` libri»)
+			if(builder.diagram.getEntity(table)==null)
+			{
+				createAndJoin(table, tableExists);
+				return;
+			}
 			table.setAlias(table.getName());
-		
+
 			for(int i=0; builder.diagram.getEntity(table)!=null; i++)
 			{
 				if(mode==DEFAULT)
@@ -164,93 +173,61 @@ public class DiagramLoader extends JDialog implements Runnable
 
 	
 	
-	private void addTables(ResultSet rs, int rsSchemaIndex, int rsTableIndex)
-		throws SQLException
-	{
-		ArrayList list = new ArrayList();
-		
-		while(rs.next())
-		{
-			String schemaName = rs.getString(rsSchemaIndex);
-			String tableName = rs.getString(rsTableIndex).trim();
-			
-			if(builder.getQueryModel().getSchema()!=null) schemaName = null;
-			if(schemaName!=null) schemaName = schemaName.trim();
-			
-			list.add(new QueryTokens.Table(schemaName,tableName));
-		}
-		rs.close();
-					
-		for(ListIterator iter = list.listIterator(); iter.hasNext();)
-		{
-			addTable((QueryTokens.Table)iter.next());
-		}
-	}
-	
+	// RamaSQL (2026-09-27, BUG-016): tabelle collegate lette dai metadati della facciata (in origine: DatabaseMetaData)
 	private void addAllForeignTables()
 		throws SQLException
 	{
-		DatabaseMetaData dbmd = builder.getConnection().getMetaData();
+		QbMetadata md = builder.metadata();
+		if(md==null) return;
 		message.setText(I18n.getString("querybuilder.message.reading","reading...") );
-		
-		String schema = builder.getQueryModel().getSchema() == null ? table.getSchema() : builder.getQueryModel().getSchema();		
-		String catalog = catalogFor(schema); schema = null; // RamaSQL: vedi catalogFor
-		addTables(dbmd.getExportedKeys(catalog, schema, table.getName()) ,6,7);
 
+		String schema = builder.getQueryModel().getSchema() == null ? table.getSchema() : builder.getQueryModel().getSchema();
+		String catalog = catalogFor(schema);
+		ArrayList<String> names = new ArrayList<String>();
+		for(QbMetadata.ForeignKey fk : md.exportedKeys(catalog, table.getName())) names.add(fk.foreignTable());
+		addTables(names);
 	}
-	
+
 	private void addAllPrimaryTables()
 		throws SQLException
 	{
-		DatabaseMetaData dbmd = builder.getConnection().getMetaData();
+		QbMetadata md = builder.metadata();
+		if(md==null) return;
 		message.setText(I18n.getString("querybuilder.message.reading","reading..."));
-		
+
 		String schema = builder.getQueryModel().getSchema() == null ? table.getSchema() : builder.getQueryModel().getSchema();
-		String catalog = catalogFor(schema); schema = null; // RamaSQL: vedi catalogFor
-		
-		addTables(dbmd.getImportedKeys(catalog, schema, table.getName()) ,2,3);
+		String catalog = catalogFor(schema);
+		ArrayList<String> names = new ArrayList<String>();
+		for(QbMetadata.ForeignKey fk : md.importedKeys(catalog, table.getName())) names.add(fk.primaryTable());
+		addTables(names);
+	}
+
+	private void addTables(java.util.List<String> names)
+		throws SQLException
+	{
+		java.util.LinkedHashSet<String> unique = new java.util.LinkedHashSet<String>(names);
+		for(String name : unique)
+		{
+			if(!name.equalsIgnoreCase(table.getName()))
+				addTable(new QueryTokens.Table(null, name));
+		}
 	}
 	
 	private boolean checkTable(QueryTokens.Table table)
 		throws SQLException
 	{
-		if(builder.getConnection()==null) return true; // RamaSQL: senza connessione non si puo verificare (in origine: NullPointerException)
-		DatabaseMetaData dbmd = builder.getConnection().getMetaData();
-		
-		String name = table.getName();
+		// RamaSQL (2026-09-27, BUG-016): esistenza e nome esatto dai metadati della facciata (in origine: DatabaseMetaData,
+		// con un secondo tentativo in maiuscolo o minuscolo che ora fa QbMetadata.find)
+		QbMetadata md = builder.metadata();
+		if(md==null) return true; // RamaSQL: senza metadati non si puo verificare (in origine: NullPointerException)
+
 		String schema = builder.getQueryModel().getSchema() == null ? table.getSchema() : builder.getQueryModel().getSchema();
 		String catalog = catalogFor(schema); // RamaSQL: vedi catalogFor; lo schema JDBC non esiste in MySQL/MariaDB
 
-		ResultSet rs = dbmd.getTables(catalog,null,name,null);
-		boolean exists = rs.next();
-		rs.close();
-		
-		if(!exists)
-		{
-			if(dbmd.storesLowerCaseIdentifiers())
-			{
-				name = name!=null ? name.toLowerCase() : null;
-				schema = schema!=null ? schema.toLowerCase() : null;
-				catalog = catalog!=null ? catalog.toLowerCase() : null;
-			}
-			else if(dbmd.storesUpperCaseIdentifiers())
-			{
-				name = name!=null ? name.toUpperCase() : null;
-				schema = schema!=null ? schema.toUpperCase() : null;
-				catalog = catalog!=null ? catalog.toUpperCase() : null;
-			}
-			
-			rs = dbmd.getTables(catalog,null,name,null);
-			if(exists = rs.next())
-			{
-				table.setName(name);
-				if(builder.getQueryModel().getSchema() == null)
-					table.setSchema(schema);
-			}
-			rs.close();
-		}
-		
-		return exists;
+		String found = md.find(catalog, table.getName());
+		if(found!=null && !found.equals(table.getName()))
+			table.setName(found);
+		return found!=null;
 	}
 	
 	private DiagramEntity creatEntity(QueryTokens.Table table, boolean tableExists)
@@ -258,119 +235,57 @@ public class DiagramLoader extends JDialog implements Runnable
 	{
 		DiagramEntity item = new DiagramEntity(builder,table);
 		if(!tableExists){
-			item.setFontColorAndToolTip(Color.red, table.getName()  + " : !!! missing !!! ");
+			item.setFontColorAndToolTip(QueryBuilder.missingColor(), QueryBuilder.missingTableTip(table.getName())); // RamaSQL (2026-09-27): colore del token, testo italiano
 		}
-		item.setEnabled(builder.getConnection()!=null);
-		
-		if(builder.getConnection()!=null)
+		// RamaSQL (2026-09-27, BUG-016): colonne e chiave primaria dai metadati della facciata (in origine: DatabaseMetaData)
+		QbMetadata md = builder.metadata();
+		item.setEnabled(md!=null);
+
+		if(md!=null)
 		{
-			DatabaseMetaData dbmetadata = builder.getConnection().getMetaData();
-			Hashtable primary = this.getPrimaryKeys(dbmetadata,item);
-			
 			String name = item.getQueryToken().getName();
 			String schema = builder.getQueryModel().getSchema() == null ? item.getQueryToken().getSchema() : builder.getQueryModel().getSchema();
-			String catalog = catalogFor(schema); schema = null; // RamaSQL: vedi catalogFor
+			String catalog = catalogFor(schema); // RamaSQL: vedi catalogFor
 
-			ResultSet rsColumns = dbmetadata.getColumns(catalog, schema, name, "%");
-			while(rsColumns.next())
+			int pos = 0;
+			for(QbMetadata.Column c : md.columns(catalog, name))
 			{
-				String columnName	= rsColumns.getString(4).trim();
-				String typeName		= rsColumns.getString(6);
-				int size	= rsColumns.getInt(7);
-				int pos		= rsColumns.getInt(17);
-				
-				DiagramField field = item.addField(pos,columnName,primary.get(columnName));
-				field.setToolTipText(columnName + " : " + typeName + "(" + size + ")");
+				DiagramField field = item.addField(++pos, c.name(), c.primaryKey() ? "PRIMARY" : null);
+				field.setToolTipText(c.name() + " : " + c.type());
 			}
-			rsColumns.close();
 		}
 		item.pack();
 		
 		return item;
 	}
 	
-	private Hashtable getPrimaryKeys(DatabaseMetaData dbmetadata, DiagramEntity item)
-	{
-		Hashtable primary = new Hashtable();
-		
-		try
-		{
-			String name = item.getQueryToken().getName();
-			String schema = builder.getQueryModel().getSchema() == null ? item.getQueryToken().getSchema() : builder.getQueryModel().getSchema();
-			String catalog = catalogFor(schema); schema = null; // RamaSQL: vedi catalogFor
-
-			ResultSet rsPK = dbmetadata.getPrimaryKeys(catalog, schema, name);
-			while(rsPK.next())
-				// il nome della chiave puo essere null
-				primary.put(rsPK.getString(4).trim(), rsPK.getString(6)== null ? "PRIMARY" : rsPK.getString(6));
-			rsPK.close();
-		}
-		catch (SQLException sqle)
-		{
-			System.out.println("[ DiagramLoader::getPrimaryKeys ]\n" + sqle);
-		}
-		
-		return primary;
-	}
-	
 	private void doAutoJoin(DiagramEntity source)
 		throws SQLException
 	{
+		QbMetadata md = builder.metadata();
 		if(builder.diagram.getEntities().length > 1)
 		{
-			DatabaseMetaData dbmetadata = builder.getConnection().getMetaData();
-			
 			String name = source.getQueryToken().getName();
 			String schema = builder.getQueryModel().getSchema() == null ? source.getQueryToken().getSchema() : builder.getQueryModel().getSchema();
-			String catalog = catalogFor(schema); schema = null; // RamaSQL: vedi catalogFor
-			
+			String catalog = catalogFor(schema); // RamaSQL: vedi catalogFor
+
 			message.setText( I18n.getFormattedString("querybuilder.message.loading.relations","check {0}'s relations ", new Object[]{"" + table.getIdentifier()}));
-			
+
 			// RamaSQL: se la facciata fornisce suggerimenti (FK reali + relazioni logiche del modello ER) si usano quelli,
-			// altrimenti le chiavi esterne lette dai metadati JDBC
+			// altrimenti le chiavi esterne dei metadati (2026-09-27: della facciata, non piu' di DatabaseMetaData)
 			java.util.List<JoinHint> hints = builder.getHost().joinHints(name);
 			if(hints!=null && !hints.isEmpty()){
 				join(hints,source);
-			}else{
-				join(dbmetadata.getImportedKeys(catalog, schema, name) , source, false);
-				join(dbmetadata.getExportedKeys(catalog, schema, name) , source, true);
+			}else if(md!=null){
+				java.util.List<JoinHint> keys = new ArrayList<JoinHint>();
+				for(QbMetadata.ForeignKey fk : md.importedKeys(catalog, name))
+					keys.add(new JoinHint(fk.name(), fk.primaryTable(), fk.primaryColumn(), fk.foreignTable(), fk.foreignColumn()));
+				for(QbMetadata.ForeignKey fk : md.exportedKeys(catalog, name))
+					keys.add(new JoinHint(fk.name(), fk.primaryTable(), fk.primaryColumn(), fk.foreignTable(), fk.foreignColumn()));
+				join(keys,source);
 			}
-			
+
 		}
-	}
-	
-	private void join(ResultSet rs, DiagramEntity source, boolean ispk)
-		throws SQLException
-	{
-		while(rs.next())
-		{
-			String pkschema = rs.getString(2);
-			String pktable	= rs.getString(3).trim();
-			String pkcolumn = rs.getString(4).trim();
-			String fkschema = rs.getString(6);
-			String fktable	= rs.getString(7).trim();
-			String fkcolumn = rs.getString(8).trim();
-			String fkname	= rs.getString(12);
-			
-			if(builder.getQueryModel().getSchema()!=null)
-				pkschema = fkschema = null;
-			
-			if(pkschema!=null) pkschema = pkschema.trim();
-			if(fkschema!=null) fkschema = fkschema.trim();
-			
-			DiagramEntity itemP = ispk ? source : builder.diagram.getEntity(pkschema, pktable);
-			DiagramEntity itemF = ispk ? builder.diagram.getEntity(fkschema, fktable) : source;
-			
-			if(itemP!=null && itemF!=null && !itemP.getQueryToken().toString().equalsIgnoreCase(itemF.getQueryToken().toString()))
-			{
-				DiagramField fP = itemP.getField(pkcolumn,true);
-				DiagramField fF = itemF.getField(fkcolumn,true);
-					
-				builder.diagram.join(itemP,fP,itemF,fF);
-				builder.diagram.getRelations()[builder.diagram.getRelationCount()-1].setName(fkname);
-			}
-		}
-		rs.close();
 	}
 	
 	/* RamaSQL: join suggeriti dalla facciata (QbHost.joinHints) */

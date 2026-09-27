@@ -1,0 +1,28 @@
+T7.8 — due schede «Query visiva» su MySQL
+Cataloghi: A = ramasql_test_ui_visual78a_jat7bd, B = ramasql_test_ui_visual78b_fmbfxg
+SQL della scheda A:
+SELECT
+	`libri`.`titolo`,
+	`editori`.`id`,
+	`editori`.`nome`,
+	`editori`.`citta`
+FROM
+	`editori`
+	INNER JOIN `libri`
+	 ON `editori`.`id` = `libri`.`id_editore`
+WHERE
+	`libri`.`anno` < 1960
+ORDER BY
+	`libri`.`titolo` ASC
+SQL della scheda B:
+SELECT
+	`studenti`.`cognome`,
+	`studenti`.`classe`
+FROM
+	`studenti`
+WHERE
+	classe = '3A'
+ORDER BY
+	cognome ASC
+Eseguite: A con USE `ramasql_test_ui_visual78a_jat7bd`, B con USE `ramasql_test_ui_visual78b_fmbfxg`; righe di B uguali al server: [[Rossi, 3A], [Verdi, 3A]]
+Esito: SUPERATO
