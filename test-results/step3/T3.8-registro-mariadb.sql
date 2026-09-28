@@ -1,9 +1,9 @@
--- RamaSQL Client - registro SQL esportato il 2026-09-28 16:57:01
+-- RamaSQL Client - registro SQL esportato il 2026-09-28 17:37:32
 -- Connessione: Test MariaDB (MariaDB 11.5.2)
 -- Istruzioni: 24 riuscite; 1 non riuscite o interrotte (commentate, non vengono rieseguite: possono essere state applicate in parte, verifica)
 -- Riferimenti al catalogo «<catalogo>» tolti: lo script si riesegue sul catalogo corrente
 
--- #1 16:57:01 · Editor SQL · OK · 0 righe · 31 ms
+-- #1 17:37:32 · Editor SQL · OK · 0 righe · 3 ms
 CREATE TABLE editori (
   id INT UNSIGNED NOT NULL AUTO_INCREMENT,
   nome VARCHAR(80) NOT NULL,
@@ -12,7 +12,7 @@ CREATE TABLE editori (
   UNIQUE KEY uq_editori_nome (nome)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- #2 16:57:01 · Editor SQL · OK · 0 righe · 27 ms
+-- #2 17:37:32 · Editor SQL · OK · 0 righe · 3 ms
 CREATE TABLE autori (
   id INT UNSIGNED NOT NULL AUTO_INCREMENT,
   cognome VARCHAR(60) NOT NULL,
@@ -22,7 +22,7 @@ CREATE TABLE autori (
   KEY ix_autori_cognome (cognome, nome)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- #3 16:57:01 · Editor SQL · OK · 0 righe · 38 ms
+-- #3 17:37:32 · Editor SQL · OK · 0 righe · 5 ms
 CREATE TABLE libri (
   id INT UNSIGNED NOT NULL AUTO_INCREMENT,
   titolo VARCHAR(150) NOT NULL,
@@ -36,7 +36,7 @@ CREATE TABLE libri (
   CONSTRAINT fk_libri_editori FOREIGN KEY (id_editore) REFERENCES editori (id) ON DELETE RESTRICT ON UPDATE RESTRICT
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Catalogo dei libri';
 
--- #4 16:57:01 · Editor SQL · OK · 0 righe · 26 ms
+-- #4 17:37:32 · Editor SQL · OK · 0 righe · 3 ms
 CREATE TABLE libri_autori (
   id_libro INT UNSIGNED NOT NULL,
   id_autore INT UNSIGNED NOT NULL,
@@ -46,7 +46,7 @@ CREATE TABLE libri_autori (
   CONSTRAINT fk_libri_autori_autori FOREIGN KEY (id_autore) REFERENCES autori (id) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- #5 16:57:01 · Editor SQL · OK · 0 righe · 32 ms
+-- #5 17:37:32 · Editor SQL · OK · 0 righe · 3 ms
 CREATE TABLE soci (
   id INT UNSIGNED NOT NULL AUTO_INCREMENT,
   tessera CHAR(8) NOT NULL COMMENT 'numero della tessera (T e 7 cifre)',
@@ -58,7 +58,7 @@ CREATE TABLE soci (
   UNIQUE KEY uq_soci_tessera (tessera)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- #6 16:57:01 · Editor SQL · OK · 0 righe · 33 ms
+-- #6 17:37:32 · Editor SQL · OK · 0 righe · 3 ms
 CREATE TABLE prestiti (
   id INT UNSIGNED NOT NULL AUTO_INCREMENT,
   id_libro INT UNSIGNED NOT NULL,
@@ -72,7 +72,7 @@ CREATE TABLE prestiti (
   CONSTRAINT fk_prestiti_soci FOREIGN KEY (id_socio) REFERENCES soci (id) ON DELETE RESTRICT ON UPDATE RESTRICT
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- #7 16:57:01 · Editor SQL · OK · 0 righe · 19 ms
+-- #7 17:37:32 · Editor SQL · OK · 0 righe · 2 ms
 CREATE VIEW v_prestiti_aperti AS
   SELECT p.id, s.cognome, s.nome, l.titolo, p.data_prestito
   FROM prestiti p
@@ -80,13 +80,13 @@ CREATE VIEW v_prestiti_aperti AS
   JOIN libri l ON l.id = p.id_libro
   WHERE p.data_reso IS NULL;
 
--- #8 16:57:01 · Editor SQL · OK · 0 righe · 12 ms
+-- #8 17:37:32 · Editor SQL · OK · 0 righe · 2 ms
 CREATE VIEW v_libri_editori AS
   SELECT l.id, l.titolo, l.anno, e.nome AS editore
   FROM libri l
   LEFT JOIN editori e ON e.id = l.id_editore;
 
--- #9 16:57:01 · Editor SQL · OK · 20 righe · 1 ms
+-- #9 17:37:32 · Editor SQL · OK · 20 righe · 0 ms
 INSERT INTO editori (id, nome, citta) VALUES
   (1, 'Einaudi', 'Bologna'),
   (2, 'Mondadori', 'Forlì'),
@@ -109,7 +109,7 @@ INSERT INTO editori (id, nome, citta) VALUES
   (19, 'Iperborea', 'Napoli'),
   (20, 'Città Nuova', 'Torino');
 
--- #10 16:57:01 · Editor SQL · OK · 50 righe · 2 ms
+-- #10 17:37:32 · Editor SQL · OK · 50 righe · 0 ms
 INSERT INTO autori (id, cognome, nome, nazionalita) VALUES
   (1, 'Manzoni', 'Alessandro', 'italiana'),
   (2, 'D''Annunzio', 'Gabriele', 'italiana'),
@@ -162,7 +162,7 @@ INSERT INTO autori (id, cognome, nome, nazionalita) VALUES
   (49, 'Szymborska', 'Wisława', 'polacca'),
   (50, 'Ferrante', 'Elena', 'italiana');
 
--- #11 16:57:01 · Editor SQL · OK · 200 righe · 2 ms
+-- #11 17:37:32 · Editor SQL · OK · 200 righe · 3 ms
 INSERT INTO libri (id, titolo, isbn, anno, prezzo, id_editore) VALUES
   (1, 'Il giardino dei ricordi', '9788800007919', 1887, 22.29, 4),
   (2, 'La casa dei ricordi', '9788800015838', 1924, 39.58, 7),
@@ -365,7 +365,7 @@ INSERT INTO libri (id, titolo, isbn, anno, prezzo, id_editore) VALUES
   (199, 'La strada all''alba', '9788801575881', 1863, 28.71, 18),
   (200, 'L''attesa all''alba', '9788801583800', 1900, 5.00, 1);
 
--- #12 16:57:01 · Editor SQL · OK · 232 righe · 5 ms
+-- #12 17:37:32 · Editor SQL · OK · 232 righe · 1 ms
 INSERT INTO libri_autori (id_libro, id_autore) VALUES
   (1, 8),
   (2, 15),
@@ -600,7 +600,7 @@ INSERT INTO libri_autori (id_libro, id_autore) VALUES
   (199, 44),
   (200, 1);
 
--- #13 16:57:01 · Editor SQL · OK · 100 righe · 5 ms
+-- #13 17:37:32 · Editor SQL · OK · 100 righe · 0 ms
 INSERT INTO soci (id, tessera, cognome, nome, email, nato_il) VALUES
   (1, 'T0001037', 'Ricci', 'Alessandro', 'alessandro.ricci1@esempio.it', '1950-07-31'),
   (2, 'T0001074', 'Mancini', 'Ginevra', 'ginevra.mancini2@esempio.it', '1951-02-27'),
@@ -703,7 +703,7 @@ INSERT INTO soci (id, tessera, cognome, nome, email, nato_il) VALUES
   (99, 'T0004663', 'Lombardi', 'Andrea', 'andrea.lombardi99@esempio.it', '1952-06-08'),
   (100, 'T0004700', 'Rossi', 'Giulia', 'giulia.rossi100@esempio.it', NULL);
 
--- #14 16:57:01 · Editor SQL · OK · 500 righe · 8 ms
+-- #14 17:37:32 · Editor SQL · OK · 500 righe · 3 ms
 INSERT INTO prestiti (id, id_libro, id_socio, data_prestito, data_reso) VALUES
   (1, 38, 54, '2025-01-04', '2025-01-06'),
   (2, 75, 7, '2025-01-07', '2025-01-10'),
@@ -1206,36 +1206,36 @@ INSERT INTO prestiti (id, id_libro, id_socio, data_prestito, data_reso) VALUES
   (499, 64, 48, '2025-10-25', '2025-11-14'),
   (500, 101, 1, '2025-10-28', '2025-11-18');
 
--- #15 16:57:01 · Editor SQL · OK · 0 righe · 14 ms
+-- #15 17:37:32 · Editor SQL · OK · 0 righe · 3 ms
 CREATE TABLE appunti (id INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY, testo VARCHAR(100));
 
--- #16 16:57:01 · Editor SQL · OK · 3 righe · 2 ms
+-- #16 17:37:32 · Editor SQL · OK · 3 righe · 0 ms
 INSERT INTO appunti (testo) VALUES ('uno'), ('l''altro'), ('tre 🎉');
 
--- #17 16:57:01 · Editor SQL · OK · 1 righe · 2 ms
+-- #17 17:37:32 · Editor SQL · OK · 1 righe · 0 ms
 UPDATE soci SET email = NULL WHERE id = 3;
 
--- #18 16:57:01 · Editor SQL · OK · 10 righe · 4 ms
+-- #18 17:37:32 · Editor SQL · OK · 10 righe · 0 ms
 DELETE FROM prestiti WHERE id > 490;
 
--- #19 16:57:01 · Editor SQL · OK · 0 righe · 21 ms
+-- #19 17:37:32 · Editor SQL · OK · 0 righe · 3 ms
 CREATE TABLE da_buttare (x INT);
 
--- #20 16:57:01 · Editor SQL · ERRORE 1062 (23000): (conn=18051) Duplicate entry 'T0001037' for key 'uq_soci_tessera'
+-- #20 17:37:32 · Editor SQL · ERRORE 1062 (23000): (conn=19797) Duplicate entry 'T0001037' for key 'uq_soci_tessera'
 -- INSERT INTO soci (tessera, cognome, nome) VALUES ('T0001037', 'Doppia', 'Tessera');
 -- (non riuscita: può essere stata applicata in parte: verifica sul server prima di rieseguire lo script)
 
--- #21 16:57:01 · Navigatore · OK · 0 righe · 8 ms
+-- #21 17:37:32 · Navigatore · OK · 0 righe · 4 ms
 TRUNCATE TABLE `appunti`;
 
--- #22 16:57:01 · Editor SQL · OK · 1 righe · 2 ms
+-- #22 17:37:32 · Editor SQL · OK · 1 righe · 0 ms
 INSERT INTO appunti (testo) VALUES ('dopo');
 
--- #23 16:57:01 · Navigatore · OK · 0 righe · 15 ms
+-- #23 17:37:32 · Navigatore · OK · 0 righe · 4 ms
 RENAME TABLE `appunti` TO `note`;
 
--- #24 16:57:01 · Navigatore · OK · 0 righe · 13 ms
+-- #24 17:37:32 · Navigatore · OK · 0 righe · 3 ms
 DROP TABLE `da_buttare`;
 
--- #25 16:57:01 · Navigatore · OK · 0 righe · 11 ms
+-- #25 17:37:32 · Navigatore · OK · 0 righe · 1 ms
 DROP VIEW `v_libri_editori`;

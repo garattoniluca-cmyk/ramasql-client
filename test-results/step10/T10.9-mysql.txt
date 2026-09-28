@@ -1,6 +1,6 @@
 T10.9 — script con un errore a metà (MySQL)
 Fermati: ✘ Fermato al primo errore: 3 istruzioni eseguite su 5: 2 riuscite, 1 con errore (0,0 s). Le istruzioni prima restano eseguite.
-  rapporto: 5 | INSERT INTO tabella_che_non_esiste VALUES (3) | La tabella indicata non esiste nel catalogo in uso: controlla il nome o il catalogo (USE). Messaggio del server: [1146] (conn=16869) Table 'ramasql_test_ui_t109_mflah5.tabella_che_non_esiste' doesn't exist
+  rapporto: 5 | INSERT INTO tabella_che_non_esiste VALUES (3) | La tabella indicata non esiste nel catalogo in uso: controlla il nome o il catalogo (USE). Messaggio del server: [1146] (conn=18560) Table 'ramasql_test_ui_t109_0l5bo6.tabella_che_non_esiste' doesn't exist
   sul server: «prima» con 2 righe, «dopo» non c'è
 Continua: ⚠ Finito con errori: 5 istruzioni eseguite su 5: 4 riuscite, 1 con errore (0,0 s). Guarda qui sotto le istruzioni che non sono riuscite.
   sul server: «prima» e «dopo» ci sono

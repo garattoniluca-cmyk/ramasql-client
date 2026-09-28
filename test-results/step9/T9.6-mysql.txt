@@ -3,12 +3,12 @@ Passo 1: «soci-excel.csv»: CSV, codifica Windows-1252 (il «CSV» normale di E
 Passo 2: 100 righe e 6 colonne nel file; qui sotto le prime 20. Prima riga: S0000001 | Marino | Ginevra | ginevra.marino1@esempio.it | 14/06/1953 | 24,5
 Passo 3 (abbinamento automatico): [Tessera → tessera, Cognome → cognome, Nome → nome, Email → email, Nato il → nato_il, Quota → ]
 Anteprima: Importa «soci-excel.csv» nella tabella «soci»: 100 righe, in 1 lotto (fino a 1000 righe per istruzione INSERT)
-INSERT INTO `ramasql_test_ui_t96_71g42a`.`soci` (`tessera`, `cognome`, `nome`, `email`, `nato_il`) VALUES (?, ?, ?, ?, ?);
-Registro: INSERT INTO `ramasql_test_ui_t96_71g42a`.`soci` (`tessera`, `cognome`, `nome`, `email`, `nato_il`) VALUES (?, ?, ?, ?, ?) — istruzione preparata · lotti: 1 · righe inserite: 100 · rifiutate dal server: 0 · duplicati ignorati: 0
+INSERT INTO `ramasql_test_ui_t96_4f9jig`.`soci` (`tessera`, `cognome`, `nome`, `email`, `nato_il`) VALUES (?, ?, ?, ?, ?);
+Registro: INSERT INTO `ramasql_test_ui_t96_4f9jig`.`soci` (`tessera`, `cognome`, `nome`, `email`, `nato_il`) VALUES (?, ?, ?, ?, ?) — istruzione preparata · lotti: 1 · righe inserite: 100 · rifiutate dal server: 0 · duplicati ignorati: 0
 Rapporto: ✔ Fatto: 100 righe lette, 100 inserite, 0 scartate, 0 duplicati ignorati · lotti: 1.
 Sul server: soci = 200; le 100 righe rilette (cognome, nome, email, nato_il) coincidono con il file
 Tabella nuova — anteprima:
-CREATE TABLE `ramasql_test_ui_t96_71g42a`.`soci_excel` (
+CREATE TABLE `ramasql_test_ui_t96_4f9jig`.`soci_excel` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
   `Tessera` CHAR(8) NOT NULL,
   `Cognome` VARCHAR(10) NOT NULL,
@@ -19,6 +19,6 @@ CREATE TABLE `ramasql_test_ui_t96_71g42a`.`soci_excel` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB;
 
-INSERT INTO `ramasql_test_ui_t96_71g42a`.`soci_excel` (`Tessera`, `Cognome`, `Nome`, `Email`, `Nato il`, `Quota`) VALUES (?, ?, ?, ?, ?, ?);
+INSERT INTO `ramasql_test_ui_t96_4f9jig`.`soci_excel` (`Tessera`, `Cognome`, `Nome`, `Email`, `Nato il`, `Quota`) VALUES (?, ?, ?, ?, ?, ?);
 Colonne sul server: [[id, int unsigned], [Tessera, char(8)], [Cognome, varchar(10)], [Nome, varchar(10)], [Email, varchar(50)], [Nato il, date], [Quota, decimal(4,2)]]
 Esito: OK

@@ -1,0 +1,5 @@
+Step 11, revisione — Ctrl+rotella, altro server, etichetta e N:M
+Ctrl+rotella sul diagramma: zoom 100% → 110%, carattere del programma 13 invariato; con il carattere a +3 la tabella libri passa da 201.0 a 236.0 di larghezza
+Etichetta «scrive» e N:M su libri_autori.id_autore → autori.id dal menu della relazione: salvate e rilette dal file
+Modello di MariaDB aperto collegati a MySQL (catalogo omonimo, altre tabelle): «Aggiorna» → «✘ Il modello viene dal server ramasql_test@127.0.0.1:3306, ma ora sei collegato a ramasql_test@127.0.0.1:3307: aggiornarlo leggerebbe le tabelle di un altro server (un catalogo con lo stesso nome può essere diverso). Collegati al server del modello.», modello invariato; doppio clic → «⚠ «libri» viene dal server ramasql_test@127.0.0.1:3306, ma ora sei collegato a ramasql_test@127.0.0.1:3307: la tabella con lo stesso nome qui potrebbe essere un'altra.»
+Esito: OK

@@ -1,4 +1,4 @@
 T9.5 — Interrompi a metà (MariaDB)
-Rapporto: interrotta, inserite 300000 righe in 301 lotti
-Sul server: COUNT(*) = 300000 (uguale)
+Rapporto: interrotta, inserite 301000 righe in 301 lotti
+Sul server: COUNT(*) = 301000 (uguale)
 Esito: OK

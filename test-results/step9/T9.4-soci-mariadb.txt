@@ -1,8 +1,8 @@
 T9.4 — soci.csv nella tabella soci esistente (MariaDB)
 Anteprima: Importa «soci.csv» nella tabella «soci»: 100 righe, in 1 lotto (fino a 1000 righe per istruzione INSERT)
-INSERT INTO `ramasql_test_t94_soci_muldhoi2s8zx`.`soci` (`tessera`, `cognome`, `nome`, `email`, `nato_il`) VALUES (?, ?, ?, ?, ?);
+INSERT INTO `ramasql_test_t94_soci_mulexmsogfym`.`soci` (`tessera`, `cognome`, `nome`, `email`, `nato_il`) VALUES (?, ?, ?, ?, ?);
 
 Rapporto: lette 100, inserite 100, scartate 0, lotti 1
-Registro: INSERT INTO `ramasql_test_t94_soci_muldhoi2s8zx`.`soci` (`tessera`, `cognome`, `nome`, `email`, `nato_il`) VALUES (?, ?, ?, ?, ?) — istruzione preparata · lotti: 1 · righe inserite: 100 · rifiutate dal server: 0 · duplicati ignorati: 0
+Registro: INSERT INTO `ramasql_test_t94_soci_mulexmsogfym`.`soci` (`tessera`, `cognome`, `nome`, `email`, `nato_il`) VALUES (?, ?, ?, ?, ?) — istruzione preparata · lotti: 1 · righe inserite: 100 · rifiutate dal server: 0 · duplicati ignorati: 0
 Sul server: COUNT(*) soci = 200; le 100 righe S* rilette sono uguali al file
 Esito: OK

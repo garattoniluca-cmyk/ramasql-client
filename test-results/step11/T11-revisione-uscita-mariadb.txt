@@ -1,0 +1,5 @@
+Step 11, revisione — uscita dal programma con un modello modificato (MariaDB)
+Stesso file aperto due volte: una sola finestra
+Esci con il modello modificato → domanda «Il modello «Modello ER — uscita.rsqlmodel •» ha modifiche non salvate. Salvarle nel file prima di chiudere?»; «Resta»: tutto aperto
+«Salva»: modello salvato (posizione nuova nel file), finestra del modello chiusa, programma chiuso
+Esito: OK

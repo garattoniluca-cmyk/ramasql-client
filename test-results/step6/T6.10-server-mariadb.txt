@@ -1,5 +1,5 @@
 T6.10 — integrità dal data-entry su MariaDB
-Catalogo di test: ramasql_test_ui_integr10_pssa8b (fixture biblioteca.sql)
-RESTRICT — eliminare l'editore 16 (che ha 9 libri): «[1451] (conn=17782) Cannot delete or update a parent row: a foreign key constraint fails (`ramasql_test_ui_integr10_pssa8b`.`libri`, CONSTRAINT `fk_libri_editori` FOREIGN KEY (`id_editore`) REFERENCES `editori` (`id`)) — Non si può eliminare o modificare questa riga: altre righe la usano attraverso una chiave esterna.»; sul server l'editore è ancora lì
-CASCADE — eliminato il libro 15: le 2 righe di libri_autori sono sparite sul server e non compaiono più riaprendo la tabella nel client
+Catalogo di test: ramasql_test_ui_integr10_789p21 (fixture biblioteca.sql)
+RESTRICT — eliminare l'editore 14 (che ha 9 libri): «[1451] (conn=19528) Cannot delete or update a parent row: a foreign key constraint fails (`ramasql_test_ui_integr10_789p21`.`libri`, CONSTRAINT `fk_libri_editori` FOREIGN KEY (`id_editore`) REFERENCES `editori` (`id`)) — Non si può eliminare o modificare questa riga: altre righe la usano attraverso una chiave esterna.»; sul server l'editore è ancora lì
+CASCADE — eliminato il libro 30: le 2 righe di libri_autori sono sparite sul server e non compaiono più riaprendo la tabella nel client
 Esito: SUPERATO

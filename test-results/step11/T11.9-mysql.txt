@@ -1,6 +1,8 @@
 T11.9 — disposizione, zoom e trascinamento (MySQL)
-57 relazioni, 227 tratti ortogonali, 170 curve in tutto: nessun tratto passa sotto un'entità
+Scelta delle tabelle: proposte 30, scelte 10 → 10 entità e 17 relazioni fisiche fra loro
+57 relazioni, 363 tratti ortogonali, 306 curve in tutto: nessun tratto passa sotto un'entità
 30 tabelle, 57 relazioni fisiche; nessuna sovrapposizione; t00 (riferita da 29) fra le più centrali (più vicine al centro: 0)
+T11.11 — le 30 tabelle su un A4 orizzontale a 150 dpi: scala 0,80, nome di tabella alto 7 px (1,2 mm): piccolo: per la stampa conviene un modello con meno tabelle o un A3
 zoom 100% → 120% → 100%; t05 trascinata di (90, 40) con il mouse: da (976.0, 776.0) a (1066.0, 816.0)
-100 entità generate: nessuna sovrapposizione, disegno completo in 9 ms, trascinamento (4 eventi) in 1 ms
+100 entità generate con 99 relazioni: nessuna sovrapposizione; primo disegno (con il calcolo di tutti i percorsi) 60 ms, disegni successivi 7 ms, trascinamento (4 eventi) più il disegno dopo il rilascio 20 ms; 99 relazioni, 511 tratti ortogonali, 412 curve in tutto: nessun tratto passa sotto un'entità
 Esito: OK

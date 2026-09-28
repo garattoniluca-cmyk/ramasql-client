@@ -14,7 +14,7 @@ SELECT titolo, anno, prezzo FROM libri WHERE anno >= 1980
 Definizione riletta dal server:
 
 ```sql
-select `ramasql_test_s2c_muld9wikqdc3`.`libri`.`titolo` AS `titolo`,`ramasql_test_s2c_muld9wikqdc3`.`libri`.`anno` AS `anno`,`ramasql_test_s2c_muld9wikqdc3`.`libri`.`prezzo` AS `prezzo` from `ramasql_test_s2c_muld9wikqdc3`.`libri` where (`ramasql_test_s2c_muld9wikqdc3`.`libri`.`anno` >= 1980)
+select `ramasql_test_s2c_muleseq9ak7m`.`libri`.`titolo` AS `titolo`,`ramasql_test_s2c_muleseq9ak7m`.`libri`.`anno` AS `anno`,`ramasql_test_s2c_muleseq9ak7m`.`libri`.`prezzo` AS `prezzo` from `ramasql_test_s2c_muleseq9ak7m`.`libri` where (`ramasql_test_s2c_muleseq9ak7m`.`libri`.`anno` >= 1980)
 ```
 
 Dopo `ViewDefinitionNormalizer` (bozza):
@@ -36,7 +36,7 @@ SELECT l.titolo, e.nome AS editore FROM libri l INNER JOIN editori e ON l.id_edi
 Definizione riletta dal server:
 
 ```sql
-select `l`.`titolo` AS `titolo`,`e`.`nome` AS `editore` from (`ramasql_test_s2c_muld9wikqdc3`.`libri` `l` join `ramasql_test_s2c_muld9wikqdc3`.`editori` `e` on((`l`.`id_editore` = `e`.`id`)))
+select `l`.`titolo` AS `titolo`,`e`.`nome` AS `editore` from (`ramasql_test_s2c_muleseq9ak7m`.`libri` `l` join `ramasql_test_s2c_muleseq9ak7m`.`editori` `e` on((`l`.`id_editore` = `e`.`id`)))
 ```
 
 Dopo `ViewDefinitionNormalizer` (bozza):
@@ -58,7 +58,7 @@ SELECT a.cognome, a.nome, l.titolo FROM autori a INNER JOIN libri_autori la ON l
 Definizione riletta dal server:
 
 ```sql
-select `a`.`cognome` AS `cognome`,`a`.`nome` AS `nome`,`l`.`titolo` AS `titolo` from ((`ramasql_test_s2c_muld9wikqdc3`.`autori` `a` join `ramasql_test_s2c_muld9wikqdc3`.`libri_autori` `la` on((`la`.`id_autore` = `a`.`id`))) join `ramasql_test_s2c_muld9wikqdc3`.`libri` `l` on((`la`.`id_libro` = `l`.`id`)))
+select `a`.`cognome` AS `cognome`,`a`.`nome` AS `nome`,`l`.`titolo` AS `titolo` from ((`ramasql_test_s2c_muleseq9ak7m`.`autori` `a` join `ramasql_test_s2c_muleseq9ak7m`.`libri_autori` `la` on((`la`.`id_autore` = `a`.`id`))) join `ramasql_test_s2c_muleseq9ak7m`.`libri` `l` on((`la`.`id_libro` = `l`.`id`)))
 ```
 
 Dopo `ViewDefinitionNormalizer` (bozza):
@@ -80,7 +80,7 @@ SELECT s.id AS codice, s.cognome AS cognome_socio, s.email AS posta FROM soci s
 Definizione riletta dal server:
 
 ```sql
-select `s`.`id` AS `codice`,`s`.`cognome` AS `cognome_socio`,`s`.`email` AS `posta` from `ramasql_test_s2c_muld9wikqdc3`.`soci` `s`
+select `s`.`id` AS `codice`,`s`.`cognome` AS `cognome_socio`,`s`.`email` AS `posta` from `ramasql_test_s2c_muleseq9ak7m`.`soci` `s`
 ```
 
 Dopo `ViewDefinitionNormalizer` (bozza):
@@ -102,7 +102,7 @@ SELECT e.nome AS editore, COUNT(l.id) AS n_libri, AVG(l.prezzo) AS prezzo_medio 
 Definizione riletta dal server:
 
 ```sql
-select `e`.`nome` AS `editore`,count(`l`.`id`) AS `n_libri`,avg(`l`.`prezzo`) AS `prezzo_medio` from (`ramasql_test_s2c_muld9wikqdc3`.`editori` `e` join `ramasql_test_s2c_muld9wikqdc3`.`libri` `l` on((`l`.`id_editore` = `e`.`id`))) group by `e`.`nome` having (count(`l`.`id`) >= 2)
+select `e`.`nome` AS `editore`,count(`l`.`id`) AS `n_libri`,avg(`l`.`prezzo`) AS `prezzo_medio` from (`ramasql_test_s2c_muleseq9ak7m`.`editori` `e` join `ramasql_test_s2c_muleseq9ak7m`.`libri` `l` on((`l`.`id_editore` = `e`.`id`))) group by `e`.`nome` having (count(`l`.`id`) >= 2)
 ```
 
 Dopo `ViewDefinitionNormalizer` (bozza):
@@ -124,7 +124,7 @@ SELECT CONCAT(s.nome, ' ', s.cognome) AS socio, YEAR(s.data_iscrizione) AS anno_
 Definizione riletta dal server:
 
 ```sql
-select concat(`s`.`nome`,' ',`s`.`cognome`) AS `socio`,year(`s`.`data_iscrizione`) AS `anno_iscrizione`,ifnull(`s`.`email`,'nessuna') AS `email` from `ramasql_test_s2c_muld9wikqdc3`.`soci` `s`
+select concat(`s`.`nome`,' ',`s`.`cognome`) AS `socio`,year(`s`.`data_iscrizione`) AS `anno_iscrizione`,ifnull(`s`.`email`,'nessuna') AS `email` from `ramasql_test_s2c_muleseq9ak7m`.`soci` `s`
 ```
 
 Dopo `ViewDefinitionNormalizer` (bozza):
@@ -146,7 +146,7 @@ SELECT a.cognome, a.nome FROM autori a LEFT JOIN libri_autori la ON la.id_autore
 Definizione riletta dal server:
 
 ```sql
-select `a`.`cognome` AS `cognome`,`a`.`nome` AS `nome` from (`ramasql_test_s2c_muld9wikqdc3`.`autori` `a` left join `ramasql_test_s2c_muld9wikqdc3`.`libri_autori` `la` on((`la`.`id_autore` = `a`.`id`))) where (`la`.`id_libro` is null)
+select `a`.`cognome` AS `cognome`,`a`.`nome` AS `nome` from (`ramasql_test_s2c_muleseq9ak7m`.`autori` `a` left join `ramasql_test_s2c_muleseq9ak7m`.`libri_autori` `la` on((`la`.`id_autore` = `a`.`id`))) where (`la`.`id_libro` is null)
 ```
 
 Dopo `ViewDefinitionNormalizer` (bozza):
@@ -168,7 +168,7 @@ SELECT l.titolo, l.prezzo FROM libri l WHERE l.prezzo > (SELECT AVG(l2.prezzo) F
 Definizione riletta dal server:
 
 ```sql
-select `l`.`titolo` AS `titolo`,`l`.`prezzo` AS `prezzo` from `ramasql_test_s2c_muld9wikqdc3`.`libri` `l` where (`l`.`prezzo` > (select avg(`l2`.`prezzo`) from `ramasql_test_s2c_muld9wikqdc3`.`libri` `l2`))
+select `l`.`titolo` AS `titolo`,`l`.`prezzo` AS `prezzo` from `ramasql_test_s2c_muleseq9ak7m`.`libri` `l` where (`l`.`prezzo` > (select avg(`l2`.`prezzo`) from `ramasql_test_s2c_muleseq9ak7m`.`libri` `l2`))
 ```
 
 Dopo `ViewDefinitionNormalizer` (bozza):
@@ -190,7 +190,7 @@ SELECT v.editore, v.titolo FROM v02_join2 v WHERE v.editore LIKE 'E%'
 Definizione riletta dal server:
 
 ```sql
-select `ramasql_test_s2c_muld9wikqdc3`.`v`.`editore` AS `editore`,`ramasql_test_s2c_muld9wikqdc3`.`v`.`titolo` AS `titolo` from `ramasql_test_s2c_muld9wikqdc3`.`v02_join2` `v` where (`ramasql_test_s2c_muld9wikqdc3`.`v`.`editore` like 'E%')
+select `ramasql_test_s2c_muleseq9ak7m`.`v`.`editore` AS `editore`,`ramasql_test_s2c_muleseq9ak7m`.`v`.`titolo` AS `titolo` from `ramasql_test_s2c_muleseq9ak7m`.`v02_join2` `v` where (`ramasql_test_s2c_muleseq9ak7m`.`v`.`editore` like 'E%')
 ```
 
 Dopo `ViewDefinitionNormalizer` (bozza):
@@ -212,7 +212,7 @@ SELECT l.titolo, l.anno FROM libri l ORDER BY l.anno DESC, l.titolo LIMIT 5
 Definizione riletta dal server:
 
 ```sql
-select `l`.`titolo` AS `titolo`,`l`.`anno` AS `anno` from `ramasql_test_s2c_muld9wikqdc3`.`libri` `l` order by `l`.`anno` desc,`l`.`titolo` limit 5
+select `l`.`titolo` AS `titolo`,`l`.`anno` AS `anno` from `ramasql_test_s2c_muleseq9ak7m`.`libri` `l` order by `l`.`anno` desc,`l`.`titolo` limit 5
 ```
 
 Dopo `ViewDefinitionNormalizer` (bozza):
@@ -234,7 +234,7 @@ SELECT DISTINCT a.nazionalita FROM autori a WHERE a.nazionalita IS NOT NULL
 Definizione riletta dal server:
 
 ```sql
-select distinct `a`.`nazionalita` AS `nazionalita` from `ramasql_test_s2c_muld9wikqdc3`.`autori` `a` where (`a`.`nazionalita` is not null)
+select distinct `a`.`nazionalita` AS `nazionalita` from `ramasql_test_s2c_muleseq9ak7m`.`autori` `a` where (`a`.`nazionalita` is not null)
 ```
 
 Dopo `ViewDefinitionNormalizer` (bozza):
@@ -256,7 +256,7 @@ SELECT a.cognome, a.nome, c.nome AS classe, c.aula FROM alunni a LEFT JOIN class
 Definizione riletta dal server:
 
 ```sql
-select `a`.`cognome` AS `cognome`,`a`.`nome` AS `nome`,`c`.`nome` AS `classe`,`c`.`aula` AS `aula` from (`ramasql_test_s2c_scuola_muld9wnnp6rt`.`alunni` `a` left join `ramasql_test_s2c_scuola_muld9wnnp6rt`.`classi` `c` on((`a`.`classe_id` = `c`.`id`)))
+select `a`.`cognome` AS `cognome`,`a`.`nome` AS `nome`,`c`.`nome` AS `classe`,`c`.`aula` AS `aula` from (`ramasql_test_s2c_scuola_mulesev0i1hm`.`alunni` `a` left join `ramasql_test_s2c_scuola_mulesev0i1hm`.`classi` `c` on((`a`.`classe_id` = `c`.`id`)))
 ```
 
 Dopo `ViewDefinitionNormalizer` (bozza):
@@ -278,7 +278,7 @@ SELECT c.nome AS classe, COUNT(cc.corso_id) AS n_corsi, SUM(k.ore_settimanali) A
 Definizione riletta dal server:
 
 ```sql
-select `c`.`nome` AS `classe`,count(`cc`.`corso_id`) AS `n_corsi`,sum(`k`.`ore_settimanali`) AS `ore` from ((`ramasql_test_s2c_scuola_muld9wnnp6rt`.`classi` `c` join `ramasql_test_s2c_scuola_muld9wnnp6rt`.`corsi_classi` `cc` on((`cc`.`classe_id` = `c`.`id`))) join `ramasql_test_s2c_scuola_muld9wnnp6rt`.`corsi` `k` on((`cc`.`corso_id` = `k`.`id`))) group by `c`.`nome`
+select `c`.`nome` AS `classe`,count(`cc`.`corso_id`) AS `n_corsi`,sum(`k`.`ore_settimanali`) AS `ore` from ((`ramasql_test_s2c_scuola_mulesev0i1hm`.`classi` `c` join `ramasql_test_s2c_scuola_mulesev0i1hm`.`corsi_classi` `cc` on((`cc`.`classe_id` = `c`.`id`))) join `ramasql_test_s2c_scuola_mulesev0i1hm`.`corsi` `k` on((`cc`.`corso_id` = `k`.`id`))) group by `c`.`nome`
 ```
 
 Dopo `ViewDefinitionNormalizer` (bozza):

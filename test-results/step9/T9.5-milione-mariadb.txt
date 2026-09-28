@@ -1,15 +1,15 @@
 T9.5 — CSV da 1 000 000 di righe (41 MB) nella tabella grande (MariaDB)
 Analisi del file (colonna «id» compresa): memoria in più 0 MB
 Inserite 1000000 in 1000 lotti, circa 8 s
-Memoria usata dopo la raccolta: all'inizio 13 MB, massimo 13 MB (crescita 0 MB)
-100 lotti, 100000 righe: 13 MB
-200 lotti, 200000 righe: 13 MB
-300 lotti, 300000 righe: 13 MB
-400 lotti, 400000 righe: 13 MB
-500 lotti, 500000 righe: 13 MB
-600 lotti, 600000 righe: 13 MB
-700 lotti, 700000 righe: 13 MB
-800 lotti, 800000 righe: 13 MB
-900 lotti, 900000 righe: 13 MB
-1000 lotti, 1000000 righe: 13 MB
+Memoria usata dopo la raccolta: all'inizio 13 MB, massimo 14 MB (crescita 0 MB)
+100 lotti, 100000 righe: 14 MB
+200 lotti, 200000 righe: 14 MB
+300 lotti, 300000 righe: 14 MB
+400 lotti, 400000 righe: 14 MB
+500 lotti, 500000 righe: 14 MB
+600 lotti, 600000 righe: 14 MB
+700 lotti, 700000 righe: 14 MB
+800 lotti, 800000 righe: 14 MB
+900 lotti, 900000 righe: 14 MB
+1000 lotti, 1000000 righe: 14 MB
 Esito: OK

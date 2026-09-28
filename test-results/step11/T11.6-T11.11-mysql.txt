@@ -1,12 +1,12 @@
 T11.6–T11.8, T11.10, T11.11 — modello ER di biblioteca_myisam (MySQL)
 T11.6 — accettati 5 suggerimenti, disegnata a mano recensioni.libro → libri.id
   6 relazioni, 20 tratti ortogonali, 14 curve in tutto: nessun tratto passa sotto un'entità
-  salvato in biblioteca.rsqlmodel: 7 entità, 6 relazioni logiche, 0 fisiche; registro SQL: 0 istruzioni; REFERENTIAL_CONSTRAINTS sul server: 0
+  salvato in biblioteca.rsqlmodel: 7 entità, 6 relazioni logiche, 0 fisiche; registro SQL: 0 istruzioni; REFERENTIAL_CONSTRAINTS sul server: 0; SHOW CREATE TABLE delle 9 tabelle uguale a prima; nessun riferimento a esecutore, pipeline o JDBC nel codice ER (ErCanvasNotationTest)
 T11.10 — doppio clic su «soci»: si apre l'editor della tabella soci
 T11.11 — leggibilità della resa
-  A4-150dpi: scala 1,76, carattere ≈ 21,1 px, linee 2,5 px, trattini 10,6 px, alternanze del tratteggio misurate: 42
-  1024x768: scala 1,09, carattere ≈ 13,1 px, linee 1,5 px, trattini 6,5 px, alternanze del tratteggio misurate: 42
+  A4-150dpi: scala 1,94, nome di tabella alto 22 px nell'immagine, zampa di gallina: 9 pixel scuri sul bordo, linee 2,7 px, trattini 11,7 px, alternanze del tratteggio misurate: 41
+  1024x768: scala 1,20, nome di tabella alto 14 px nell'immagine, zampa di gallina: 9 pixel scuri sul bordo, linee 1,7 px, trattini 7,2 px, alternanze del tratteggio misurate: 41
   contrasto su bianco: relazioni fisiche 7,7:1, logiche 5,2:1 (almeno 3:1); fisiche a tratto pieno grigio, logiche tratteggiate blu: distinguibili anche in bianco e nero per la forma
 T11.7 — riaperto dal menu File senza connessione: modello identico (7 entità, posizioni uguali, 6 relazioni logiche)
-T11.8 — dopo ALTER TABLE soci ADD telefono e DROP TABLE prestiti: ✔ Modello aggiornato dal database: posizioni e relazioni logiche conservate. ℹ Tabelle con colonne o indici cambiati: soci. ⚠ Tabelle che non ci sono più nel database (restano segnate in rosso): prestiti.; posizioni e 6 relazioni logiche conservate
+T11.8 — dopo ALTER TABLE soci ADD telefono, DROP TABLE prestiti e DROP COLUMN recensioni.libro: ✔ Modello aggiornato dal database: posizioni e relazioni logiche conservate. ℹ Tabelle con colonne o indici cambiati: recensioni, soci. ⚠ Tabelle che non ci sono più nel database (restano segnate in rosso): prestiti. ⚠ Relazioni logiche che nominano colonne che non ci sono più (in rosso): recensioni.libro → libri.id. Eliminale o ridisegnale.; posizioni e 6 relazioni logiche conservate
 Esito: OK

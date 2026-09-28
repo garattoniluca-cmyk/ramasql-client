@@ -1,6 +1,6 @@
 T9.5 — CSV da 1 000 000 di righe (41 MB) nella tabella grande (MySQL)
 Analisi del file (colonna «id» compresa): memoria in più 0 MB
-Inserite 1000000 in 1000 lotti, circa 12 s
+Inserite 1000000 in 1000 lotti, circa 11 s
 Memoria usata dopo la raccolta: all'inizio 13 MB, massimo 14 MB (crescita 0 MB)
 100 lotti, 100000 righe: 14 MB
 200 lotti, 200000 righe: 14 MB

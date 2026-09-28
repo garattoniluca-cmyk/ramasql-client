@@ -43,4 +43,4 @@ Celle nella JTable:
 [cod-19] ["inizia con virgolette 19] [descrizione àè 19]
 [cod-20] [semplice 20] [descrizione àè 20]
 
-script: soffice-pid=32004 [exit 0]
+script: soffice-pid=38952 [exit 0]
