@@ -10,10 +10,8 @@
 package it.ramasql.app.theme;
 
 import java.awt.Component;
-import java.awt.GraphicsConfiguration;
 import java.awt.Point;
 import java.awt.Rectangle;
-import java.awt.Toolkit;
 import java.util.function.Function;
 
 import javax.swing.JComboBox;
@@ -84,6 +82,7 @@ public final class ComboTips {
 
             @Override
             public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
+                fitRows(combo);
                 JList<Object> list = popupList(combo);
                 if (list == null) {
                     return;
@@ -107,6 +106,34 @@ public final class ComboTips {
             }
         });
         updateBaseTip(combo);
+    }
+
+    private static final String MAX_ROWS = "rama.comboTips.maxRows";
+
+    /**
+     * Le righe della lista aperta, quante ne stanno sullo schermo (T12.13): al proiettore, con il carattere al
+     * massimo, una lista lunga come quella dei tipi uscirebbe dallo schermo; si accorcia (e scorre) quanto basta.
+     */
+    static void fitRows(JComboBox<?> combo) {
+        if (!(combo.getClientProperty(MAX_ROWS) instanceof Integer wanted)) {
+            combo.putClientProperty(MAX_ROWS, combo.getMaximumRowCount());
+            fitRows(combo);
+            return;
+        }
+        if (!combo.isShowing() || combo.getItemCount() == 0) {
+            return;
+        }
+        Rectangle screen = Screens.usable(combo);
+        Point at = combo.getLocationOnScreen();
+        int room = Math.max(at.y - screen.y, screen.y + screen.height - (at.y + combo.getHeight()))
+                - com.formdev.flatlaf.util.UIScale.scale(16);
+        @SuppressWarnings("unchecked")
+        ListCellRenderer<Object> renderer = (ListCellRenderer<Object>) combo.getRenderer();
+        JList<Object> list = popupList(combo);
+        int row = list != null && list.getFixedCellHeight() > 0 ? list.getFixedCellHeight()
+                : renderer.getListCellRendererComponent(list != null ? list : new JList<>(), combo.getItemAt(0), 0,
+                        false, false).getPreferredSize().height;
+        combo.setMaximumRowCount(Math.max(3, Math.min(wanted, room / Math.max(1, row))));
     }
 
     /** Il suggerimento della lista chiusa: quello della lista, più la spiegazione della voce scelta. */
@@ -163,28 +190,56 @@ public final class ComboTips {
         JToolTip tip = list.createToolTip();
         tip.setTipText(text);
         tip.setName("comboTips.tip");
-        java.awt.Dimension size = tip.getPreferredSize();
         Point listOnScreen = list.getLocationOnScreen();
         Rectangle cell = list.getCellBounds(index, index);
-        Rectangle popupOnScreen = new Rectangle(listOnScreen, list.getVisibleRect().getSize());
+        Rectangle popupOnScreen = new Rectangle(listOnScreen.x, listOnScreen.y + list.getVisibleRect().y,
+                list.getVisibleRect().width, list.getVisibleRect().height);
         java.awt.Container popupRoot = SwingUtilities.getAncestorOfClass(javax.swing.JPopupMenu.class, list);
         if (popupRoot != null) {
             popupOnScreen = new Rectangle(popupRoot.getLocationOnScreen(), popupRoot.getSize());
         }
-        Rectangle screen = screenBounds(combo);
+        Rectangle screen = Screens.usable(combo);
         int gap = com.formdev.flatlaf.util.UIScale.scale(6);
-        int x = popupOnScreen.x + popupOnScreen.width + gap;
-        if (x + size.width > screen.x + screen.width) {
-            x = popupOnScreen.x - gap - size.width;   // a destra non c'è posto: a sinistra della lista
+        int itemY = cell == null ? popupOnScreen.y : listOnScreen.y + cell.y;   // la lista scorre: la sua origine è già spostata
+        java.awt.Dimension size = tip.getPreferredSize();
+        int room = Math.max(screen.x + screen.width - (popupOnScreen.x + popupOnScreen.width),
+                popupOnScreen.x - screen.x) - gap;
+        if (size.width > room && room > 0) {
+            // al proiettore la spiegazione intera non sta accanto alla lista: va a capo più stretta, sul lato più largo
+            java.awt.Insets in = tip.getInsets();
+            tip.putClientProperty(RamaToolTipUI.NARROW, Math.max(com.formdev.flatlaf.util.UIScale.scale(120),
+                    room - in.left - in.right - com.formdev.flatlaf.util.UIScale.scale(2 * RamaToolTipUI.PAD_X)));
+            size = tip.getPreferredSize();
         }
-        x = Math.max(screen.x, x);
-        int y = listOnScreen.y + (cell == null ? 0 : cell.y - list.getVisibleRect().y);
-        y = Math.max(screen.y, Math.min(y, screen.y + screen.height - size.height));
+        Rectangle place = place(popupOnScreen, itemY, size, screen, gap);
+        int x = place.x;
+        int y = place.y;
         state.popup = PopupFactory.getSharedInstance().getPopup(list, tip, x, y);
         state.tip = tip;
         state.bounds = new Rectangle(x, y, size.width, size.height);
         state.text = text;
         state.popup.show();
+    }
+
+    /**
+     * Dove mettere la spiegazione (coordinate dello schermo): a destra della lista aperta, o a sinistra se a destra
+     * non c'è posto; all'altezza della voce, ma sempre dentro lo schermo.
+     */
+    static Rectangle place(Rectangle popup, int itemY, java.awt.Dimension size, Rectangle screen, int gap) {
+        int right = popup.x + popup.width + gap;
+        int left = popup.x - gap - size.width;
+        int x;
+        if (right + size.width <= screen.x + screen.width) {
+            x = right;
+        } else if (left >= screen.x) {
+            x = left;
+        } else {
+            // nessun lato basta: il lato più largo, tenendo la spiegazione dentro lo schermo
+            boolean rightWider = screen.x + screen.width - right >= popup.x - gap - screen.x;
+            x = rightWider ? Math.min(right, screen.x + screen.width - size.width) : Math.max(screen.x, left);
+        }
+        int y = Math.max(screen.y, Math.min(itemY, screen.y + screen.height - size.height));
+        return new Rectangle(x, y, size.width, size.height);
     }
 
     private static void hide(State state) {
@@ -195,16 +250,6 @@ public final class ComboTips {
         state.tip = null;
         state.bounds = null;
         state.text = null;
-    }
-
-    private static Rectangle screenBounds(Component c) {
-        GraphicsConfiguration gc = c.getGraphicsConfiguration();
-        if (gc == null) {
-            return new Rectangle(Toolkit.getDefaultToolkit().getScreenSize());
-        }
-        Rectangle b = gc.getBounds();
-        java.awt.Insets in = Toolkit.getDefaultToolkit().getScreenInsets(gc);
-        return new Rectangle(b.x + in.left, b.y + in.top, b.width - in.left - in.right, b.height - in.top - in.bottom);
     }
 
     /** Dove sta ora il suggerimento accanto alla lista aperta (coordinate dello schermo), {@code null} se non c'è. */

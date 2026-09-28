@@ -29,15 +29,15 @@ import com.formdev.flatlaf.util.UIScale;
 /**
  * Il suggerimento unico del programma ({@code DESIGN-SYSTEM.md} §3.9, {@code ADR-020}): riquadro chiaro con bordo,
  * pensato per essere <b>letto</b>. Il testo va a capo da solo entro una larghezza massima (360 px al carattere
- * normale, e cresce con il carattere scelto nelle impostazioni, così al proiettore resta leggibile e non attraversa lo
- * schermo); una prima riga fra «**» diventa il titolo in grassetto (il nome della cosa, per le voci delle liste); le
+ * normale, e cresce con il carattere scelto nelle impostazioni, ma mai oltre i tre quinti dello schermo: al proiettore
+ * resta leggibile e non attraversa lo schermo); una prima riga fra «**» diventa il titolo in grassetto (il nome della cosa, per le voci delle liste); le
  * righe che cominciano con «Attenzione:» sono nel colore d'avviso. Il testo HTML, dove c'è, si disegna come prima.
  */
 public final class RamaToolTipUI extends BasicToolTipUI {
 
     /** Larghezza massima del testo al carattere normale (13 pt), in pixel non scalati. */
     public static final int MAX_WIDTH = 360;
-    private static final int PAD_X = 12;
+    static final int PAD_X = 12;
     private static final int PAD_Y = 10;
 
     public static ComponentUI createUI(JComponent c) {
@@ -70,6 +70,9 @@ public final class RamaToolTipUI extends BasicToolTipUI {
     private static boolean isHtml(String text) {
         return text != null && text.regionMatches(true, 0, "<html>", 0, 6);
     }
+
+    /** Proprietà del suggerimento: larghezza massima del testo più stretta di quella normale (px, Integer). */
+    public static final String NARROW = "ramasql.tip.narrow";
 
     /** Larghezza massima del testo: 360 px al carattere normale, in proporzione al carattere in uso. */
     static int maxWidth(Font font) {
@@ -107,7 +110,11 @@ public final class RamaToolTipUI extends BasicToolTipUI {
         Content content = parse(tip.getTipText());
         FontMetrics fm = tip.getFontMetrics(text);
         FontMetrics tm = tip.getFontMetrics(title);
-        int max = maxWidth(text);
+        // al proiettore, con il carattere al massimo, al più tre quinti dello schermo: le righe restano leggibili
+        int max = Math.min(maxWidth(text), Screens.usable(tip).width * 3 / 5);
+        if (tip.getClientProperty(NARROW) instanceof Integer narrow && narrow > 0) {
+            max = Math.min(max, narrow);   // accanto a una lista aperta, lo spazio che resta sullo schermo
+        }
         List<String> titleLines = content.title() == null ? List.of() : wrap(content.title(), tm, max);
         List<List<String>> lines = new ArrayList<>();
         int w = 0;

@@ -140,9 +140,10 @@ Niente rifattorizzazioni «estetiche»: il modulo resta il più vicino possibile
 | SQLeo (codice incorporato) | query builder | GPL-2.0-or-later | ✅ (si esercita «or later») |
 | FlatLaf (+ extras per SVG) | aspetto | Apache-2.0 | ✅ |
 | FlatLaf Extras (stessa versione di FlatLaf) | icone SVG disegnate da noi (`FlatSVGIcon`), sistema visivo `docs/DESIGN-SYSTEM.md` | Apache-2.0 | ✅ |
+| JSVG 2.1.0 (arriva con FlatLaf Extras) | disegno delle icone SVG | MIT | ✅ |
 | RSyntaxTextArea 4.0.1, AutoComplete 4.0.0 | editor SQL (Step 4) | BSD-3-Clause | ✅ |
 | MariaDB Connector/J 3.5.10 | driver **unico**, anche per MySQL (`ADR-015`) | LGPL-2.1+ | ✅ |
-| Jackson databind 2.22.2 | JSON (profili, impostazioni) | Apache-2.0 | ✅ |
+| Jackson databind 2.22.2 (con jackson-core e jackson-annotations) | JSON (profili, impostazioni, modelli, importazione) | Apache-2.0 | ✅ |
 | ~~Apache Commons CSV~~ | non usata: il lettore CSV è del progetto (`ADR-025`) | — | — |
 | JUnit 5, AssertJ, AssertJ-Swing | test | EPL-2.0 / Apache-2.0 | ✅ (solo test, non distribuite) |
 

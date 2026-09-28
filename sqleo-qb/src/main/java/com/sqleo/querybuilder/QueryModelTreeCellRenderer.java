@@ -42,6 +42,7 @@ public class QueryModelTreeCellRenderer extends DefaultTreeCellRenderer {
         super.getTreeCellRendererComponent(tree, value, selected, expanded, leaf, row, hasFocus);
         setIcon(iconFor(value));
         setText(textFor(value));
+        setToolTipText(tipFor(value));
         return this;
     }
 
@@ -134,6 +135,36 @@ public class QueryModelTreeCellRenderer extends DefaultTreeCellRenderer {
             text = text.replace("`", "");
         }
         return text;
+    }
+
+    /** Il suggerimento del nodo (T12.9): cosa rappresenta nella query e cosa se ne può fare. */
+    static String tipFor(Object node) {
+        String key;
+        if (node instanceof BrowserItems.ConditionQueryTreeItem) {
+            key = "condition";
+        } else if (node instanceof BrowserItems.AbstractQueryTreeItem) {
+            key = ROOT_QUERY_LABEL.equals(String.valueOf(node)) ? "query" : "subquery";
+        } else if (node instanceof BrowserItems.TableTreeItem) {
+            key = "table";
+        } else if (node instanceof BrowserItems.FromTreeItem) {
+            key = "from";
+        } else if (node instanceof BrowserItems.ClauseTreeItem) {
+            String label = String.valueOf(((BrowserItems.ClauseTreeItem) node).getUserObject());
+            key = label.startsWith(_ReservedWords.SELECT) ? "select"
+                    : label.startsWith(_ReservedWords.WHERE) ? "where"
+                    : label.startsWith(_ReservedWords.GROUP_BY) ? "groupby"
+                    : label.startsWith(_ReservedWords.HAVING) ? "having"
+                    : label.startsWith(_ReservedWords.ORDER_BY) ? "orderby" : "item";
+        } else {
+            Object user = node instanceof BrowserItems.DefaultTreeItem ? ((BrowserItems.DefaultTreeItem) node).getUserObject() : node;
+            key = user instanceof QueryTokens.Table ? "table"
+                    : user instanceof QueryTokens.Column ? "column"
+                    : user instanceof QueryTokens.Sort ? "sort"
+                    : user instanceof QueryTokens.Group ? "group"
+                    : user instanceof QueryTokens.Condition ? "condition"
+                    : user instanceof QueryTokens._Expression ? "expression" : "item";
+        }
+        return QbRuntime.host().text("querybuilder.tree." + key + ".tooltip", textFor(node));
     }
 
     private static String subqueryText() {

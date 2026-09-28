@@ -31,6 +31,7 @@
  * BUG-024), e caricando un modello le definizioni di tutte le sue tabelle si leggono in una volta, prima di disegnare;
  * a caricamento finito, se per quel livello non ci sono posizioni salvate, le tabelle si dispongono per collegamenti
  * (ViewDiagram.doArrangeEntitiesLayered, BUG-023: nessun join passa sotto un'altra tabella).
+ * Modificato per RamaSQL Client (2026-09-28, T12.9): suggerimento (tooltip) delle linguette Grafico e SQL.
  */
 
 package com.sqleo.querybuilder;
@@ -238,6 +239,9 @@ public class QueryBuilder extends JTabbedPane implements ChangeListener
 		
 		add(I18n.getString("querybuilder.designer","designer"),designer);
 		add(I18n.getString("querybuilder.syntax","syntax"),syntax = new TextView(new QueryStyledDocument(), false));
+		// RamaSQL (2026-09-28, T12.9): ogni linguetta spiega cosa contiene
+		setToolTipTextAt(0, I18n.getString("querybuilder.designer.tooltip", "The query as a diagram."));
+		setToolTipTextAt(1, I18n.getString("querybuilder.syntax.tooltip", "The SQL text of the query."));
 		addChangeListener(this);		
 	}
 	

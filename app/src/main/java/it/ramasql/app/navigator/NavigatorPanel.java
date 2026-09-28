@@ -237,6 +237,18 @@ public final class NavigatorPanel extends JPanel {
         add(top, BorderLayout.NORTH);
         add(scroll, BorderLayout.CENTER);
 
+        tree.getInputMap(JComponent.WHEN_FOCUSED).put(KeyStroke.getKeyStroke(KeyEvent.VK_F10,
+                java.awt.event.InputEvent.SHIFT_DOWN_MASK), "navigator.menu");
+        tree.getInputMap(JComponent.WHEN_FOCUSED).put(KeyStroke.getKeyStroke(KeyEvent.VK_CONTEXT_MENU, 0),
+                "navigator.menu");
+        tree.getActionMap().put("navigator.menu", new AbstractAction() {
+            private static final long serialVersionUID = 1L;
+
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                popupFromKeyboard();
+            }
+        });
         getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT)
                 .put(KeyStroke.getKeyStroke(KeyEvent.VK_F5, 0), "navigator.refresh");
         getActionMap().put("navigator.refresh", new AbstractAction() {
@@ -631,6 +643,23 @@ public final class NavigatorPanel extends JPanel {
 
     // ================================================================ menu contestuale
 
+    /** Maiusc+F10 o il tasto del menu (T12.4): il menu del nodo scelto, sotto di lui. */
+    public void popupFromKeyboard() {
+        TreePath path = tree.getSelectionPath();
+        if (path == null) {
+            return;
+        }
+        java.awt.Rectangle r = tree.getPathBounds(path);
+        JPopupMenu menu = menuFor(path);
+        if (menu != null && r != null) {
+            menu.show(tree, r.x + Math.min(r.width, Tokens.px(24)), r.y + r.height);
+            if (menu.getComponentCount() > 0) {
+                javax.swing.MenuSelectionManager.defaultManager().setSelectedPath(
+                        new javax.swing.MenuElement[] {menu, (javax.swing.MenuElement) menu.getComponent(0)});
+            }
+        }
+    }
+
     private void popup(MouseEvent e) {
         if (!e.isPopupTrigger()) {
             return;
@@ -784,7 +813,7 @@ public final class NavigatorPanel extends JPanel {
                 menu.add(item("nav.menu.newTable", () -> onNewTable.accept(n.catalog())));
                 menu.add(item("nav.menu.export", () -> onExport.accept(n.catalog(), null)));
                 menu.addSeparator();
-                JMenuItem drop = item("nav.menu.dropCatalog", () -> propose(TreeScripts.dropCatalog(n.catalog())));
+                JMenuItem drop = item("nav.menu.dropCatalog", () -> dropCatalog(n.catalog()));
                 drop.setEnabled(!(n.data() instanceof CatalogInfo c && c.system()));
                 menu.add(drop);
                 menu.addSeparator();
@@ -848,6 +877,26 @@ public final class NavigatorPanel extends JPanel {
         workspace.pipeline().propose(TreeScripts.dropView(catalog, view)).whenComplete((result, error) -> {
             if (error == null && result != null && result.completed()) {
                 SwingUtilities.invokeLater(() -> onViewDropped.accept(new DroppedView(server, catalog, view)));
+            }
+        });
+    }
+
+    /** Chi viene avvisato quando un catalogo intero è stato eliminato ({@code BUG-027}: via le sue viste dall'archivio). */
+    private BiConsumer<String, String> onCatalogDropped = (server, catalog) -> { };
+
+    public void setOnCatalogDropped(BiConsumer<String, String> handler) {
+        this.onCatalogDropped = handler == null ? (server, catalog) -> { } : handler;
+    }
+
+    /** «Elimina catalogo»: {@code DROP DATABASE} dalla pipeline; se riesce, lo si dice (server, catalogo). */
+    private void dropCatalog(String catalog) {
+        if (workspace == null) {
+            return;
+        }
+        String server = workspace.session().profile().address();
+        workspace.pipeline().propose(TreeScripts.dropCatalog(catalog)).whenComplete((result, error) -> {
+            if (error == null && result != null && result.completed()) {
+                SwingUtilities.invokeLater(() -> onCatalogDropped.accept(server, catalog));
             }
         });
     }

@@ -58,6 +58,7 @@ public final class GuideDialog extends JDialog {
         setContentPane(root);
         pack();
         setLocationRelativeTo(owner);
+        it.ramasql.app.theme.Screens.fit(this);   // dentro lo schermo anche a 1024x768 (T12.6)
     }
 
     /** Il testo della guida, dal file di risorse. */

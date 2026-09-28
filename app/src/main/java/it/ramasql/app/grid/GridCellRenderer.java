@@ -107,7 +107,7 @@ final class GridCellRenderer extends DefaultTableCellRenderer {
             Optional<String> rowError = pending.errorMessage(row);
             if (rowError.isPresent()) {
                 background = ERROR_ROW;
-                setToolTipText(Texts.get("grid.row.error.tooltip", rowError.get()));
+                setToolTipText(Texts.get("grid.row.error", rowError.get()));
             }
             invalid = pending.validationError(row, modelColumn);
             if (invalid.isPresent()) {

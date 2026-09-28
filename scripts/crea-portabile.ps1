@@ -5,7 +5,8 @@
   1. Compila il programma (mvnw install, senza test: la verifica e' scripts\verify.ps1).
   2. Raccoglie in app\target\portable-lib il jar dell'app e le sue librerie.
   3. jpackage crea dist\RamaSQL-portabile-<data>\RamaSQL\RamaSQL.exe con un runtime Java ridotto incluso,
-     piu' LEGGIMI.txt e LICENZA.txt, e lo ZIP della cartella. dist\ e' escluso da git.
+     piu' LEGGIMI.txt, LICENZA.txt e RamaSQL-sorgenti.zip (i sorgenti dell'ultimo commit, obbligo GPL),
+     e lo ZIP della cartella. dist\ e' escluso da git.
 #>
 $ErrorActionPreference = 'Stop'
 $root = Split-Path -Parent $PSScriptRoot
@@ -37,5 +38,8 @@ $mods = 'java.base,java.desktop,java.management,java.naming,java.prefs,java.secu
 if ($LASTEXITCODE -ne 0) { throw "jpackage non riuscito ($LASTEXITCODE)" }
 Copy-Item (Join-Path $root 'packaging\LEGGIMI.txt') $dest
 Copy-Item (Join-Path $root 'LICENSE') (Join-Path $dest 'LICENZA.txt')
+# i sorgenti che corrispondono al programma (GPL-3, par. 6): l'ultimo commit, senza i file ignorati da git
+& git archive --format=zip -o (Join-Path $dest 'RamaSQL-sorgenti.zip') HEAD
+if ($LASTEXITCODE -ne 0) { throw "archivio dei sorgenti non riuscito ($LASTEXITCODE)" }
 Compress-Archive -Path "$dest\*" -DestinationPath "$dest.zip"
 "{0:N0} MB, pronta in $dest (e $dest.zip)" -f ((Get-ChildItem $dest -Recurse | Measure-Object Length -Sum).Sum / 1MB)

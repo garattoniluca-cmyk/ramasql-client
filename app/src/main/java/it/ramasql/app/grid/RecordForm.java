@@ -163,6 +163,9 @@ public final class RecordForm extends JPanel {
         return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;");
     }
 
+    /** Il suggerimento della colonna, che torna quando il campo non ha un errore da spiegare. */
+    private static final String BASE_TIP = "ramasql.recordForm.baseTip";
+
     private JTextComponent field(ColumnDef def, int column) {
         String type = SqlTypes.canonical(def.dataType());
         boolean longText = type.endsWith("TEXT");
@@ -176,8 +179,10 @@ public final class RecordForm extends JPanel {
             field = new JTextField(30);
         }
         field.setName("recordForm.field." + def.name());
-        field.setToolTipText(Texts.get("recordForm.field.tooltip", def.name(), def.fullType()
-                + (def.unsigned() ? " UNSIGNED" : ""), def.nullable() ? "" : Texts.get("recordForm.field.notNull")));
+        String tip = Texts.get("recordForm.field.tooltip", def.name(), def.fullType()
+                + (def.unsigned() ? " UNSIGNED" : ""), def.nullable() ? "" : Texts.get("recordForm.field.notNull"));
+        field.putClientProperty(BASE_TIP, tip);
+        field.setToolTipText(tip);
         field.getDocument().addDocumentListener(new DocumentListener() {
             @Override
             public void insertUpdate(DocumentEvent e) {
@@ -311,7 +316,8 @@ public final class RecordForm extends JPanel {
                 field.setFont(field.getFont().deriveFont(value == null && set ? Font.ITALIC : Font.PLAIN));
                 Optional<String> invalid = insertRow ? Optional.empty() : pending.validationError(current, c);
                 field.putClientProperty("JComponent.outline", invalid.isPresent() ? "error" : null);
-                field.setToolTipText(invalid.orElse(hasLineBreak ? Texts.get("form.lineBreak") : null));
+                field.setToolTipText(invalid.orElse(hasLineBreak ? Texts.get("form.lineBreak")
+                        : (String) field.getClientProperty(BASE_TIP)));
                 field.setBackground(background(insertRow, c));
                 field.repaint();
             }
@@ -326,7 +332,7 @@ public final class RecordForm extends JPanel {
             if (!insertRow) {
                 Optional<String> error = pending.errorMessage(current);
                 if (error.isPresent()) {
-                    state = Texts.get("grid.row.error.tooltip", error.get());
+                    state = Texts.get("grid.row.error", error.get());
                     rowState.setForeground(Tokens.DANGER);
                     rowState.setIcon(AppIcons.small(AppIcons.STATUS_ERROR));
                 } else {

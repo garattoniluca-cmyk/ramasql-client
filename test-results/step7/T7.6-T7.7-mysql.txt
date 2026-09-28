@@ -1,5 +1,5 @@
 T7.6 e T7.7 su MySQL
-Catalogo di test: ramasql_test_ui_visual76_09ipno
+Catalogo di test: ramasql_test_ui_visual76_st482o
 T7.6 — SQL del diagramma:
 SELECT
 	`libri`.`titolo`

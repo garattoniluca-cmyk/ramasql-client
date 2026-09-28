@@ -82,36 +82,6 @@ class T129T1210SuggerimentiTest {
         onEdt(RamaSqlLaf::setup);
     }
 
-    private static void tabs(TipCoverage cov, String screen, Component root) {
-        // ogni linguetta scelta a turno (le non scelte sono nascoste)
-        List<JTabbedPane> panes = new ArrayList<>();
-        collect(root, panes);
-        cov.visit(screen, root);
-        for (JTabbedPane p : panes) {
-            if (p.getParent() == null) {
-                continue;
-            }
-            int keep = p.getSelectedIndex();
-            for (int i = 0; i < p.getTabCount(); i++) {
-                int k = i;
-                onEdt(() -> p.setSelectedIndex(k));
-                cov.visit(screen + " › " + p.getTitleAt(i), p.getComponentAt(i));
-            }
-            onEdt(() -> p.setSelectedIndex(keep));
-        }
-    }
-
-    private static void collect(Component c, List<JTabbedPane> out) {
-        if (c instanceof JTabbedPane p && !(p.getParent() instanceof javax.swing.JLayeredPane)) {
-            out.add(p);
-        }
-        if (c instanceof java.awt.Container k) {
-            for (Component child : k.getComponents()) {
-                collect(child, out);
-            }
-        }
-    }
-
     @Test
     void t129_t1210_ogniComponenteEOgniVoceHaIlSuoSuggerimento() throws Exception {
         DbServer server = DbServer.MARIADB;
@@ -122,132 +92,21 @@ class T129T1210SuggerimentiTest {
         try {
             server.createCatalog(catalog);
             server.loadFixture(catalog, "biblioteca.sql");
-            // 1) schermata iniziale, prima di collegarsi
-            Path homeDir = dataDir.resolve("home");
-            java.nio.file.Files.createDirectories(homeDir);
-            new ProfileStore(homeDir).add(server.profile());
-            App home = fromEdt(() -> App.create(homeDir, new QuietPrompts(server), new FakeWorkspacePrompts()));
-            try {
-                onEdt(() -> cov.visit("schermata iniziale", home.frame()));
-            } finally {
-                onEdt(() -> {
-                    home.connections().shutdown();
-                    home.frame().dispose();
-                });
-            }
+            // 1) schermata iniziale, 2-5) tutto il resto (Schermate)
+            Schermate.Visitor visitor = new Schermate.Visitor() {
+                @Override
+                public void screen(String name, Component root) {
+                    cov.visit(name, root);
+                }
+
+                @Override
+                public void menu(String name, javax.swing.JPopupMenu menu) {
+                    cov.menu(name, menu);
+                }
+            };
+            Schermate.home(server, dataDir, visitor);
             try (ClientApp a = ClientApp.connect(server, dataDir)) {
-                // 2) area di lavoro: barra, menu, navigatore aperto fino alle colonne, menu contestuali di ogni nodo
-                a.expand(NavNode.Kind.CATALOG, catalog, catalog);
-                for (NavNode.Kind group : List.of(NavNode.Kind.TABLES, NavNode.Kind.VIEWS)) {
-                    TreePath p = fromEdt(() -> a.nav().find(group, catalog, null));
-                    if (p != null) {
-                        a.expandPath(p);
-                    }
-                }
-                a.expand(NavNode.Kind.TABLE, catalog, "libri");
-                for (NavNode.Kind group : List.of(NavNode.Kind.COLUMNS, NavNode.Kind.INDEXES, NavNode.Kind.FOREIGN_KEYS)) {
-                    TreePath p = fromEdt(() -> a.nav().find(group, catalog, "libri"));
-                    if (p != null) {
-                        a.expandPath(p);
-                    }
-                }
-                onEdt(() -> cov.visit("area di lavoro", a.frame()));
-                onEdt(() -> {
-                    cov.menu("barra › Importa", a.frame().importMenu());
-                    cov.menu("barra › Modello ER", a.frame().erMenu());
-                    javax.swing.JTree tree = a.nav().tree();
-                    Set<NavNode.Kind> seen = new TreeSet<>();
-                    for (int r = 0; r < tree.getRowCount(); r++) {
-                        TreePath path = tree.getPathForRow(r);
-                        Object last = path.getLastPathComponent();
-                        NavNode n = last instanceof javax.swing.tree.DefaultMutableTreeNode d
-                                && d.getUserObject() instanceof NavNode nn ? nn : null;
-                        if (n != null && seen.add(n.kind())) {
-                            tree.setSelectionPath(path);
-                            javax.swing.JPopupMenu menu = a.nav().menuFor(path);
-                            if (menu != null) {
-                                cov.menu("navigatore › " + n.kind(), menu);
-                            }
-                        }
-                    }
-                });
-                // 3) le schede
-                a.ws.onPreview = d -> d.cancelButton().doClick();
-                onEdt(() -> tabs(cov, "editor SQL", a.frame().openSqlEditor()));
-                TableDef libri = a.workspace().reader().table(catalog, "libri").orElseThrow();
-                DataGrid grid = fromEdt(() -> a.frame().openDataEntry(catalog, libri));
-                waitUntil("righe della griglia", ClientApp.TIMEOUT, () -> grid.table().getRowCount() > 0);
-                onEdt(() -> tabs(cov, "griglia dati", grid));
-                onEdt(() -> grid.showRecordForm(true));
-                onEdt(() -> tabs(cov, "griglia dati con la scheda record", grid));
-                TableEditor editor = fromEdt(() -> a.frame().openTableEditor(catalog, libri));
-                onEdt(() -> tabs(cov, "editor di tabelle", editor));
-                TableEditor fresh = fromEdt(() -> a.frame().openTableEditor(catalog, null));
-                onEdt(() -> tabs(cov, "tabella nuova", fresh));
-                var visual = fromEdt(() -> a.frame().openVisualQuery(catalog));
-                onEdt(() -> tabs(cov, "query visiva", visual));
-                ImportWizard imp = fromEdt(() -> a.frame().openImport(catalog, "soci"));
-                onEdt(() -> tabs(cov, "importa › 1 file", imp));
-                ImportSupport.choose(a, imp, ImportSupport.fixture("soci.csv"));
-                onEdt(() -> tabs(cov, "importa › 1 file scelto", imp));
-                ImportSupport.toPreview(imp);
-                onEdt(() -> tabs(cov, "importa › 2 anteprima", imp));
-                ImportSupport.toTarget(imp);
-                onEdt(() -> tabs(cov, "importa › 3 tabella esistente", imp));
-                onEdt(() -> imp.newRadio().doClick());
-                onEdt(() -> tabs(cov, "importa › 3 tabella nuova", imp));
-                onEdt(() -> imp.existingRadio().doClick());
-                onEdt(() -> imp.nextButton().doClick());
-                onEdt(() -> tabs(cov, "importa › 4 opzioni", imp));
-                onEdt(() -> imp.nextButton().doClick());
-                onEdt(() -> tabs(cov, "importa › 5 importa", imp));
-                DumpWizard dump = fromEdt(() -> a.frame().openDump(catalog, null));
-                waitUntil("oggetti letti", ClientApp.TIMEOUT, () -> !dump.isLoading());
-                onEdt(() -> tabs(cov, "dump › 1 cosa", dump));
-                onEdt(() -> dump.nextButton().doClick());
-                onEdt(() -> tabs(cov, "dump › 2 opzioni", dump));
-                a.ws.filesToSave.put(it.ramasql.app.workspace.FilePrompts.Purpose.DUMP, dataDir.resolve("d.sql"));
-                onEdt(dump::chooseFile);
-                onEdt(() -> dump.nextButton().doClick());
-                onEdt(() -> tabs(cov, "dump › 3 esporta", dump));
-                ScriptRunTab script = fromEdt(() -> a.frame().openScriptRun(catalog));
-                onEdt(() -> tabs(cov, "esegui script", script));
-                // 4) il modello ER, con l'elenco dei suggerimenti aperto
-                int before = fromEdt(() -> a.frame().erWindows().size());
-                onEdt(() -> a.nav().tree().setSelectionPath(a.nav().find(NavNode.Kind.CATALOG, catalog, catalog)));
-                onEdt(() -> ClientApp.menuItem(a.frame().erMenu(), "er.menu.new").doClick());
-                waitUntil("modello ER", ClientApp.TIMEOUT, () -> !a.frame().isErLoading()
-                        && a.frame().erWindows().size() == before + 1);
-                ErModelWindow er = fromEdt(() -> a.frame().erWindows().get(a.frame().erWindows().size() - 1));
-                onEdt(() -> er.panel().suggest());
-                onEdt(() -> tabs(cov, "modello ER", er));
-                onEdt(() -> cov.menu("modello ER › relazione", er.panel().relationshipMenuFor(
-                        er.panel().model().relationships().get(0))));
-                // 5) le finestre di dialogo
-                List<java.awt.Window> dialogs = new ArrayList<>();
-                onEdt(() -> {
-                    dialogs.add(new PreviewDialog(a.frame(), SqlScript.of("Anteprima", "Editor SQL",
-                            "UPDATE t SET a = 1 WHERE id = 2"), ConfirmationPolicy.evaluate(SqlScript.of("x", "y",
-                            "UPDATE t SET a = 1 WHERE id = 2"))));
-                    SqlScript drop = SqlScript.of("Elimina", "Navigatore", "DROP TABLE libri");
-                    dialogs.add(new PreviewDialog(a.frame(), drop, ConfirmationPolicy.evaluate(drop)));
-                    dialogs.add(new CreateCatalogDialog(a.frame(), List.of(new it.ramasql.core.metadata.CollationInfo(
-                            "utf8mb4_unicode_ci", "utf8mb4", false), new it.ramasql.core.metadata.CollationInfo(
-                            "utf8mb4_general_ci", "utf8mb4", true)), "utf8mb4", null));
-                    dialogs.add(new ProfileDialog(a.frame(), server.profile(), a.app.connections()));
-                    dialogs.add(new SettingsDialog(a.frame(), AppSettings.defaults()));
-                    dialogs.add(new AboutDialog(a.frame()));
-                    dialogs.add(new GuideDialog(a.frame()));
-                    dialogs.add(new ConnectionErrorDialog(a.frame(), server.profile(), new ConnectionFailure(
-                            ConnectionErrorCause.PORT_CLOSED, "Il server non risponde.", 0, "", "Connection refused")));
-                    dialogs.add(new ModelTablesDialog(a.frame(), catalog, List.of("autori", "libri")));
-                    dialogs.add(new ShowCreateDialog(a.frame(), "libri", "SHOW CREATE TABLE", "CREATE TABLE libri (…)",
-                            s -> { }));
-                    for (java.awt.Window d : dialogs) {
-                        cov.visit("finestra " + d.getName(), d);
-                    }
-                });
-                onEdt(() -> dialogs.forEach(java.awt.Window::dispose));
+                TableEditor editor = Schermate.workspace(a, server, catalog, dataDir, visitor).editor();
                 // T12.10: le voci di ogni lista a discesa
                 Map<String, List<String>> itemsMissing = new LinkedHashMap<>();
                 Set<String> named = new TreeSet<>();

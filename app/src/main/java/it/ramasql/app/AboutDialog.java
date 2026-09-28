@@ -37,7 +37,7 @@ public final class AboutDialog extends JDialog {
     private static final long serialVersionUID = 1L;
 
     /** Le librerie incluse nel programma: nome e licenza (chiavi {@code about.lib.<n>}). */
-    static final List<String> LIBRARIES = List.of("flatlaf", "rsyntax", "mariadb", "jackson", "java");
+    public static final List<String> LIBRARIES = List.of("flatlaf", "jsvg", "rsyntax", "mariadb", "jackson", "java");
 
     private final JTable libraries;
 
@@ -119,6 +119,7 @@ public final class AboutDialog extends JDialog {
         setContentPane(root);
         pack();
         setLocationRelativeTo(owner);
+        it.ramasql.app.theme.Screens.fit(this);   // dentro lo schermo anche a 1024x768 (T12.6)
     }
 
     /** Tutto il testo della finestra (per i test). */

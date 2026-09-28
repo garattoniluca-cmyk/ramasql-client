@@ -21,9 +21,12 @@
  * Modificato per RamaSQL Client (2026-09-27): elenco letto dai metadati della facciata (QbHost.metadata(), BUG-016) invece
  * che da DatabaseMetaData; tolte le due liste a discesa (filtro per schema, che in MySQL/MariaDB non esiste, e per
  * tipo): l'elenco mostra le tabelle e poi le viste del catalogo, sempre tutte; objectNames() per la facciata.
+ * Modificato per RamaSQL Client (2026-09-28, T12.9): suggerimento (tooltip) dell'elenco delle tabelle.
  */
 
 package com.sqleo.querybuilder;
+
+import com.sqleo.common.util.I18n;
 
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -65,6 +68,9 @@ public class ViewObjects extends BorderLayoutPanel
 		jListObjects = new JList();
 		jListObjects.setDragEnabled(true);
 		jListObjects.setName("qb.objects");
+		// RamaSQL (2026-09-28, T12.9): cosa si fa con l'elenco
+		jListObjects.setToolTipText(I18n.getString("querybuilder.objects.tooltip",
+			"Tables and views of the catalog: drag one into the diagram, or double-click it."));
 
 		jListObjects.setTransferHandler(new EntityTransferHandler());
 

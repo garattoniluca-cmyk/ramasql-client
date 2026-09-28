@@ -107,6 +107,14 @@ public final class ViewSourceStore {
         }
     }
 
+    /** Dimentica tutte le viste di un catalogo (eliminato dal client con {@code DROP DATABASE}, {@code BUG-027}). */
+    public synchronized void removeCatalog(String server, String catalog) throws IOException {
+        if (entries.removeIf(e -> e.server().equalsIgnoreCase(server)
+                && Objects.equals(lower(e.catalog()), lower(catalog)))) {
+            write();
+        }
+    }
+
     public synchronized Optional<Entry> find(String server, String catalog, String view) {
         return entries.stream().filter(e -> e.sameKey(server, catalog, view)).findFirst();
     }

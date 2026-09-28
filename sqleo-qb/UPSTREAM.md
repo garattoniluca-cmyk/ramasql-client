@@ -138,10 +138,13 @@ commento `RamaSQL (2026-09-28…)` accanto a ogni punto toccato.
 | `querybuilder/QueryBuilder.java` | `metadata()` avvolge i metadati della facciata in `OffEdtQbMetadata` (`BUG-024`); `onLoad` legge in una volta, fuori dall'EDT, nomi e colonne di tutte le tabelle del FROM e, a caricamento finito, dispone le tabelle per collegamenti se per quel livello non ci sono posizioni salvate (`BUG-023`) |
 | `querybuilder/ViewDiagram.java` | `BUG-023`: `doArrangeEntitiesLayered` (disposizione per collegamenti, `DiagramArrange`), `onEntityAdded`, ordine di aggiunta delle entità, livelli «sistemati a mano» (trascinamento, «Disponi a griglia», «Disponi in automatico»: dopo, le tabelle nuove cercano un posto libero senza spostare le altre) |
 | `querybuilder/DiagramRelation.java` | `pathBoxes()` e `anchorBounds()`: i rettangoli che contengono i tratti della linea e il nodo, per cercare un posto libero a una tabella nuova (`BUG-023`) |
+| `querybuilder/QueryBuilder.java` (T12.9) | suggerimenti (tooltip) delle linguette Grafico e SQL, dal file dei testi |
+| `querybuilder/ViewObjects.java` (T12.9) | suggerimento dell'elenco delle tabelle e delle viste |
+| `querybuilder/ViewBrowser.java` (T12.9) | l'albero della query è registrato presso il `ToolTipManager`: ogni nodo mostra il suo suggerimento |
 
 Codice nostro aggiunto: `com/sqleo/querybuilder/DiagramArrange.java` (disposizione per collegamenti e ricerca di un posto
 libero, nel pacchetto per raggiungerne i membri di pacchetto) e `it/ramasql/qb/OffEdtQbMetadata.java` (metadati letti
-fuori dall'EDT con un'attesa che non congela l'interfaccia). Test: `T12DisposizioneDelDiagrammaTest`,
+fuori dall'EDT con un'attesa che non congela l'interfaccia); nel disegnatore dei nodi, già nostro (`QueryModelTreeCellRenderer`), il suggerimento di ogni nodo (`tipFor`, T12.9). Test: `T12DisposizioneDelDiagrammaTest`,
 `T12MetadatiFuoriDallEdtTest`.
 
 ## Rimosso rispetto all'originale

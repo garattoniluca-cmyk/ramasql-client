@@ -99,7 +99,7 @@ final class RowHeader extends JList<String> {
         if (row < 0 || model.isInsertRow(row)) {
             return row < 0 ? null : Texts.get("grid.row.insert.tooltip");
         }
-        return model.pending().errorMessage(row).map(m -> Texts.get("grid.row.error.tooltip", m)).orElse(null);
+        return model.pending().errorMessage(row).map(m -> Texts.get("grid.row.error", m)).orElse(null);
     }
 
     private final class HeaderListModel extends AbstractListModel<String> {

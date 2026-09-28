@@ -1,0 +1,47 @@
+T12.5 — connessioni di rete durante una sessione d'uso completa (PID 20716)
+Sessione:
+  MariaDB: collegamento
+  MariaDB: navigatore aperto fino alle colonne di libri
+  MariaDB: griglia dei dati di libri
+  MariaDB: editor SQL, una SELECT e un UPDATE confermato
+  MariaDB: query visiva aperta (tab.visual.ramasql_test_ui_t125_blr7ge.visual.1)
+  MariaDB: editor di tabelle di libri (5 linguette)
+  MariaDB: importazione di soci.csv in una tabella nuova
+  MariaDB: dump del catalogo (60723 byte)
+  MariaDB: il file di dump rieseguito sul catalogo
+  MariaDB: modello ER dal database (7 entità)
+  MariaDB: guida rapida e «Informazioni su»
+  MariaDB: scollegamento
+  MySQL: collegamento
+  MySQL: navigatore aperto fino alle colonne di libri
+  MySQL: griglia dei dati di libri
+  MySQL: editor SQL, una SELECT e un UPDATE confermato
+  MySQL: query visiva aperta (tab.visual.ramasql_test_ui_t125_8k30fa.visual.1)
+  MySQL: editor di tabelle di libri (5 linguette)
+  MySQL: importazione di soci.csv in una tabella nuova
+  MySQL: dump del catalogo (61203 byte)
+  MySQL: il file di dump rieseguito sul catalogo
+  MySQL: modello ER dal database (7 entità)
+  MySQL: guida rapida e «Informazioni su»
+  MySQL: scollegamento
+Monitor di Windows (Get-NetTCPConnection sul PID, 7 letture): connessioni viste
+  Bound :::62846 > :::0
+  Bound :::62847 > :::0
+  Bound :::62848 > :::0
+  Bound :::62850 > :::0
+  Bound :::62853 > :::0
+  Bound :::62854 > :::0
+  Bound :::62855 > :::0
+  Closing 127.0.0.1:62846 > 127.0.0.1:3306
+  Established 127.0.0.1:62846 > 127.0.0.1:3306
+  Established 127.0.0.1:62847 > 127.0.0.1:3306
+  Established 127.0.0.1:62848 > 127.0.0.1:3306
+  Established 127.0.0.1:62850 > 127.0.0.1:3306
+  Established 127.0.0.1:62853 > 127.0.0.1:3307
+  Established 127.0.0.1:62854 > 127.0.0.1:3307
+  Established 127.0.0.1:62855 > 127.0.0.1:3307
+Registratore di Java (JFR, letture e scritture su socket): destinazioni
+  127.0.0.1:3306 (127.0.0.1)
+  127.0.0.1:3307 (127.0.0.1)
+Problemi: 0
+Esito: OK

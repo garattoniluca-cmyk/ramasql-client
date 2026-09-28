@@ -13,12 +13,17 @@ Cosa si può fare in questa versione
   - esplorare cataloghi, tabelle, colonne, indici, chiavi esterne e viste;
   - editor SQL, griglia dei dati con Conferma/Scarta, editor di tabelle, indici e chiavi esterne;
   - Nuova query visiva: costruire le query nel diagramma, con l'SQL sempre accanto;
-  - Nuova vista / Modifica vista: creare e modificare le viste graficamente.
+  - Nuova vista / Modifica vista: creare e modificare le viste graficamente;
+  - importare dati da file CSV e JSON, esportare (dump) ed eseguire file .sql;
+  - modello ER: diagramma dal database (retroingegneria) e relazioni logiche;
+  - un suggerimento su ogni comando e su ogni voce delle liste (Ctrl+F1 da tastiera),
+    guida rapida con F1.
   Ogni operazione mostra prima l'SQL che verrà eseguito.
-  Non ci sono ancora: importazione CSV/JSON, dump, modello ER.
 
 Dove finiscono i dati del programma
   Profili di connessione, impostazioni e archivio delle viste stanno in %APPDATA%\RamaSQL
   (uno per ogni utente di Windows), non nella cartella del programma.
 
-Licenza: GPL-3.0-or-later. Contiene codice derivato da SQLeo (GPL).
+Licenza e sorgenti
+  GPL-3.0-or-later (testo completo in LICENZA.txt). Contiene codice derivato da SQLeo e SQLeonardo (GPL).
+  Il codice sorgente di questa versione è in RamaSQL-sorgenti.zip, nella stessa cartella.

@@ -25,6 +25,8 @@ public class RamaSqlLaf extends FlatLightLaf {
     public static boolean setup() {
         boolean ok = FlatLaf.setup(new RamaSqlLaf());
         installTips();
+        Screens.install();
+        KeyTips.install();
         return ok;
     }
 

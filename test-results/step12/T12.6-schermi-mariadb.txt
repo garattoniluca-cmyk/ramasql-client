@@ -1,0 +1,44 @@
+T12.6 — carattere al massimo (28) su schermi piccoli, MariaDB
+
+Schermo 1024x768 (utilizzabile 1024×728, barra delle applicazioni esclusa)
+  finestra principale                           1024×728  in    0,0    10 pulsanti fissi in vista, contenuto scorrevole
+    barra degli strumenti: solo icone (i nomi nei suggerimenti)
+  anteprima SQL (60 istruzioni)                 1024×728  in    0,0    4 pulsanti fissi in vista, contenuto scorrevole
+  anteprima SQL (conferma scritta)              1024×728  in    0,0    4 pulsanti fissi in vista, contenuto scorrevole
+  nuovo catalogo                                1005×661  in   19,67   3 pulsanti fissi in vista
+  profilo di connessione                        1024×728  in    0,0    3 pulsanti fissi in vista, contenuto scorrevole
+  password                                       795×620  in  229,108  3 pulsanti fissi in vista
+  impostazioni                                  1024×728  in    0,0    3 pulsanti fissi in vista, contenuto scorrevole
+  informazioni                                  1024×728  in    0,0    2 pulsanti fissi in vista, contenuto scorrevole
+  guida rapida                                  1024×728  in    0,0    2 pulsanti fissi in vista, contenuto scorrevole
+  errore di connessione (messaggio aperto)      1024×683  in    0,45   2 pulsanti fissi in vista, contenuto scorrevole
+  tabelle del modello ER                        1024×728  in    0,0    3 pulsanti fissi in vista, contenuto scorrevole
+  SQL di creazione di libri                     1024×728  in    0,0    3 pulsanti fissi in vista, contenuto scorrevole
+  errore spiegato                                979×590  in   45,138  2 pulsanti fissi in vista
+  errore con un percorso lunghissimo            1004×432  in   20,296  2 pulsanti fissi in vista
+  domanda                                        782×345  in  242,383  3 pulsanti fissi in vista
+  messaggio dell'editor di tabelle               979×590  in   45,138  2 pulsanti fissi in vista
+  richiesta di un nome                           840×433  in  184,295  3 pulsanti fissi in vista
+
+Schermo 1366x768 (utilizzabile 1366×728, barra delle applicazioni esclusa)
+  finestra principale                           1024×728  in    0,0    10 pulsanti fissi in vista, contenuto scorrevole
+    barra degli strumenti: solo icone (i nomi nei suggerimenti)
+  anteprima SQL (60 istruzioni)                 1366×728  in    0,0    4 pulsanti fissi in vista, contenuto scorrevole
+  anteprima SQL (conferma scritta)              1366×728  in    0,0    4 pulsanti fissi in vista, contenuto scorrevole
+  nuovo catalogo                                1005×661  in  361,67   3 pulsanti fissi in vista
+  profilo di connessione                        1041×728  in  325,0    3 pulsanti fissi in vista, contenuto scorrevole
+  password                                       795×620  in  571,108  3 pulsanti fissi in vista
+  impostazioni                                  1307×728  in   59,0    3 pulsanti fissi in vista, contenuto scorrevole
+  informazioni                                  1366×728  in    0,0    2 pulsanti fissi in vista, contenuto scorrevole
+  guida rapida                                  1366×728  in    0,0    2 pulsanti fissi in vista, contenuto scorrevole
+  errore di connessione (messaggio aperto)      1116×683  in  250,45   3 pulsanti fissi in vista
+  tabelle del modello ER                        1366×728  in    0,0    3 pulsanti fissi in vista, contenuto scorrevole
+  SQL di creazione di libri                     1366×728  in    0,0    3 pulsanti fissi in vista, contenuto scorrevole
+  errore spiegato                                979×590  in  387,138  2 pulsanti fissi in vista
+  errore con un percorso lunghissimo            1004×432  in  362,296  2 pulsanti fissi in vista
+  domanda                                        782×345  in  584,383  3 pulsanti fissi in vista
+  messaggio dell'editor di tabelle               979×590  in  387,138  2 pulsanti fissi in vista
+  richiesta di un nome                           840×433  in  526,295  3 pulsanti fissi in vista
+
+Problemi: 0
+Esito: OK

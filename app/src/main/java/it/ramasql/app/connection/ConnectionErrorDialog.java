@@ -99,6 +99,7 @@ public final class ConnectionErrorDialog extends JDialog {
         setResizable(false);
         pack();
         setLocationRelativeTo(owner);
+        it.ramasql.app.theme.Screens.fit(this);   // dentro lo schermo anche a 1024x768 (T12.6)
     }
 
     /** Apre o ripiega il riquadro del messaggio originale (la freccia gira di conseguenza). */
@@ -107,6 +108,7 @@ public final class ConnectionErrorDialog extends JDialog {
         toggle.setIcon(AppIcons.small(shown ? AppIcons.CHEVRON_DOWN : AppIcons.PAGE_NEXT));
         toggle.setToolTipText(Texts.get(shown ? "connect.error.original.hide" : "connect.error.original.show"));
         pack();
+        it.ramasql.app.theme.Screens.fit(this);
     }
 
     public boolean isOriginalShown() {

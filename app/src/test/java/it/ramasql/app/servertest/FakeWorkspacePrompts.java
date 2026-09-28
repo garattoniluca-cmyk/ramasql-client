@@ -79,8 +79,22 @@ public final class FakeWorkspacePrompts implements WorkspacePrompts {
     public Path sqlFileToOpen;
     public Path sqlFileToSave;
 
+    /**
+     * Se c'è, le finestre del programma sono quelle vere, modali, sopra questa finestra: anteprima SQL, nuovo catalogo,
+     * domande della griglia, dell'editor SQL e dell'editor di tabelle (per le prove da tastiera, T12.4). Restano finte
+     * solo le finestre dei file di Windows.
+     */
+    public java.util.function.Supplier<java.awt.Window> realOwner;
+
+    private it.ramasql.app.workspace.SwingWorkspacePrompts real() {
+        return new it.ramasql.app.workspace.SwingWorkspacePrompts(realOwner, () -> "");
+    }
+
     @Override
     public it.ramasql.app.grid.GridPrompts gridPrompts() {
+        if (realOwner != null) {
+            return real().gridPrompts();
+        }
         return new it.ramasql.app.grid.GridPrompts() {
             @Override
             public boolean confirm(String title, String message, String confirmLabel) {
@@ -106,6 +120,9 @@ public final class FakeWorkspacePrompts implements WorkspacePrompts {
 
     @Override
     public it.ramasql.app.editor.EditorPrompts editorPrompts() {
+        if (realOwner != null) {
+            return real().editorPrompts();
+        }
         return new it.ramasql.app.editor.EditorPrompts() {
             @Override
             public String confirmDestructive(ConfirmationPolicy.Confirmation confirmation, SqlScript dangerous) {
@@ -171,6 +188,9 @@ public final class FakeWorkspacePrompts implements WorkspacePrompts {
 
     @Override
     public it.ramasql.app.tableeditor.TableEditorPrompts tableEditorPrompts() {
+        if (realOwner != null) {
+            return real().tableEditorPrompts();
+        }
         return new it.ramasql.app.tableeditor.TableEditorPrompts() {
             @Override
             public boolean confirm(String title, String message, String confirmLabel) {
@@ -225,6 +245,11 @@ public final class FakeWorkspacePrompts implements WorkspacePrompts {
 
     @Override
     public PreviewDialog.Decision preview(SqlScript script, ConfirmationPolicy.Confirmation confirmation) {
+        if (realOwner != null) {
+            PreviewDialog.Decision d = real().preview(script, confirmation);
+            previews.add(new Shown(script, confirmation, script.text(), d));
+            return d;
+        }
         PreviewDialog dialog = new PreviewDialog(null, script, confirmation);
         try {
             onPreview.accept(dialog);
@@ -237,6 +262,9 @@ public final class FakeWorkspacePrompts implements WorkspacePrompts {
 
     @Override
     public CreateCatalogDialog.Choice askNewCatalog(List<CollationInfo> collations, String charset, String collation) {
+        if (realOwner != null) {
+            return real().askNewCatalog(collations, charset, collation);
+        }
         CreateCatalogDialog dialog = new CreateCatalogDialog(null, collations, charset, collation);
         try {
             onNewCatalog.accept(dialog);

@@ -1,0 +1,4 @@
+BUG-027 — archivio delle viste dopo DROP DATABASE, su MariaDB
+1. Anteprima annullata: catalogo e sorgenti al loro posto
+2. DROP DATABASE riuscito: tolte da viste.json v_uno e v_due del catalogo; restano la vista di un altro catalogo e quella dello stesso catalogo su un altro server
+Esito: SUPERATO

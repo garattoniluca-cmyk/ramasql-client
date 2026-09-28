@@ -1,0 +1,31 @@
+T12.8 — «Informazioni su» dal programma collegato a MySQL
+Librerie elencate nella finestra:
+  FlatLaf e FlatLaf Extras — aspetto grafico e icone — Apache License 2.0
+  JSVG — disegno delle icone vettoriali (SVG), usato da FlatLaf Extras — MIT License
+  RSyntaxTextArea e AutoComplete — editor SQL con colori e completamento — BSD 3-Clause
+  MariaDB Connector/J — collegamento a MariaDB e MySQL — GNU LGPL 2.1 o successiva
+  Jackson — file JSON (profili, impostazioni, modelli, importazione) — Apache License 2.0
+  Java (Eclipse Temurin) — ambiente d'esecuzione incluso nella versione portabile — GNU GPL 2 con Classpath Exception
+Jar di terze parti del programma (dal classpath, tolti quelli delle sole prove):
+  mariadb-java-client-3.5.10.jar → MariaDB Connector/J
+  jackson-databind-2.22.2.jar → Jackson
+  jackson-annotations-2.22.jar → Jackson
+  jackson-core-2.22.2.jar → Jackson
+  flatlaf-3.7.2.jar → FlatLaf e FlatLaf Extras
+  flatlaf-extras-3.7.2.jar → FlatLaf e FlatLaf Extras
+  jsvg-2.1.0.jar → JSVG
+  rsyntaxtextarea-4.0.1.jar → RSyntaxTextArea e AutoComplete
+  autocomplete-4.0.0.jar → RSyntaxTextArea e AutoComplete
+Jar della versione portabile RamaSQL-portabile-2026-09-28:
+  autocomplete-4.0.0.jar → RSyntaxTextArea e AutoComplete
+  flatlaf-3.7.2.jar → FlatLaf e FlatLaf Extras
+  flatlaf-extras-3.7.2.jar → FlatLaf e FlatLaf Extras
+  jackson-annotations-2.22.jar → Jackson
+  jackson-core-2.22.2.jar → Jackson
+  jackson-databind-2.22.2.jar → Jackson
+  jsvg-2.1.0.jar → JSVG
+  mariadb-java-client-3.5.10.jar → MariaDB Connector/J
+  rsyntaxtextarea-4.0.1.jar → RSyntaxTextArea e AutoComplete
+Controlli: testo (licenza, garanzia, attribuzioni SQLeo/SQLeonardo/JasperSoft, sorgenti), licenze compatibili, jar elencati, LICENSE = GPL-3, crea-portabile.ps1 copia LICENZA.txt e crea RamaSQL-sorgenti.zip, UPSTREAM.md aggiornato, LEGGIMI.txt
+Problemi: 0
+Esito: OK

@@ -116,6 +116,7 @@ public final class CreateCatalogDialog extends JDialog {
         pack();
         setResizable(false);
         setLocationRelativeTo(owner);
+        it.ramasql.app.theme.Screens.fit(this);   // dentro lo schermo anche a 1024x768 (T12.6)
     }
 
     private static void row(JPanel form, int y, String labelKey, java.awt.Component field) {

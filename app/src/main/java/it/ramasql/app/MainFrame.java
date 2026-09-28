@@ -27,6 +27,7 @@ import java.util.List;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
@@ -40,6 +41,7 @@ import javax.swing.BoxLayout;
 import javax.swing.JToolBar;
 import javax.swing.KeyStroke;
 import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 
 import it.ramasql.app.connection.ConnectingPanel;
 import it.ramasql.app.connection.ConnectionController;
@@ -144,6 +146,7 @@ public final class MainFrame extends JFrame implements ShellView {
         navigatorPanel.setOnOpenView(this::openView);
         navigatorPanel.setOnEditView(this::editView);
         navigatorPanel.setOnViewDropped(this::forgetViewSource);
+        navigatorPanel.setOnCatalogDropped(this::forgetCatalogViewSources);
         navigatorPanel.setOnImportData(this::openImport);
         navigatorPanel.setOnExport(this::openDump);
         navigatorPanel.setOnSelection(this::updateToolbar);
@@ -191,7 +194,106 @@ public final class MainFrame extends JFrame implements ShellView {
         pack();
         verticalSplit.setDividerLocation(getHeight() - 330);
         setLocationRelativeTo(null);
+        it.ramasql.app.theme.Screens.fit(this);
+        verticalSplit.setDividerLocation(Math.max(getHeight() / 2, getHeight() - 330));
+        installKeyboard();
         showHome(connections.profiles());
+    }
+
+    // ------------------------------------------------------------------ tastiera (T12.4)
+
+    /**
+     * Tutto il programma senza mouse: <b>F6</b> e <b>Maiusc+F6</b> passano da un'area all'altra (barra degli strumenti,
+     * navigatore, scheda aperta, pannello SQL); nella barra le frecce passano da un pulsante all'altro e Spazio lo
+     * preme. I pulsanti della barra non sono fra le fermate di Tab (sarebbero dieci tasti in più a ogni giro).
+     */
+    private void installKeyboard() {
+        javax.swing.JRootPane root = getRootPane();
+        root.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(KeyEvent.VK_F6, 0),
+                "ramasql.nextArea");
+        root.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(KeyEvent.VK_F6,
+                InputEvent.SHIFT_DOWN_MASK), "ramasql.previousArea");
+        root.getActionMap().put("ramasql.nextArea", new javax.swing.AbstractAction() {
+            private static final long serialVersionUID = 1L;
+
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                moveArea(1);
+            }
+        });
+        root.getActionMap().put("ramasql.previousArea", new javax.swing.AbstractAction() {
+            private static final long serialVersionUID = 1L;
+
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                moveArea(-1);
+            }
+        });
+        setFocusTraversalPolicy(new javax.swing.LayoutFocusTraversalPolicy() {
+            private static final long serialVersionUID = 1L;
+
+            @Override
+            protected boolean accept(java.awt.Component c) {
+                if (inToolbar(c) && !inToolbar(java.awt.KeyboardFocusManager.getCurrentKeyboardFocusManager()
+                        .getFocusOwner())) {
+                    return false;   // la barra si raggiunge con F6, non con Tab
+                }
+                return super.accept(c);
+            }
+        });
+    }
+
+    private boolean inToolbar(java.awt.Component c) {
+        return c != null && SwingUtilities.getAncestorOfClass(JToolBar.class, c) != null
+                && SwingUtilities.getWindowAncestor(c) == this;
+    }
+
+    /** Le aree che F6 visita, nell'ordine; solo quelle che si vedono. */
+    private List<java.awt.Component> areas() {
+        List<java.awt.Component> out = new ArrayList<>();
+        toolbarButtons.stream().filter(b -> b.isShowing() && b.isEnabled()).findFirst().ifPresent(out::add);
+        if (screen() == Screen.WORKSPACE) {
+            out.add(navigatorPanel);
+            if (workTabs.getSelectedComponent() != null) {
+                out.add(workTabs.getSelectedComponent());
+            }
+            out.add(sqlPanel);
+        } else if (home.isShowing()) {
+            out.add(home);
+        }
+        return out;
+    }
+
+    /** Il fuoco nell'area dopo (o prima di) quella che lo ha ora. */
+    public void moveArea(int direction) {
+        List<java.awt.Component> areas = areas();
+        if (areas.isEmpty()) {
+            return;
+        }
+        java.awt.Component owner = java.awt.KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusOwner();
+        int current = -1;
+        for (int i = 0; i < areas.size(); i++) {
+            java.awt.Component a = areas.get(i);
+            if (owner != null && (a == owner || (a instanceof java.awt.Container k && k.isAncestorOf(owner))
+                    || (i == 0 && inToolbar(owner)))) {
+                current = i;
+            }
+        }
+        java.awt.Component next = areas.get(Math.floorMod(current + direction, areas.size()));
+        focusArea(next);
+    }
+
+    private void focusArea(java.awt.Component area) {
+        if (area instanceof java.awt.Container k && !(area instanceof JButton)) {
+            java.awt.Component first = area == navigatorPanel ? navigatorPanel.tree()
+                    : getFocusTraversalPolicy().getFirstComponent(k);
+            if (first == null) {
+                first = k.getFocusTraversalPolicy() != null ? k.getFocusTraversalPolicy().getDefaultComponent(k) : null;
+            }
+            (first != null ? first : area).requestFocusInWindow();
+            return;
+        }
+        area.requestFocusInWindow();
     }
 
     // ------------------------------------------------------------------ costruzione
@@ -315,8 +417,74 @@ public final class MainFrame extends JFrame implements ShellView {
      * rosso). I comandi non ancora realizzati sono disabilitati, non nascosti — la barra non cambia forma — e lo
      * dicono nel suggerimento.
      */
+    /**
+     * Un pulsante della barra che, se la barra non basta (proiettore a 1024×768 con il carattere grande, T12.6), mostra
+     * solo l'icona: il nome resta nel suggerimento e per chi legge lo schermo.
+     */
+    private static final class ToolbarButton extends JButton {
+        private static final long serialVersionUID = 1L;
+        private boolean compact;
+
+        ToolbarButton(String text, javax.swing.Icon icon) {
+            super(text, icon);
+        }
+
+        void setCompact(boolean compact) {
+            if (this.compact != compact) {
+                this.compact = compact;
+                getAccessibleContext().setAccessibleName(compact ? super.getText() : null);
+                invalidate();   // la barra (e il pannello di Esegui e Interrompi) si rimisura
+                repaint();
+            }
+        }
+
+        boolean isCompact() {
+            return compact;
+        }
+
+        @Override
+        public String getText() {
+            return compact ? "" : super.getText();
+        }
+    }
+
+    /** Prima senza le scritte dei pulsanti della barra, poi anche senza quelle di Esegui e Interrompi, finché basta. */
+    private void compactToolbar(JToolBar bar) {
+        for (int level = 0; level <= 2; level++) {
+            for (JButton b : toolbarButtons) {
+                boolean action = b.getName().equals("toolbar.run") || b.getName().equals("toolbar.stop");
+                ((ToolbarButton) b).setCompact(action ? level >= 2 : level >= 1);
+            }
+            // durante la disposizione le misure in memoria non si azzerano da sole: si rimisura da capo
+            for (java.awt.Component c : bar.getComponents()) {
+                if (c instanceof java.awt.Container k && k.getLayout() instanceof java.awt.LayoutManager2 l) {
+                    l.invalidateLayout(k);
+                }
+            }
+            if (bar.getLayout() instanceof java.awt.LayoutManager2 l) {
+                l.invalidateLayout(bar);
+            }
+            if (bar.getLayout().preferredLayoutSize(bar).width <= bar.getWidth()) {
+                break;
+            }
+        }
+    }
+
+    /** La barra mostra solo le icone (schermo stretto o carattere grande). */
+    public boolean isToolbarCompact() {
+        return toolbarButtons.stream().anyMatch(b -> ((ToolbarButton) b).isCompact());
+    }
+
     private JToolBar buildToolBar() {
-        JToolBar bar = new JToolBar();
+        JToolBar bar = new JToolBar() {
+            private static final long serialVersionUID = 1L;
+
+            @Override
+            public void doLayout() {
+                compactToolbar(this);   // prima di disporre i pulsanti: con o senza scritte, secondo lo spazio
+                super.doLayout();
+            }
+        };
         bar.setName("toolbar");
         bar.setFloatable(false);
         bar.setBorder(BorderFactory.createCompoundBorder(
@@ -328,9 +496,8 @@ public final class MainFrame extends JFrame implements ShellView {
         actions.setOpaque(false);
         for (int i = 0; i < TOOLBAR_KEYS.length; i++) {
             String key = TOOLBAR_KEYS[i];
-            JButton button = new JButton(Texts.get("toolbar." + key), AppIcons.toolbar(TOOLBAR_ICONS[i]));
+            JButton button = new ToolbarButton(Texts.get("toolbar." + key), AppIcons.toolbar(TOOLBAR_ICONS[i]));
             button.setName("toolbar." + key);
-            button.setFocusable(false);
             button.setEnabled(false);
             button.setIconTextGap(Tokens.px(6));
             button.setToolTipText(Texts.get("toolbar.comingSoon"));
@@ -680,6 +847,19 @@ public final class MainFrame extends JFrame implements ShellView {
         }
     }
 
+    /** Un catalogo intero è stato eliminato dal navigatore: via dall'archivio i sorgenti delle sue viste (BUG-027). */
+    private void forgetCatalogViewSources(String server, String catalog) {
+        if (viewSources == null) {
+            return;
+        }
+        try {
+            viewSources.removeCatalog(server, catalog);
+        } catch (java.io.IOException | RuntimeException e) {
+            sqlPanel.message(PipelineView.MessageKind.WARNING,
+                    Texts.get("catalog.archive.removeFailed", catalog, String.valueOf(e.getMessage())));
+        }
+    }
+
     /**
      * Collega una scheda visiva alla finestra: «Esegui»/«Interrompi» della barra seguono l'esecuzione; il catalogo della
      * barra di stato segue il {@code USE} della query visiva; una vista salvata compare nell'elenco di tutte le schede
@@ -860,6 +1040,7 @@ public final class MainFrame extends JFrame implements ShellView {
                 getIconImages());
         erWindows.add(w);
         w.setLocationRelativeTo(this);
+        it.ramasql.app.theme.Screens.fit(w);
         if (isShowing()) {
             w.setVisible(true);
         }

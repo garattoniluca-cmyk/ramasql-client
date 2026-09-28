@@ -1,0 +1,24 @@
+T12.12 — passaggio del mouse su ogni voce delle liste dell'editor di tabelle (MySQL)
+Schermo utilizzabile: 0,0 3440×1392
+  columns.typeEditor (colonna «Tipo»)              lista 1610,609 114×522, prima spiegazione 1730,636 385×98
+    29 voci spiegate
+  indexes.columnChoice                             lista 2140,744 136×132, prima spiegazione 2282,745 367×80
+    5 voci spiegate
+  indexes.kind (colonna «Tipo»)                    lista 1738,609 164×80, prima spiegazione 1908,610 385×116
+    3 voci spiegate
+  fks.refTable (colonna «Tabella riferita»)        lista 1681,609 146×158, prima spiegazione 1833,610 386×98
+    6 voci spiegate
+  fks.action (colonna «ON DELETE»)                 lista 2073,609 102×106, prima spiegazione 2181,610 371×116
+    4 voci spiegate
+  fks.action (colonna «ON UPDATE»)                 lista 2174,609 102×106, prima spiegazione 2282,610 371×116
+    4 voci spiegate
+  options.engine                                   lista 1638,581 100×54, prima spiegazione 1744,582 380×116
+    2 voci spiegate
+  options.charset                                  lista 1638,659 100×132, prima spiegazione 1744,660 386×98
+    5 voci spiegate
+  options.collation                                lista 1638,699 182×262, prima spiegazione 1826,700 381×98
+    10 voci spiegate
+Liste provate: [columns.typeEditor, indexes.columnChoice, indexes.kind, fks.refTable, fks.action, options.engine, options.charset, options.collation]
+Liste richieste non trovate: []
+Problemi: 0
+Esito: OK

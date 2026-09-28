@@ -72,6 +72,7 @@ public final class PasswordDialog extends JDialog {
         setResizable(false);
         pack();
         setLocationRelativeTo(owner);
+        it.ramasql.app.theme.Screens.fit(this);   // dentro lo schermo anche a 1024x768 (T12.6)
     }
 
     private void confirm() {

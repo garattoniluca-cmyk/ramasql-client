@@ -114,6 +114,7 @@ public final class SettingsDialog extends JDialog {
         it.ramasql.app.theme.Tips.fromNames(getRootPane());   // suggerimenti <nome>.tooltip (ADR-020)
         pack();
         setLocationRelativeTo(owner);
+        it.ramasql.app.theme.Screens.fit(this);   // dentro lo schermo anche a 1024x768 (T12.6)
     }
 
     /** Una voce: etichetta a destra nella prima colonna, controllo nella seconda (righe 0, 2, 4, 6). */
