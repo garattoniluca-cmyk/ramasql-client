@@ -91,6 +91,9 @@ public final class ResultsPanel extends JPanel {
         outcomePanel.add(new JScrollPane(outcomeTable), BorderLayout.CENTER);
         outcomePanel.add(errorScroll, BorderLayout.SOUTH);
         tabs.addTab(Texts.get("editor.results.outcome"), outcomePanel);
+        tabs.setName("sqlEditor.results");
+        tabs.setToolTipTextAt(0, Texts.get("sqlEditor.results.0.tooltip"));
+        it.ramasql.app.theme.Tips.headers(outcomeTable);
 
         status.setName("sqlEditor.status");
         status.setBorder(BorderFactory.createEmptyBorder(4, 8, 4, 8));
@@ -156,6 +159,7 @@ public final class ResultsPanel extends JPanel {
         grid.setName("sqlEditor.result." + (grids.size() + 1));
         grids.add(grid);
         tabs.addTab(Texts.get("editor.results.result", grids.size()), grid);
+        tabs.setToolTipTextAt(tabs.getTabCount() - 1, Texts.get("sqlEditor.results.result.tooltip"));
         if (grids.size() == 1) {
             tabs.setSelectedIndex(1);   // il primo risultato si vede subito
         }

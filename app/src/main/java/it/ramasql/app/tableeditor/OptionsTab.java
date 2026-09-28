@@ -70,6 +70,9 @@ final class OptionsTab extends JPanel {
         comment.setName("options.comment");
         charset.setEditable(true);
         collation.setEditable(true);
+        it.ramasql.app.theme.ComboTips.install(engine, it.ramasql.app.theme.Tips.of("tableeditor.engine"));
+        it.ramasql.app.theme.ComboTips.install(charset, it.ramasql.app.theme.Tips::charset);
+        it.ramasql.app.theme.ComboTips.install(collation, it.ramasql.app.theme.Tips::collation);
         setBackground(Tokens.BG_SURFACE);
         for (JComponent field : List.of(name, engine, charset, collation, autoIncrement, comment)) {
             Dimension d = field.getPreferredSize();

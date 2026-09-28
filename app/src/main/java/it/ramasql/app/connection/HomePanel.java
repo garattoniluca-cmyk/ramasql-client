@@ -170,7 +170,8 @@ public final class HomePanel extends JPanel {
         tile.add(more, TileContentLayout.MORE);
 
         tile.getAccessibleContext().setAccessibleName(profile.name() + ", " + profile.address() + ", " + server.getText());
-        tile.setToolTipText(profile.note().isEmpty() ? null : profile.note());
+        String tip = Texts.get("home.tile.tooltip", profile.name(), profile.address(), profile.user());
+        tile.setToolTipText(profile.note().isEmpty() ? tip : tip + "\n" + profile.note());
         tile.addActionListener(e -> controller.connect(profile));
         tile.setComponentPopupMenu(menu);
         return tile;

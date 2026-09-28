@@ -182,6 +182,8 @@ public final class MainFrame extends JFrame implements ShellView {
         add(buildToolBar(), BorderLayout.NORTH);
         add(screenHost, BorderLayout.CENTER);
         add(buildStatusBar(), BorderLayout.SOUTH);
+        // menu, barra, navigatore e pannello SQL: i componenti con un nome ricevono <nome>.tooltip (ADR-020)
+        it.ramasql.app.theme.Tips.fromNames(getRootPane());
 
         setPreferredSize(new Dimension(1180, 760));
         setMinimumSize(new Dimension(820, 520));
@@ -219,6 +221,8 @@ public final class MainFrame extends JFrame implements ShellView {
             @Override
             public void componentAdded(ContainerEvent e) {
                 cards.show(area, "tabs");
+                // ogni scheda nuova: i componenti con un nome ricevono il suggerimento <nome>.tooltip (ADR-020)
+                it.ramasql.app.theme.Tips.fromNames(e.getChild());
             }
 
             @Override
@@ -279,8 +283,13 @@ public final class MainFrame extends JFrame implements ShellView {
 
         JMenu help = new JMenu(Texts.get("menu.help"));
         help.setName("menu.help");
-        help.add(item("menu.help.about", AppIcons.MENU_ABOUT, null, () -> prompts.showInfo(Texts.get("about.title"),
-                Texts.get("about.message", ProductInfo.NAME, ProductInfo.version()))));
+        JMenuItem guide = item("menu.help.guide", AppIcons.MENU_ABOUT, KeyStroke.getKeyStroke(KeyEvent.VK_F1, 0),
+                () -> new GuideDialog(this).setVisible(true));
+        guide.setToolTipText(Texts.get("menu.help.guide.tooltip"));
+        help.add(guide);
+        JMenuItem about = item("menu.help.about", AppIcons.MENU_ABOUT, null, () -> new AboutDialog(this).setVisible(true));
+        about.setToolTipText(Texts.get("menu.help.about.tooltip"));
+        help.add(about);
 
         JMenuBar bar = new JMenuBar();
         bar.add(file);

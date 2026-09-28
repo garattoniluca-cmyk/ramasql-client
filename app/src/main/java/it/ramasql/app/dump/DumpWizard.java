@@ -248,6 +248,8 @@ public final class DumpWizard extends JPanel {
         JComboBox<String> content = new JComboBox<>(new String[] {Texts.get("dump.content.BOTH"),
             Texts.get("dump.content.STRUCTURE"), Texts.get("dump.content.DATA")});
         content.setName("dump.what.content");
+        it.ramasql.app.theme.ComboTips.install(content, it.ramasql.app.theme.Tips.of("dump.content", List.of(Texts.get("dump.content.BOTH"),
+                Texts.get("dump.content.STRUCTURE"), Texts.get("dump.content.DATA")), List.of("BOTH", "STRUCTURE", "DATA")));
         objectTable.getColumnModel().getColumn(3).setCellEditor(new DefaultCellEditor(content));
         objectTable.getColumnModel().getColumn(3).setCellRenderer(new DefaultTableCellRenderer() {
             private static final long serialVersionUID = 1L;

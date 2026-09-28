@@ -99,6 +99,7 @@ public final class ModelTablesDialog extends JDialog {
         content.add(form, BorderLayout.CENTER);
         content.add(buttons, BorderLayout.SOUTH);
         setContentPane(content);
+        it.ramasql.app.theme.Tips.fromNames(getRootPane());   // suggerimenti <nome>.tooltip (ADR-020)
         pack();
         setLocationRelativeTo(owner);
     }

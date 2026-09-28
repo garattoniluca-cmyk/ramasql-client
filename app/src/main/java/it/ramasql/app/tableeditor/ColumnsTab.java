@@ -62,6 +62,7 @@ final class ColumnsTab extends JPanel {
                 Tokens.SPACE_8, Tokens.SPACE_16));
         setBackground(Tokens.BG_SURFACE);
         table.setName("columns.table");
+        it.ramasql.app.theme.Tips.headers(table);
         Ui.styleTable(table);
         Ui.narrow(table.getColumnModel().getColumn(MARK), 24);
         table.getColumnModel().getColumn(MARK).setCellRenderer(new Ui.MarkRenderer());
@@ -91,6 +92,7 @@ final class ColumnsTab extends JPanel {
         JComboBox<Object> combo = new JComboBox<>(TypeChoices.comboItems());
         combo.setName("columns.typeEditor");
         combo.setEditable(true);
+        it.ramasql.app.theme.ComboTips.install(combo, v -> v instanceof String ? it.ramasql.app.theme.Tips.type(v) : null);
         combo.setMaximumRowCount(20);
         combo.setRenderer(new DefaultListCellRenderer() {
             private static final long serialVersionUID = 1L;

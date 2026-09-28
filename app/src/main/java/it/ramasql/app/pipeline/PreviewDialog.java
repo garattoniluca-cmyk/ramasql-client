@@ -142,6 +142,7 @@ public final class PreviewDialog extends JDialog {
         // Invio non deve mai confermare un'operazione distruttiva
         getRootPane().setDefaultButton(isStrong() ? null : execute);
         updateExecute();
+        it.ramasql.app.theme.Tips.fromNames(getRootPane());   // suggerimenti <nome>.tooltip (ADR-020)
         pack();
         setMinimumSize(getSize());
         setLocationRelativeTo(owner);

@@ -64,6 +64,8 @@ public final class CreateCatalogDialog extends JDialog {
         name.setName("catalog.create.name");
         charset.setName("catalog.create.charset");
         collation.setName("catalog.create.collation");
+        it.ramasql.app.theme.ComboTips.install(charset, it.ramasql.app.theme.Tips::charset);
+        it.ramasql.app.theme.ComboTips.install(collation, it.ramasql.app.theme.Tips::collation);
         name.putClientProperty("JTextField.placeholderText", Texts.get("catalog.create.name.placeholder"));
 
         TreeSet<String> charsets = new TreeSet<>();
@@ -102,6 +104,7 @@ public final class CreateCatalogDialog extends JDialog {
         form.add(hint, h);
 
         buttons = new DialogButtons(this, Texts.get("catalog.create.confirm"), error, this::confirm);
+        buttons.confirmButton().setToolTipText(Texts.get("catalog.create.confirm.tooltip"));
         Styles.primary(buttons.confirmButton(), Tokens.ACCENT);
         JPanel content = new JPanel(new BorderLayout());
         content.setBackground(Tokens.BG_SURFACE);
@@ -109,6 +112,7 @@ public final class CreateCatalogDialog extends JDialog {
         content.add(form, BorderLayout.CENTER);
         content.add(buttons, BorderLayout.SOUTH);
         setContentPane(content);
+        it.ramasql.app.theme.Tips.fromNames(getRootPane());   // suggerimenti <nome>.tooltip (ADR-020)
         pack();
         setResizable(false);
         setLocationRelativeTo(owner);

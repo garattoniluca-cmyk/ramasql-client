@@ -345,6 +345,15 @@ public final class ImportWizard extends JPanel {
         headerCheck.setName("import.header");
         charsetCombo.setRenderer(new ItemRenderer(v -> Texts.get("import.charset." + ((Charset) v).name())));
         separatorCombo.setRenderer(new ItemRenderer(v -> Texts.get("import.separator." + (int) (char) (Character) v)));
+        it.ramasql.app.theme.ComboTips.install(kindCombo, it.ramasql.app.theme.Tips.of("import.kind"));
+        it.ramasql.app.theme.ComboTips.install(charsetCombo, v -> it.ramasql.app.theme.Tips.item("import.charset", v.name(),
+                Texts.get("import.charset." + v.name())));
+        it.ramasql.app.theme.ComboTips.install(separatorCombo, v -> it.ramasql.app.theme.Tips.item("import.separator", switch ((char) v) {
+            case ';' -> "semicolon";
+            case ',' -> "comma";
+            case '\t' -> "tab";
+            default -> "pipe";
+        }, Texts.get("import.separator." + (int) (char) v)));
         kindCombo.setRenderer(new ItemRenderer(v -> Texts.get("import.kind." + v)));
         p.add(label("import.kind.label"), at(0, 2));
         p.add(kindCombo, at(1, 2));
@@ -391,6 +400,7 @@ public final class ImportWizard extends JPanel {
         existingRadio.setName("import.target.existing");
         newRadio.setName("import.target.new");
         tableCombo.setName("import.target.table");
+        it.ramasql.app.theme.ComboTips.install(tableCombo, v -> it.ramasql.app.theme.Tips.titled(v, Texts.get("import.table.item.tooltip", v)));
         newNameField.setName("import.target.newName");
         p.add(existingRadio, at(0, 1));
         p.add(tableCombo, at(1, 1));
@@ -428,6 +438,8 @@ public final class ImportWizard extends JPanel {
         Ui.styleTable(mappingTable);
         mappingTable.setPreferredScrollableViewportSize(new Dimension(Tokens.px(420), Tokens.px(Tokens.ROW_HEIGHT) * 4));
         mappingEditor.setName("import.mapping.editor");
+        it.ramasql.app.theme.ComboTips.install(mappingEditor, v -> SKIP.equals(v) ? it.ramasql.app.theme.Tips.titled(Texts.get("import.mapping.skip"),
+                Texts.get("import.mapping.skip.tooltip")) : it.ramasql.app.theme.Tips.titled(v, Texts.get("import.mapping.item.tooltip", v)));
         mappingEditor.setRenderer(new ItemRenderer(v -> SKIP.equals(v) ? Texts.get("import.mapping.skip")
                 : String.valueOf(v)));
         mappingTable.getColumnModel().getColumn(2).setCellEditor(new DefaultCellEditor(mappingEditor));
@@ -481,6 +493,7 @@ public final class ImportWizard extends JPanel {
             "TINYINT(1)", "DATE", "DATETIME", "TIME", "CHAR(10)", "VARCHAR(50)", "VARCHAR(255)", "TEXT"});
         types.setEditable(true);
         types.setName("import.newTable.type");
+        it.ramasql.app.theme.ComboTips.install(types, it.ramasql.app.theme.Tips::type);
         return types;
     }
 
@@ -489,8 +502,14 @@ public final class ImportWizard extends JPanel {
         p.add(Ui.sectionTitle(Texts.get("import.options.intro")), wide(0, 0));
         truncateCheck.setName("import.option.truncate");
         duplicatesCombo.setName("import.option.duplicates");
+        it.ramasql.app.theme.ComboTips.install(duplicatesCombo, it.ramasql.app.theme.Tips.of("import.option.duplicates",
+                List.of(Texts.get("import.option.duplicates.error"), Texts.get("import.option.duplicates.ignore")),
+                List.of("error", "ignore")));
         emptyNullCheck.setName("import.option.emptyNull");
         datesCombo.setName("import.option.dates");
+        it.ramasql.app.theme.ComboTips.install(datesCombo, it.ramasql.app.theme.Tips.of("import.option.dates", List.of(Texts.get("import.option.dates.auto"),
+                Texts.get("import.option.dates.DMY"), Texts.get("import.option.dates.MDY"),
+                Texts.get("import.option.dates.YMD")), List.of("auto", "DMY", "MDY", "YMD")));
         optionsSummary.setName("import.options.summary");
         p.add(truncateCheck, wide(1, 0));
         p.add(label("import.option.duplicates.label"), at(0, 2));

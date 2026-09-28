@@ -170,6 +170,10 @@ public final class ScriptRunTab extends JPanel {
         top.add(label("script.target.label"), c);
         c.gridx = 1;
         targetCombo.setName("script.target");
+        it.ramasql.app.theme.ComboTips.install(targetCombo, v -> FROM_SCRIPT.equals(v)
+                ? it.ramasql.app.theme.Tips.titled(Texts.get("script.target.fromScript"), Texts.get("script.target.fromScript.tooltip"))
+                : NONE.equals(v) ? it.ramasql.app.theme.Tips.titled(Texts.get("script.target.none"), Texts.get("script.target.none.tooltip"))
+                : it.ramasql.app.theme.Tips.titled(v, Texts.get("script.target.catalog.tooltip", v)));
         targetCombo.addActionListener(e -> {
             if (!refreshingTargets) {
                 targetChosen = true;

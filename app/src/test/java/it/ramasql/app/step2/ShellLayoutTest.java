@@ -121,7 +121,8 @@ class ShellLayoutTest {
             // Step 11 (ADR-027): «Apri modello ER…» è l'unico modo di riaprire un modello senza connessione
             assertEquals(List.of("Importa profili…", "Esporta profili…", "Apri modello ER…", "Impostazioni…", "Esci"),
                     items(frame.getJMenuBar().getMenu(0)));
-            assertEquals(List.of("Informazioni"), items(frame.getJMenuBar().getMenu(1)));
+            // Step 12: la guida rapida (DESIGN §3.12) prima di «Informazioni»
+            assertEquals(List.of("Guida rapida", "Informazioni"), items(frame.getJMenuBar().getMenu(1)));
             assertEquals("File", frame.getJMenuBar().getMenu(0).getText());
             assertEquals("Aiuto", frame.getJMenuBar().getMenu(1).getText());
         });

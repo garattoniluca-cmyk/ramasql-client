@@ -125,6 +125,7 @@ public final class TableEditor extends JPanel {
         tabs.addTab(Texts.get("tableeditor.tab.fks"), foreignKeysTab);
         tabs.addTab(Texts.get("tableeditor.tab.options"), optionsTab);
         tabs.addTab(Texts.get("tableeditor.tab.sql"), sqlTab);
+        it.ramasql.app.theme.Tips.tabs(tabs, "tableeditor.tabs");
         tabs.putClientProperty("JTabbedPane.tabHeight", 36);
         tabs.putClientProperty("JTabbedPane.tabType", "underlined");
         tabs.setBackground(Tokens.BG_WINDOW);          // la striscia delle schede sta sul fondo della finestra
@@ -550,7 +551,8 @@ public final class TableEditor extends JPanel {
         title(TAB_OPTIONS, "tableeditor.tab.options", Checks.Area.OPTIONS);
         boolean innoDb = edited.isInnoDb();
         tabs.setForegroundAt(TAB_FOREIGN_KEYS, innoDb ? null : Tokens.TEXT_TERTIARY);
-        tabs.setToolTipTextAt(TAB_FOREIGN_KEYS, innoDb ? null : Texts.get("tableeditor.fks.myisam.title"));
+        tabs.setToolTipTextAt(TAB_FOREIGN_KEYS, innoDb ? Texts.get("tableeditor.tabs.2.tooltip")
+                : Texts.get("tableeditor.fks.myisam.title"));
         int statements = preview.size();
         tabs.setTitleAt(TAB_SQL, statements == 0 ? Texts.get("tableeditor.tab.sql")
                 : Texts.get("tableeditor.tab.sqlCount", statements));

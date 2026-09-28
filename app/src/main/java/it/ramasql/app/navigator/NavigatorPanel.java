@@ -799,6 +799,7 @@ public final class NavigatorPanel extends JPanel {
                 return null;
             }
         }
+        it.ramasql.app.theme.Tips.fromNames(menu);   // ogni voce con il suo suggerimento (<nome>.tooltip)
         return menu;
     }
 
@@ -1066,7 +1067,26 @@ public final class NavigatorPanel extends JPanel {
     }
 
     private static String tooltip(NavNode n) {
-        return switch (n.kind()) {
+        // ogni nodo dice che cos'è e che cosa ci si fa (ADR-020); in più, dove c'è, il dettaglio che lo riguarda
+        String base = switch (n.kind()) {
+            case SERVER -> Texts.get("nav.tip.server", n.name());
+            case CATALOG -> Texts.get("nav.tip.catalog", n.name());
+            case TABLES -> Texts.get("nav.tip.tables");
+            case VIEWS -> Texts.get("nav.tip.views");
+            case ROUTINES -> Texts.get("nav.tip.routines");
+            case TABLE -> Texts.get("nav.tip.table", n.name());
+            case VIEW -> Texts.get("nav.tip.view", n.name());
+            case ROUTINE -> Texts.get("nav.tip.routine", n.name());
+            case COLUMNS -> Texts.get("nav.tip.columns");
+            case INDEXES -> Texts.get("nav.tip.indexes");
+            case FOREIGN_KEYS -> Texts.get("nav.tip.foreignKeys");
+            case COLUMN -> Texts.get("nav.tip.column", n.name());
+            case INDEX -> Texts.get("nav.tip.index", n.name());
+            case FOREIGN_KEY -> Texts.get("nav.tip.foreignKey", n.name());
+            case MESSAGE -> n.name();
+            case LOADING -> null;
+        };
+        String extra = switch (n.kind()) {
             case TABLE -> n.table() == null || n.table().engine() == null ? null
                     : n.table().isMyIsam() ? Texts.get("nav.tooltip.myisam")
                     : Texts.get("nav.tooltip.engine", n.table().engine());
@@ -1075,9 +1095,9 @@ public final class NavigatorPanel extends JPanel {
             case INDEX -> n.data() instanceof ReadOnlyIndex r ? Texts.get("nav.tooltip.readOnlyIndex", r.definition()) : null;
             case COLUMN -> n.data() instanceof ColumnDef c && c.autoIncrement()
                     ? Texts.get("nav.tooltip.autoIncrement") : null;
-            case MESSAGE -> n.name();
             default -> null;
         };
+        return extra == null ? base : base == null ? extra : base + "\n" + extra;
     }
 
     /**

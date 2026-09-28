@@ -70,6 +70,7 @@ final class IndexesTab extends JPanel {
                 Tokens.SPACE_8, Tokens.SPACE_16));
         setBackground(Tokens.BG_SURFACE);
         table.setName("indexes.table");
+        it.ramasql.app.theme.Tips.headers(table);
         Ui.styleTable(table);
         table.setPreferredScrollableViewportSize(new Dimension(600, 5 * Tokens.ROW_HEIGHT));
         Ui.narrow(table.getColumnModel().getColumn(MARK), 24);
@@ -78,6 +79,9 @@ final class IndexesTab extends JPanel {
         table.getColumnModel().getColumn(KIND).setPreferredWidth(90);
         table.getColumnModel().getColumn(COLUMNS).setPreferredWidth(300);
         JComboBox<IndexKind> kinds = new JComboBox<>(IndexKind.values());
+        kinds.setName("indexes.kind");
+        it.ramasql.app.theme.ComboTips.install(kinds, k -> it.ramasql.app.theme.Tips.item("tableeditor.index.kind", k,
+                k.name()));
         table.getColumnModel().getColumn(KIND).setCellEditor(new DefaultCellEditor(kinds));
         table.getSelectionModel().addListSelectionListener(e -> {
             if (!e.getValueIsAdjusting() && !refreshing) {
@@ -97,6 +101,7 @@ final class IndexesTab extends JPanel {
         columnList.setName("indexes.columns");
         columnList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         columnChoice.setName("indexes.columnChoice");
+        it.ramasql.app.theme.ComboTips.install(columnChoice, this::columnTip);
         columnList.setFixedCellHeight(Tokens.ROW_HEIGHT);
         columnList.setSelectionBackground(Tokens.ACCENT_TINT);
         columnList.setSelectionForeground(Tokens.TEXT_PRIMARY);
@@ -249,6 +254,15 @@ final class IndexesTab extends JPanel {
     }
 
     // ================================================================ aggiornamento
+
+    /** La spiegazione di una colonna della tabella che si sta modificando. */
+    private String columnTip(String name) {
+        it.ramasql.core.metadata.TableDef t = editor.editedTable();
+        return t.columns().stream().filter(c -> c.name().equalsIgnoreCase(name)).findFirst()
+                .map(c -> it.ramasql.app.theme.Tips.column(c, t.primaryKey().map(pk -> pk.columns().stream()
+                        .anyMatch(name::equalsIgnoreCase)).orElse(false)))
+                .orElse(null);
+    }
 
     void refresh() {
         refreshing = true;

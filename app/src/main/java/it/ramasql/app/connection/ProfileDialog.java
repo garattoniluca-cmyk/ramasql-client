@@ -38,12 +38,14 @@ public final class ProfileDialog extends JDialog {
         super(owner, Texts.get(initial == null ? "profile.title.new" : "profile.title.edit"), ModalityType.APPLICATION_MODAL);
         form = new ProfileForm(initial, controller);
         DialogButtons buttons = new DialogButtons(this, Texts.get("profile.save"), error, this::save);
+        buttons.confirmButton().setToolTipText(Texts.get("profile.save.tooltip"));
         add(header(initial == null ? "profile.title.new" : "profile.title.edit"), BorderLayout.NORTH);
         add(form, BorderLayout.CENTER);
         buttons.setBorder(BorderFactory.createEmptyBorder(Tokens.px(Tokens.SPACE_8), Tokens.px(Tokens.SPACE_24),
                 Tokens.px(Tokens.SPACE_24), Tokens.px(Tokens.SPACE_24)));
         add(buttons, BorderLayout.SOUTH);
         setResizable(false);
+        it.ramasql.app.theme.Tips.fromNames(getRootPane());   // suggerimenti <nome>.tooltip (ADR-020)
         pack();
         setLocationRelativeTo(owner);
     }

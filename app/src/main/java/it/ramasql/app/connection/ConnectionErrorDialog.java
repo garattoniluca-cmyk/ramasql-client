@@ -92,6 +92,7 @@ public final class ConnectionErrorDialog extends JDialog {
         }
         add(body, BorderLayout.CENTER);
         DialogButtons buttons = new DialogButtons(this, Texts.get("dialog.ok"), null, null, this::dispose);
+        buttons.confirmButton().setToolTipText(Texts.get("connection.error.ok.tooltip"));
         buttons.setBorder(BorderFactory.createEmptyBorder(Tokens.px(Tokens.SPACE_8), Tokens.px(Tokens.SPACE_24),
                 Tokens.px(Tokens.SPACE_24), Tokens.px(Tokens.SPACE_24)));
         add(buttons, BorderLayout.SOUTH);

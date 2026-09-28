@@ -25,6 +25,10 @@ public final class QuietPrompts implements Prompts {
     private final DbServer server;
     public AppSettings nextSettings;
     public final List<String> errors = new ArrayList<>();
+    /** I fallimenti di connessione ricevuti, com'erano (per costruire la finestra che li spiega). */
+    public final List<ConnectionFailure> failures = new java.util.concurrent.CopyOnWriteArrayList<>();
+    /** Una password diversa da quella del server (per provocare l'errore 1045); {@code null} = quella giusta. */
+    public volatile char[] passwordOverride;
 
     public QuietPrompts(DbServer server) {
         this.server = server;
@@ -32,7 +36,7 @@ public final class QuietPrompts implements Prompts {
 
     @Override
     public char[] askPassword(ConnectionProfile profile) {
-        return server.password();
+        return passwordOverride != null ? passwordOverride.clone() : server.password();
     }
 
     @Override
@@ -52,6 +56,7 @@ public final class QuietPrompts implements Prompts {
 
     @Override
     public void showConnectionError(ConnectionProfile profile, ConnectionFailure failure) {
+        failures.add(failure);
         errors.add("connessione: " + failure);
     }
 

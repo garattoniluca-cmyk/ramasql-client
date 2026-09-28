@@ -22,6 +22,11 @@ public final class Texts {
     private Texts() {
     }
 
+    /** C'è un testo con questa chiave. */
+    public static boolean has(String key) {
+        return TEXTS.containsKey(key);
+    }
+
     public static String get(String key, Object... args) {
         String pattern = TEXTS.getString(key);
         return args.length == 0 ? pattern : String.format(pattern, args);

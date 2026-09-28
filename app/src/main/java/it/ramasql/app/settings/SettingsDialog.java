@@ -78,6 +78,7 @@ public final class SettingsDialog extends JDialog {
         rowLimit.setEditor(new JSpinner.NumberEditor(rowLimit, "#"));
         workDirectory.setText(current.workDirectory());
         JButton browse = new JButton(Texts.get("settings.workDirectory.browse"));
+        browse.setName("settings.browse");
         browse.addActionListener(e -> browse());
         JPanel directoryRow = new JPanel(new BorderLayout(Tokens.px(Tokens.SPACE_8), 0));
         directoryRow.setOpaque(false);
@@ -85,6 +86,7 @@ public final class SettingsDialog extends JDialog {
         directoryRow.add(browse, BorderLayout.EAST);
 
         language.setName("settings.language");
+        it.ramasql.app.theme.ComboTips.install(language, l -> it.ramasql.app.theme.Tips.item("settings.language", l.code(), l.label()));
         fontSize.setName("settings.fontSize");
         rowLimit.setName("settings.rowLimit");
         workDirectory.setName("settings.workDirectory");
@@ -104,10 +106,12 @@ public final class SettingsDialog extends JDialog {
 
         add(fields, BorderLayout.CENTER);
         DialogButtons buttons = new DialogButtons(this, Texts.get("settings.save"), error, this::save);
+        buttons.confirmButton().setToolTipText(Texts.get("settings.save.tooltip"));
         buttons.setBorder(BorderFactory.createEmptyBorder(Tokens.px(Tokens.SPACE_8), Tokens.px(Tokens.SPACE_24),
                 Tokens.px(Tokens.SPACE_24), Tokens.px(Tokens.SPACE_24)));
         add(buttons, BorderLayout.SOUTH);
         setResizable(false);
+        it.ramasql.app.theme.Tips.fromNames(getRootPane());   // suggerimenti <nome>.tooltip (ADR-020)
         pack();
         setLocationRelativeTo(owner);
     }

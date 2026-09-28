@@ -102,6 +102,7 @@ public final class ShowCreateDialog extends JDialog {
         getRootPane().registerKeyboardAction(e -> dispose(), KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0),
                 JComponent.WHEN_IN_FOCUSED_WINDOW);
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+        it.ramasql.app.theme.Tips.fromNames(getRootPane());   // suggerimenti <nome>.tooltip (ADR-020)
         pack();
         setLocationRelativeTo(owner);
     }

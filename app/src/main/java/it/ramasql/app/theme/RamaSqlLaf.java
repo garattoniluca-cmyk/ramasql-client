@@ -23,7 +23,22 @@ public class RamaSqlLaf extends FlatLightLaf {
 
     /** Installa il tema (al posto di {@code FlatLightLaf.setup()}): va chiamato prima di creare le finestre. */
     public static boolean setup() {
-        return FlatLaf.setup(new RamaSqlLaf());
+        boolean ok = FlatLaf.setup(new RamaSqlLaf());
+        installTips();
+        return ok;
+    }
+
+    /** Pausa prima di comparire (ms): {@code DESIGN-SYSTEM.md} §3.9. */
+    public static final int TIP_INITIAL_DELAY = 500;
+    /** Quanto resta a schermo (ms): il tempo di leggerlo ad alta voce in classe, almeno 20 s. */
+    public static final int TIP_DISMISS_DELAY = 60_000;
+
+    /** I tempi dei suggerimenti, uguali in tutto il programma. */
+    public static void installTips() {
+        javax.swing.ToolTipManager tips = javax.swing.ToolTipManager.sharedInstance();
+        tips.setInitialDelay(TIP_INITIAL_DELAY);
+        tips.setDismissDelay(TIP_DISMISS_DELAY);
+        tips.setReshowDelay(200);
     }
 
     @Override

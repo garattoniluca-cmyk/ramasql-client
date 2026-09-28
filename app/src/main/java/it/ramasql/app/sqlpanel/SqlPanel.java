@@ -134,6 +134,11 @@ public final class SqlPanel extends JTabbedPane implements PipelineView {
         addTab(Texts.get("sqlPanel.log"), buildLogTab());
         addTab(Texts.get("sqlPanel.preview"), buildPreviewTab());
         addTab(Texts.get("sqlPanel.messages"), buildMessagesTab());
+        setToolTipTextAt(0, Texts.get("sqlPanel.log.tooltip"));
+        setToolTipTextAt(1, Texts.get("sqlPanel.preview.tooltip"));
+        setToolTipTextAt(2, Texts.get("sqlPanel.messages.tooltip"));
+        it.ramasql.app.theme.Tips.fromNames(this);
+        it.ramasql.app.theme.Tips.headers(logTable);
 
         log.entries().forEach(logModel::add);
         log.addListener(new SqlLog.Listener() {

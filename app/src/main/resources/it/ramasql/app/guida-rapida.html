@@ -1,0 +1,56 @@
+<html>
+<body style="margin: 14px 18px">
+<h2>Guida rapida di RamaSQL Client</h2>
+<p>RamaSQL Client è un programma per imparare i database con <b>MariaDB</b> e <b>MySQL</b>. La regola d'oro:
+<b>ogni operazione mostra l'SQL che esegue</b>. Prima di toccare il database compare l'<i>anteprima</i>: leggila,
+poi premi <i>Esegui</i>. Tutto quello che il programma esegue finisce nel <i>Registro</i> in basso.</p>
+<p>Non sai a cosa serve qualcosa? Fermati con il mouse sopra: compare una spiegazione. Da tastiera si apre con
+<b>Ctrl+F1</b>. Anche le voci degli elenchi a discesa (tipi, motori, azioni delle chiavi esterne…) hanno la loro.</p>
+
+<h3>1. Collegarsi</h3>
+<p>Nella schermata iniziale ogni riquadro è una connessione salvata: un clic, la password, ed entri. Con
+<i>Nuova connessione</i> scrivi indirizzo, porta (di solito 3306) e utente. La password non si salva mai. Se qualcosa non
+va, il programma dice il motivo in italiano (server spento, password sbagliata…).</p>
+
+<h3>2. Il navigatore</h3>
+<p>A sinistra ci sono i cataloghi (database) con le loro tabelle e viste. Clic destro su un nodo per le operazioni:
+creare, rinominare, svuotare, eliminare, vedere l'SQL di creazione. Le operazioni pericolose chiedono di riscrivere il
+nome per conferma. <b>F5</b> rilegge tutto.</p>
+
+<h3>3. Creare le tabelle</h3>
+<p><i>Nuova tabella</i> apre l'editor: nella scheda <i>Colonne</i> scegli nome, tipo e opzioni; in <i>Indici</i> la chiave
+primaria e gli indici; in <i>Chiavi esterne</i> i collegamenti con le altre tabelle (cosa succede se la riga «padre»
+si elimina: RESTRICT, CASCADE, SET NULL). Sotto vedi sempre l'SQL che verrà eseguito. <i>Applica</i> lo esegue e poi
+rilegge la tabella dal server per mostrarti com'è davvero.</p>
+
+<h3>4. Inserire i dati</h3>
+<p>Clic destro su una tabella → <i>Apri tabella</i>: si apre la griglia. Scrivi nelle celle, aggiungi righe, incolla da Excel
+(<b>Ctrl+V</b>). Niente arriva al server finché non premi <i>Conferma</i>: vedi prima le istruzioni INSERT, UPDATE e
+DELETE. Le celle sbagliate si colorano e il suggerimento dice perché.</p>
+
+<h3>5. Scrivere SQL</h3>
+<p><i>Nuova query</i> apre l'editor SQL. <b>Ctrl+Invio</b> esegue l'istruzione sotto il cursore,
+<b>Ctrl+Maiusc+Invio</b> tutto lo script, <b>Esc</b> interrompe, <b>Ctrl+Spazio</b> completa nomi di tabelle e colonne. Gli errori del server compaiono con una spiegazione e il punto evidenziato.</p>
+
+<h3>6. Query visiva e viste</h3>
+<p><i>Nuova query visiva</i>: trascina le tabelle nel diagramma, collega le colonne per le unioni, spunta le colonne da
+mostrare. La scheda <i>SQL</i> accanto mostra la stessa query in testo, e le due restano allineate. <i>Salva come
+vista…</i> la conserva nel database come vista.</p>
+
+<h3>7. Importare, esportare, ripristinare</h3>
+<p><i>Importa</i>: dati da un file CSV (anche di Excel) o JSON, con anteprima, tipi proposti e rapporto delle righe
+scartate. <i>Esporta/Dump</i>: una copia in un file .sql di tabelle o cataloghi interi. <i>Importa → Esegui script
+SQL…</i> rimette tutto a posto da un file .sql (anche fatto con mysqldump o Navicat).</p>
+
+<h3>8. Modello ER</h3>
+<p><i>Modello ER</i> disegna le tabelle e le loro relazioni. Le linee piene sono le chiavi esterne vere; quelle
+tratteggiate sono relazioni che disegni tu o che il programma ti suggerisce dai nomi delle colonne: vivono solo nel
+file del modello e non toccano il database.</p>
+
+<h3>Scorciatoie utili</h3>
+<p><b>Ctrl+F1</b> spiegazione dell'elemento con il focus · <b>Ctrl+Invio</b> esegui l'istruzione ·
+<b>Ctrl+Maiusc+Invio</b> esegui tutto · <b>Esc</b> interrompi · <b>Ctrl+F</b> cerca · <b>Ctrl+/</b> commenta le righe ·
+<b>Ctrl+S</b> salva · <b>F5</b> aggiorna il navigatore · <b>Ctrl+,</b> impostazioni · <b>Ctrl+rotella</b> ingrandisci
+il carattere (nel modello ER: lo zoom del diagramma).</p>
+</body>
+</html>

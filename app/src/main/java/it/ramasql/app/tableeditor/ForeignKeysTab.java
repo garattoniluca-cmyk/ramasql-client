@@ -83,6 +83,7 @@ final class ForeignKeysTab extends JPanel {
         setBackground(Tokens.BG_SURFACE);
 
         table.setName("fks.table");
+        it.ramasql.app.theme.Tips.headers(table);
         Ui.styleTable(table);
         table.setPreferredScrollableViewportSize(new Dimension(600, 5 * Tokens.ROW_HEIGHT));
         Ui.narrow(table.getColumnModel().getColumn(MARK), 24);
@@ -91,6 +92,16 @@ final class ForeignKeysTab extends JPanel {
         table.getColumnModel().getColumn(REF_TABLE).setPreferredWidth(120);
         table.getColumnModel().getColumn(COLUMNS).setPreferredWidth(220);
         refTables.setEditable(true);
+        refTables.setName("fks.refTable");
+        childColumns.setName("fks.childColumn");
+        parentColumns.setName("fks.parentColumn");
+        it.ramasql.app.theme.ComboTips.install(refTables, this::refTableTip);
+        it.ramasql.app.theme.ComboTips.install(childColumns, n -> columnTip(editor.editedTable(), n));
+        it.ramasql.app.theme.ComboTips.install(parentColumns, n -> {
+            int i = selected();
+            TableDef parent = i < 0 ? null : editor.parentOf(editor.editedTable().foreignKeys().get(i));
+            return parent == null ? null : columnTip(parent, n);
+        });
         table.getColumnModel().getColumn(REF_TABLE).setCellEditor(new DefaultCellEditor(refTables));
         table.getColumnModel().getColumn(ON_DELETE).setCellEditor(new DefaultCellEditor(actionCombo()));
         table.getColumnModel().getColumn(ON_UPDATE).setCellEditor(new DefaultCellEditor(actionCombo()));
@@ -102,6 +113,7 @@ final class ForeignKeysTab extends JPanel {
         });
 
         pairs.setName("fks.pairs");
+        it.ramasql.app.theme.Tips.headers(pairs);
         Ui.styleTable(pairs);
         pairs.getColumnModel().getColumn(0).setCellEditor(new DefaultCellEditor(childColumns));
         pairs.getColumnModel().getColumn(1).setCellEditor(new DefaultCellEditor(parentColumns));
@@ -175,7 +187,24 @@ final class ForeignKeysTab extends JPanel {
         for (FkAction a : FkAction.values()) {
             combo.addItem(a.sql());
         }
+        combo.setName("fks.action");
+        it.ramasql.app.theme.ComboTips.install(combo, it.ramasql.app.theme.Tips.of("tableeditor.fk.action"));
         return combo;
+    }
+
+    /** La tabella riferita: la sua chiave primaria, dai metadati già letti. */
+    private String refTableTip(String name) {
+        TableDef t = editor.tableNamed(name);
+        String key = t == null ? Texts.get("tableeditor.refTable.noKey") : t.primaryKey()
+                .map(pk -> String.join(", ", pk.columns())).orElse(Texts.get("tableeditor.refTable.noKey"));
+        return it.ramasql.app.theme.Tips.titled(name, Texts.get("tableeditor.refTable.tooltip", name, key));
+    }
+
+    private static String columnTip(TableDef t, String name) {
+        return t.columns().stream().filter(c -> c.name().equalsIgnoreCase(name)).findFirst()
+                .map(c -> it.ramasql.app.theme.Tips.column(c, t.primaryKey().map(pk -> pk.columns().stream()
+                        .anyMatch(name::equalsIgnoreCase)).orElse(false)))
+                .orElse(null);
     }
 
     JTable table() {
