@@ -295,7 +295,7 @@ public final class ErModelPanel extends JPanel {
     public void suggest() {
         List<RelationshipSuggester.Suggestion> list = RelationshipSuggester.suggest(model());
         suggestions.set(list);
-        showSuggestions(true);
+        showSuggestions(!list.isEmpty());   // niente da suggerire: basta la fascia che lo dice
         banner.set(Banner.Tone.INFO, Texts.get(list.isEmpty() ? "er.suggestions.none" : "er.suggestions.found",
                 list.size()));
     }

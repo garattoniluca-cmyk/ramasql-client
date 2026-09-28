@@ -88,7 +88,9 @@ class ThemeTokensTest {
         expected.put("ToolBar.background", Tokens.BG_WINDOW);
         expected.put("PopupMenu.borderColor", Tokens.BORDER_SUBTLE);
         expected.put("TabbedPane.underlineColor", Tokens.ACCENT);
-        expected.put("ToolTip.background", Tokens.TEXT_PRIMARY);
+        // DESIGN-SYSTEM §3.9 (ADR-020, ADR-028): suggerimento chiaro con il testo scuro, non più scuro con testo chiaro
+        expected.put("ToolTip.background", Tokens.BG_SURFACE);
+        expected.put("ToolTip.foreground", Tokens.TEXT_PRIMARY);
         expected.put("Component.error.focusedBorderColor", Tokens.DANGER);
         expected.put("Component.warning.focusedBorderColor", Tokens.WARNING);
         expected.put("ProgressBar.foreground", Tokens.ACCENT);

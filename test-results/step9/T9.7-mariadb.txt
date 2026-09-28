@@ -1,9 +1,9 @@
 T9.7 — prestiti-errori.csv: 100 righe, 5 sbagliate (MariaDB)
-  riga 11: Valore duplicato: esiste già una riga con lo stesso valore nella chiave primaria o in un indice UNIQUE. Messaggio del server: [1062] (conn=19437) Duplicate entry '1002' for key 'PRIMARY'
+  riga 11: Valore duplicato: esiste già una riga con lo stesso valore nella chiave primaria o in un indice UNIQUE. Messaggio del server: [1062] (conn=24164) Duplicate entry '1002' for key 'PRIMARY'
   riga 23: «31/02/2025» non è una data valida (giorno/mese/anno) per la colonna «data_prestito»: il giorno o il mese non esistono.
   riga 37: «trentasette» non è un numero intero, ma la colonna «id_libro» vuole un intero.
   riga 58: Valore vuoto nella colonna «id_socio», che non ammette NULL (NOT NULL).
-  riga 90: Il valore non esiste nella tabella riferita dalla chiave esterna: prima va inserita la riga «padre». Messaggio del server: [1452] (conn=19437) Cannot add or update a child row: a foreign key constraint fails (`ramasql_test_ui_t97_zo86y0`.`prestiti`, CONSTRAINT `fk_prestiti_libri` FOREIGN KEY (`id_libro`) REFERENCES `libri` (`id`))
+  riga 90: Il valore non esiste nella tabella riferita dalla chiave esterna: prima va inserita la riga «padre». Messaggio del server: [1452] (conn=24164) Cannot add or update a child row: a foreign key constraint fails (`ramasql_test_ui_t97_n9d540`.`prestiti`, CONSTRAINT `fk_prestiti_libri` FOREIGN KEY (`id_libro`) REFERENCES `libri` (`id`))
 Rapporto: ⚠ Fatto: 100 righe lette, 95 inserite, 5 scartate, 0 duplicati ignorati · lotti: 1.
 Sul server: prestiti = 500 + 95
 Esito: OK

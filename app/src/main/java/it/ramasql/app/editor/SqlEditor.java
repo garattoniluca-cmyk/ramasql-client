@@ -246,11 +246,15 @@ public final class SqlEditor extends JPanel {
         textArea.setPaintMatchedBracketPair(true);
         textArea.setAnimateBracketMatching(false);
         textArea.setHighlightCurrentLine(true);
+        textArea.setCurrentLineHighlightColor(it.ramasql.app.theme.Tokens.SQL_CURRENT_LINE);
         textArea.setMarkOccurrences(false);
         textArea.setTabSize(4);
         textArea.setAntiAliasingEnabled(true);
         textArea.setRows(12);
         textArea.setColumns(80);
+        // gli stessi colori della sintassi dell'anteprima, del registro e della scheda SQL (revisione T12.7)
+        it.ramasql.app.pipeline.SqlText.applyScheme(textArea);
+        textArea.setSelectionColor(it.ramasql.app.theme.Tokens.SQL_SELECTION);
     }
 
     private JPanel buildToolbar() {

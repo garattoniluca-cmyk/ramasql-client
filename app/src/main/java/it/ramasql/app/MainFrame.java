@@ -541,12 +541,13 @@ public final class MainFrame extends JFrame implements ShellView {
                 actions.add(button);
             } else if (key.equals("stop")) {
                 Styles.outline(button, Tokens.DANGER, Tokens.DANGER_TINT);
-                actions.add(Box.createHorizontalStrut(Tokens.px(Tokens.SPACE_8)));
+                actions.add(new Box.Filler(new Dimension(Tokens.px(Tokens.SPACE_4), 0),
+                        new Dimension(Tokens.px(Tokens.SPACE_8), 0), new Dimension(Tokens.px(Tokens.SPACE_8), 0)));
                 actions.add(button);
             } else {
                 if (GROUP_STARTS.contains(key)) {
-                    // lo spazio fra i gruppi si stringe fino a 4 px prima di togliere le scritte
-                    bar.add(new Box.Filler(new Dimension(Tokens.px(Tokens.SPACE_4), 0),
+                    // lo spazio fra i gruppi si stringe fino a sparire prima di togliere le scritte
+                    bar.add(new Box.Filler(new Dimension(0, 0),
                             new Dimension(Tokens.px(Tokens.SPACE_12), 0), new Dimension(Tokens.px(Tokens.SPACE_12), 0)));
                 }
                 Styles.text(button, "smallText");

@@ -163,9 +163,9 @@ public final class DumpWizard extends JPanel {
         Styles.outline(stopButton, Tokens.DANGER, Tokens.DANGER_TINT);
         add(header(), BorderLayout.NORTH);
         body.setOpaque(false);
-        body.add(whatStep(), Step.WHAT.name());
-        body.add(optionsStep(), Step.OPTIONS.name());
-        body.add(runStep(), Step.RUN.name());
+        body.add(Ui.stepScroll(whatStep()), Step.WHAT.name());
+        body.add(Ui.stepScroll(optionsStep()), Step.OPTIONS.name());
+        body.add(Ui.stepScroll(runStep()), Step.RUN.name());
         add(body, BorderLayout.CENTER);
         add(footer(), BorderLayout.SOUTH);
         tooltips();

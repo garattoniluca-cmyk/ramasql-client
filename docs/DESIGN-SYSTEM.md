@@ -86,7 +86,7 @@ Fondo `bg.window`. In cima: campo **filtro** con icona lente e segnaposto «Filt
 Fondo `bg.surface`, font mono 13 (segue la scala), numeri di riga `text.tertiary` su `bg.window`, riga corrente `#F5F8FF`, parentesi abbinate con fondo `accent.tint`. Barra sopra: *Esegui istruzione* (primario, Ctrl+Invio), *Esegui tutto*, *Interrompi*, *Apri*, *Salva*. Risultati sotto, in sotto-schede con pillola del numero di righe. Errore: fascia `danger.tint` con codice in grassetto, messaggio originale, spiegazione italiana in `text.secondary`, riga evidenziata nell'editor.
 
 ### 3.6 Pannello SQL (Registro · Anteprima · Messaggi)
-Schede a sottolineatura (2 px `accent` sulla scheda attiva). Registro come griglia compatta: ora `caption`, **pillola dell'origine** (Editor, Navigatore, Griglia… colori neutri), SQL in mono evidenziato su una riga (a capo al passaggio), esito con icona (spunta `success` / croce `danger`), durata e righe allineate a destra. Pulsante *Esporta…* in alto a destra.
+Schede a sottolineatura (2 px `accent` sulla scheda attiva). Registro come griglia compatta: ora `caption`, **pillola dell'origine** (Editor, Navigatore, Griglia… colori neutri), SQL in mono evidenziato su una riga (a capo al passaggio), esito con icona (spunta `success` / croce `danger`), durata e righe allineate a destra. Pulsante *Esporta registro…* in alto a destra.
 
 ### 3.7 Dialoghi
 Raggio 12, padding 24, titolo `heading`, testo `body`, al massimo **una decisione** per volta; pulsante primario a destra. **Anteprima SQL** («SQL che verrà eseguito»): riquadro codice `bg.sunken` con evidenziazione, contatore «3 istruzioni», pillola del rischio (`Modifica` ambra, `Distruttiva` rossa). **Conferma rafforzata**: fascia `danger.tint` con icona di avvertimento, frase chiara («Stai per eliminare la tabella **libri** con 200 righe. Non si può annullare.»), campo «Scrivi *libri* per confermare», pulsante *Elimina* `danger` attivo solo quando il nome coincide. **Errori di connessione**: titolo umano («Non riesco a connettermi a …»), cosa correggere in `body`, «Messaggio originale» in un riquadro mono ripiegabile.
@@ -103,6 +103,12 @@ Uno stile unico in tutto il programma, pensato per essere **letto**, non intravi
 - **Tastiera**: il suggerimento dell'elemento con il focus si apre con **Ctrl+F1** (lo stesso tasto di Workbench e dell'uso comune per «dimmi di più») e si chiude con Esc.
 - **Proiettore**: segue la dimensione del carattere scelta nelle impostazioni; se non entra sullo schermo si sposta, non si taglia.
 - **Testi**: sempre nei file di risorse (chiavi `<componente>.tooltip` per i componenti, `<lista>.<voce>.tooltip` per le voci delle liste), mai nel codice. Stile di scrittura del §4.
+- **Realizzato (Step 12, `ADR-028`)**: `theme.RamaToolTipUI` (disegno), `theme.ComboTips` (voci accanto alla lista), `theme.Tips` (chiavi e testi composti), `theme.KeyTips` (Ctrl+F1). La larghezza massima cresce con il carattere ma resta entro i tre quinti dello schermo; resta a schermo 60 s.
+
+### 3.10 Tastiera, schermi piccoli, barre che si stringono (Step 12, `ADR-028`)
+- **Aree**: F6 / Maiusc+F6 fra barra degli strumenti, navigatore, scheda aperta e pannello SQL; nella barra frecce e Spazio. Menu del nodo del navigatore con Maiusc+F10 (o il tasto del menu). Liste nelle celle con Alt+Giù o F4; nella lista aperta le frecce spostano l'evidenziazione (e la spiegazione accanto), Invio sceglie.
+- **Schermo**: nessuna finestra esce dallo schermo (1024×768 con il carattere a 28): la parte centrale scorre, i pulsanti restano fissi in basso; i messaggi vanno a capo a 60 caratteri; popup e liste aperte restano dentro lo schermo.
+- **Barre**: quando lo spazio manca si stringono prima gli spazi fra i gruppi, poi alcuni pulsanti mostrano la sola icona (il nome resta nel suggerimento), a gradini (`theme.Compact`); l'azione principale (*Esegui*, *Conferma*) tiene sempre la scritta finché è possibile.
 
 ## 4. Scrittura (ux-copy)
 Frasi brevi, in seconda persona, verbi d'azione nei pulsanti («Conferma», «Elimina tabella», «Connetti»), niente gergo tecnico dove non serve, il gergo SQL dove serve (è ciò che si insegna). Errori: *cosa è successo* + *cosa fare*, poi il messaggio originale.

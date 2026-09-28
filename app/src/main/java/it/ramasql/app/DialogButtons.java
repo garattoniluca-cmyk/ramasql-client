@@ -43,6 +43,7 @@ public final class DialogButtons extends JPanel {
         confirm.setName("dialog.confirm");
         confirm.addActionListener(e -> onConfirm.run());
         JPanel right = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
+        right.setOpaque(false);
         if (cancelLabel != null) {
             cancel = new JButton(cancelLabel);
             cancel.setName("dialog.cancel");

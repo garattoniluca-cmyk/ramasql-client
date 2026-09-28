@@ -2,9 +2,9 @@ T9.8 — opzioni «ignora duplicati» e «svuota prima» (MySQL)
 Duplicati come errore: ⚠ Fatto: 100 righe lette, 0 inserite, 100 scartate, 0 duplicati ignorati · lotti: 1.
 Ignora duplicati: ✔ Fatto: 101 righe lette, 1 inserite, 0 scartate, 100 duplicati ignorati · lotti: 1.
 Svuota prima: anteprima
-TRUNCATE TABLE `ramasql_test_ui_t98_zvhn2v`.`soci_copia`;
+TRUNCATE TABLE `ramasql_test_ui_t98_kqd01b`.`soci_copia`;
 
-INSERT INTO `ramasql_test_ui_t98_zvhn2v`.`soci_copia` (`tessera`, `cognome`, `nome`, `email`, `nato_il`) VALUES (?, ?, ?, ?, ?);
+INSERT INTO `ramasql_test_ui_t98_kqd01b`.`soci_copia` (`tessera`, `cognome`, `nome`, `email`, `nato_il`) VALUES (?, ?, ?, ?, ?);
 conferma [STRONG «soci_copia»] → soci_copia = 100 righe, tutte del file
 Svuota prima su soci (riferita da prestiti): opzione spenta, con il motivo: «Svuota prima» non si può usare: la tabella «soci» è riferita dalle chiavi esterne di prestiti, e il server rifiuta TRUNCATE su una tabella riferita anche se le altre tabelle sono vuote.
 Esito: OK

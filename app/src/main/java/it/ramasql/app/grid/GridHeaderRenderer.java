@@ -79,11 +79,13 @@ final class GridHeaderRenderer extends JComponent implements TableCellRenderer {
         return this;
     }
 
-    /** {@code VARCHAR(50) · NN · AI}: il tipo come lo scrive il server, poi i vincoli in sigla. */
+    /** {@code INT · UN · NN · AI}: il tipo come lo scrive il server, poi le opzioni in sigla. */
     static String typeText(ColumnDef def) {
         StringBuilder sb = new StringBuilder(def.fullType());
         if (def.unsigned()) {
-            sb.append(" UNSIGNED");
+            // in sigla come NN e AI (e come la colonna UN dell'editor di tabelle): al carattere piccolo
+            // «INT UNSIGNED» sembrava una parola sola (revisione T12.7)
+            sb.append(" · UN");
         }
         if (!def.nullable()) {
             sb.append(" · NN");

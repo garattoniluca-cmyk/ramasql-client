@@ -732,3 +732,17 @@ Nessun intervento toglie funzioni della colonna v1, l'anteprima SQL, il registro
 | Impostazioni **= 4 voci** | **4** in «finestra settings.dialog»: *Lingua*, *Dimensione carattere*, *Limite righe*, *Cartella di lavoro*. *Sfoglia…* fa parte della quarta voce; *Annulla* e *Salva* sono i pulsanti della finestra | **rispettata**, esattamente come `DESIGN.md` §3.12 |
 
 **Copertura:** tutte le schermate dell'inventario hanno la loro sezione nel §2, con il nome tra caporali: 36 titoli, che coprono le 49 voci contando le linguette interne di editor SQL, editor di tabelle, tabella nuova e query visiva.
+
+## 5. Esito degli interventi (2026-09-28, Step 12)
+
+Applicati nel codice:
+- **Da fare ora** 1, 2, 3, 5, 6, 7, 8, 9: sottotitolo dell'anteprima senza ripetizione; «(scegli il catalogo)» invece di «null»; il pannello dei suggerimenti del modello ER si apre solo se ce ne sono; riga corrente dell'editor SQL con `sql.currentLine`; i pulsanti si misurano con il carattere che hanno davvero (niente più «Interro…»); *Esporta registro…*; *Aggiungi all'indice* / *Togli dall'indice*; nessun rettangolo grigio dietro i pulsanti dei dialoghi.
+- **Da fare ora** 4 (linguette su una riga che scorre): provato e tolto, perché con FlatLaf la disposizione a scorrimento del `JTabbedPane` si rompe; annotato in `BUGS.md` (`BUG-036`).
+- **Per dopo** 1 (*Conferma* fuori dalla finestra): la barra della griglia si stringe a gradini (prima *Esporta CSV…*, poi *Griglia/Scheda*, poi *Scarta* restano con la sola icona); *Conferma* resta sempre intera (`theme.Compact`).
+- **Per dopo** 2 («INTUNSIGNED»): nell'intestazione le opzioni sono in sigla come le altre, «INT · UN · NN · AI» (al carattere piccolo lo spazio fra «INT» e «UNSIGNED» non si vedeva).
+- **Per dopo** 3 (passi delle procedure guidate): ogni passo dell'importazione e del dump scorre in verticale se non ci sta.
+- **Per dopo** 8 (testo delle Informazioni): il testo scorre.
+- **Per dopo** 9 (barra compatta a 1164 px): gli spazi fra i gruppi si stringono prima di togliere le scritte, così alla dimensione normale la barra mostra icone e nomi.
+- **Per dopo** 11 (colori della sintassi dell'editor SQL): stessi colori di anteprima e registro, selezione `sql.selection`.
+
+Annotati in `BUGS.md` per dopo: 4 (`BUG-028`, da decidere con l'utente), 5 (`BUG-029`), 6 (`BUG-030`), 7 (`BUG-031`), 10 (`BUG-032`), 12 (`BUG-033`), 13 (`BUG-034`), 14 (`BUG-035`).

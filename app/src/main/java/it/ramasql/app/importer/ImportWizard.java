@@ -221,11 +221,11 @@ public final class ImportWizard extends JPanel {
 
         add(header(), BorderLayout.NORTH);
         body.setOpaque(false);
-        body.add(fileStep(), Step.FILE.name());
-        body.add(previewStep(), Step.PREVIEW.name());
-        body.add(targetStep(), Step.TARGET.name());
-        body.add(optionsStep(), Step.OPTIONS.name());
-        body.add(runStep(), Step.RUN.name());
+        body.add(Ui.stepScroll(fileStep()), Step.FILE.name());
+        body.add(Ui.stepScroll(previewStep()), Step.PREVIEW.name());
+        body.add(Ui.stepScroll(targetStep()), Step.TARGET.name());
+        body.add(Ui.stepScroll(optionsStep()), Step.OPTIONS.name());
+        body.add(Ui.stepScroll(runStep()), Step.RUN.name());
         add(body, BorderLayout.CENTER);
         add(footer(), BorderLayout.SOUTH);
         tooltips();

@@ -1,0 +1,6 @@
+T12.4 — scorciatoie della guida rapida, MariaDB
+F10: il menu File si apre; Esc lo chiude
+tasto del menu sul server: il menu del nodo si apre; Esc lo chiude
+F4 sulla cella ON DELETE: la lista si apre, la freccia evidenzia «CASCADE», Esc chiude e la cella resta «RESTRICT»; tabella non modificata
+Tasti premuti: 33
+Esito: SUPERATO

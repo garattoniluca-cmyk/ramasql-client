@@ -1,13 +1,13 @@
--- RamaSQL Client - registro SQL esportato il 2026-09-28 17:34:53
+-- RamaSQL Client - registro SQL esportato il 2026-09-28 19:46:51
 -- Connessione: MariaDB locale (MariaDB 11.5.2)
 -- Istruzioni: 37 riuscite; 0 non riuscite o interrotte (commentate, non vengono rieseguite: possono essere state applicate in parte, verifica)
--- Riferimenti al catalogo «ramasql_test_ui_m1a_etc76c» tolti: lo script si riesegue sul catalogo corrente
+-- Riferimenti al catalogo «ramasql_test_ui_m1a_f6po4r» tolti: lo script si riesegue sul catalogo corrente
 
--- #1 17:34:52 · Navigatore · OK · 1 righe · 0 ms
--- CREATE DATABASE `ramasql_test_ui_m1a_etc76c` CHARACTER SET utf8mb4 COLLATE utf8mb4_uca1400_ai_ci;
--- (istruzione sul catalogo d'origine «ramasql_test_ui_m1a_etc76c» omessa: rieseguire lo script non deve mai crearlo, modificarlo o eliminarlo)
+-- #1 19:46:50 · Navigatore · OK · 1 righe · 0 ms
+-- CREATE DATABASE `ramasql_test_ui_m1a_f6po4r` CHARACTER SET utf8mb4 COLLATE utf8mb4_uca1400_ai_ci;
+-- (istruzione sul catalogo d'origine «ramasql_test_ui_m1a_f6po4r» omessa: rieseguire lo script non deve mai crearlo, modificarlo o eliminarlo)
 
--- #2 17:34:52 · Editor di tabelle · OK · 0 righe · 3 ms
+-- #2 19:46:50 · Editor di tabelle · OK · 0 righe · 3 ms
 CREATE TABLE `editori` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
   `nome` VARCHAR(80) NOT NULL,
@@ -16,7 +16,7 @@ CREATE TABLE `editori` (
   UNIQUE INDEX `uq_editori_nome` (`nome`)
 ) ENGINE=InnoDB;
 
--- #3 17:34:53 · Editor di tabelle · OK · 0 righe · 3 ms
+-- #3 19:46:50 · Editor di tabelle · OK · 0 righe · 6 ms
 CREATE TABLE `autori` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
   `cognome` VARCHAR(60) NOT NULL,
@@ -24,7 +24,7 @@ CREATE TABLE `autori` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB;
 
--- #4 17:34:53 · Editor di tabelle · OK · 0 righe · 4 ms
+-- #4 19:46:50 · Editor di tabelle · OK · 0 righe · 4 ms
 CREATE TABLE `libri` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
   `titolo` VARCHAR(150) NOT NULL,
@@ -35,7 +35,7 @@ CREATE TABLE `libri` (
   CONSTRAINT `fk_libri_editori` FOREIGN KEY (`id_editore`) REFERENCES `editori` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT
 ) ENGINE=InnoDB;
 
--- #5 17:34:53 · Editor di tabelle · OK · 0 righe · 4 ms
+-- #5 19:46:50 · Editor di tabelle · OK · 0 righe · 5 ms
 CREATE TABLE `libri_autori` (
   `id_libro` INT UNSIGNED NOT NULL,
   `id_autore` INT UNSIGNED NOT NULL,
@@ -44,98 +44,98 @@ CREATE TABLE `libri_autori` (
   CONSTRAINT `fk_libri_autori_autori` FOREIGN KEY (`id_autore`) REFERENCES `autori` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT
 ) ENGINE=InnoDB;
 
--- #6 17:34:53 · Griglia · OK · 0 righe · 0 ms
+-- #6 19:46:51 · Griglia · OK · 0 righe · 0 ms
 SELECT `id`, `nome`, `citta` FROM `editori` LIMIT 1001;
 
--- #7 17:34:53 · Griglia · OK · 1 righe · 0 ms
+-- #7 19:46:51 · Griglia · OK · 1 righe · 1 ms
 INSERT INTO `editori` (`nome`, `citta`) VALUES ('Einaudi', 'Torino');
 
--- #8 17:34:53 · Griglia · OK · 1 righe · 0 ms
+-- #8 19:46:51 · Griglia · OK · 1 righe · 0 ms
 INSERT INTO `editori` (`nome`, `citta`) VALUES ('Adelphi', 'Milano');
 
--- #9 17:34:53 · Griglia · OK · 1 righe · 0 ms
+-- #9 19:46:51 · Griglia · OK · 1 righe · 0 ms
 INSERT INTO `editori` (`nome`, `citta`) VALUES ('Sellerio', 'Palermo');
 
--- #10 17:34:53 · Griglia · OK · 3 righe · 0 ms
+-- #10 19:46:51 · Griglia · OK · 3 righe · 0 ms
 SELECT `id`, `nome`, `citta` FROM `editori` LIMIT 1001;
 
--- #11 17:34:53 · Griglia · OK · 0 righe · 0 ms
+-- #11 19:46:51 · Griglia · OK · 0 righe · 1 ms
 SELECT `id`, `cognome`, `nome` FROM `autori` LIMIT 1001;
 
--- #12 17:34:53 · Griglia · OK · 1 righe · 0 ms
+-- #12 19:46:51 · Griglia · OK · 1 righe · 0 ms
 INSERT INTO `autori` (`cognome`, `nome`) VALUES ('Autore01', 'Nome 1');
 
--- #13 17:34:53 · Griglia · OK · 1 righe · 0 ms
+-- #13 19:46:51 · Griglia · OK · 1 righe · 0 ms
 INSERT INTO `autori` (`cognome`, `nome`) VALUES ('Autore02', 'Nome 2');
 
--- #14 17:34:53 · Griglia · OK · 1 righe · 0 ms
+-- #14 19:46:51 · Griglia · OK · 1 righe · 0 ms
 INSERT INTO `autori` (`cognome`, `nome`) VALUES ('Autore03', 'Nicolò');
 
--- #15 17:34:53 · Griglia · OK · 1 righe · 0 ms
+-- #15 19:46:51 · Griglia · OK · 1 righe · 0 ms
 INSERT INTO `autori` (`cognome`, `nome`) VALUES ('Autore04', 'Nome 4');
 
--- #16 17:34:53 · Griglia · OK · 1 righe · 0 ms
+-- #16 19:46:51 · Griglia · OK · 1 righe · 0 ms
 INSERT INTO `autori` (`cognome`, `nome`) VALUES ('Autore05', 'Nome 5');
 
--- #17 17:34:53 · Griglia · OK · 1 righe · 0 ms
+-- #17 19:46:51 · Griglia · OK · 1 righe · 0 ms
 INSERT INTO `autori` (`cognome`, `nome`) VALUES ('Autore06', 'Nicolò');
 
--- #18 17:34:53 · Griglia · OK · 1 righe · 0 ms
+-- #18 19:46:51 · Griglia · OK · 1 righe · 0 ms
 INSERT INTO `autori` (`cognome`, `nome`) VALUES ('Autore07', 'Nome 7');
 
--- #19 17:34:53 · Griglia · OK · 1 righe · 0 ms
+-- #19 19:46:51 · Griglia · OK · 1 righe · 0 ms
 INSERT INTO `autori` (`cognome`, `nome`) VALUES ('Autore08', 'Nome 8');
 
--- #20 17:34:53 · Griglia · OK · 1 righe · 0 ms
+-- #20 19:46:51 · Griglia · OK · 1 righe · 0 ms
 INSERT INTO `autori` (`cognome`, `nome`) VALUES ('Autore09', 'Nicolò');
 
--- #21 17:34:53 · Griglia · OK · 1 righe · 0 ms
+-- #21 19:46:51 · Griglia · OK · 1 righe · 0 ms
 INSERT INTO `autori` (`cognome`, `nome`) VALUES ('Autore10', 'Nome 10');
 
--- #22 17:34:53 · Griglia · OK · 1 righe · 0 ms
+-- #22 19:46:51 · Griglia · OK · 1 righe · 0 ms
 INSERT INTO `autori` (`cognome`, `nome`) VALUES ('Autore11', 'Nome 11');
 
--- #23 17:34:53 · Griglia · OK · 1 righe · 0 ms
+-- #23 19:46:51 · Griglia · OK · 1 righe · 0 ms
 INSERT INTO `autori` (`cognome`, `nome`) VALUES ('Autore12', 'Nicolò');
 
--- #24 17:34:53 · Griglia · OK · 1 righe · 0 ms
+-- #24 19:46:51 · Griglia · OK · 1 righe · 0 ms
 INSERT INTO `autori` (`cognome`, `nome`) VALUES ('Autore13', 'Nome 13');
 
--- #25 17:34:53 · Griglia · OK · 1 righe · 0 ms
+-- #25 19:46:51 · Griglia · OK · 1 righe · 0 ms
 INSERT INTO `autori` (`cognome`, `nome`) VALUES ('Autore14', 'Nome 14');
 
--- #26 17:34:53 · Griglia · OK · 1 righe · 0 ms
+-- #26 19:46:51 · Griglia · OK · 1 righe · 0 ms
 INSERT INTO `autori` (`cognome`, `nome`) VALUES ('Autore15', 'Nicolò');
 
--- #27 17:34:53 · Griglia · OK · 1 righe · 0 ms
+-- #27 19:46:51 · Griglia · OK · 1 righe · 0 ms
 INSERT INTO `autori` (`cognome`, `nome`) VALUES ('Autore16', 'Nome 16');
 
--- #28 17:34:53 · Griglia · OK · 1 righe · 0 ms
+-- #28 19:46:51 · Griglia · OK · 1 righe · 0 ms
 INSERT INTO `autori` (`cognome`, `nome`) VALUES ('Autore17', 'Nome 17');
 
--- #29 17:34:53 · Griglia · OK · 1 righe · 0 ms
+-- #29 19:46:51 · Griglia · OK · 1 righe · 0 ms
 INSERT INTO `autori` (`cognome`, `nome`) VALUES ('Autore18', 'Nicolò');
 
--- #30 17:34:53 · Griglia · OK · 1 righe · 0 ms
+-- #30 19:46:51 · Griglia · OK · 1 righe · 0 ms
 INSERT INTO `autori` (`cognome`, `nome`) VALUES ('Autore19', 'Nome 19');
 
--- #31 17:34:53 · Griglia · OK · 1 righe · 0 ms
+-- #31 19:46:51 · Griglia · OK · 1 righe · 0 ms
 INSERT INTO `autori` (`cognome`, `nome`) VALUES ('Autore20', 'Nome 20');
 
--- #32 17:34:53 · Griglia · OK · 20 righe · 0 ms
+-- #32 19:46:51 · Griglia · OK · 20 righe · 0 ms
 SELECT `id`, `cognome`, `nome` FROM `autori` LIMIT 1001;
 
--- #33 17:34:53 · Griglia · OK · 0 righe · 0 ms
+-- #33 19:46:51 · Griglia · OK · 0 righe · 0 ms
 SELECT `id`, `titolo`, `isbn`, `id_editore` FROM `libri` LIMIT 1001;
 
--- #34 17:34:53 · Griglia · OK · 1 righe · 1 ms
+-- #34 19:46:51 · Griglia · OK · 1 righe · 3 ms
 INSERT INTO `libri` (`titolo`, `isbn`, `id_editore`) VALUES ('Se questo è un uomo', '9788806001', 1);
 
--- #35 17:34:53 · Griglia · OK · 1 righe · 0 ms
+-- #35 19:46:51 · Griglia · OK · 1 righe · 0 ms
 INSERT INTO `libri` (`titolo`, `isbn`, `id_editore`) VALUES ('Il deserto dei Tartari', '9788845902', 2);
 
--- #36 17:34:53 · Griglia · OK · 1 righe · 0 ms
+-- #36 19:46:51 · Griglia · OK · 1 righe · 0 ms
 INSERT INTO `libri` (`titolo`, `isbn`, `id_editore`) VALUES ('Il birraio di Preston', '9788838903', 3);
 
--- #37 17:34:53 · Griglia · OK · 3 righe · 0 ms
+-- #37 19:46:51 · Griglia · OK · 3 righe · 0 ms
 SELECT `id`, `titolo`, `isbn`, `id_editore` FROM `libri` LIMIT 1001;

@@ -8,7 +8,7 @@ T12.13 — suggerimenti al proiettore (1024×768, carattere 28) e da tastiera, M
 4) liste dell'editor di tabelle al proiettore:
   columns.typeEditor (colonna «Tipo»)              lista 449,332 249×396, prima spiegazione 8,366 427×362
     29 voci spiegate
-  indexes.columnChoice                             lista 728,388 296×340, prima spiegazione 91,390 623×210
+  indexes.columnChoice                             lista 718,388 306×340, prima spiegazione 81,390 623×210
     6 voci spiegate
   indexes.kind (colonna «Tipo»)                    lista 609,520 188×172, prima spiegazione 16,442 579×286
     3 voci spiegate

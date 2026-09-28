@@ -45,12 +45,22 @@ public final class Ui {
     }
 
     public static JButton button(String name, String text, Runnable action) {
-        JButton b = new JButton(text);
+        // misura calcolata ogni volta: se lo stile cambia il carattere (Styles.outline), il testo non si taglia
+        JButton b = new JButton(text) {
+            private static final long serialVersionUID = 1L;
+
+            @Override
+            public Dimension getPreferredSize() {
+                if (isPreferredSizeSet()) {
+                    return super.getPreferredSize();
+                }
+                Dimension d = super.getPreferredSize();
+                return new Dimension(Math.max(d.width, Tokens.px(32)), Tokens.px(Tokens.CONTROL_HEIGHT));
+            }
+        };
         b.setName(name);
         b.addActionListener(e -> action.run());
         b.putClientProperty("JButton.buttonType", "roundRect");
-        Dimension d = b.getPreferredSize();
-        b.setPreferredSize(new Dimension(Math.max(d.width, Tokens.px(32)), Tokens.px(Tokens.CONTROL_HEIGHT)));
         return b;
     }
 
@@ -147,6 +157,53 @@ public final class Ui {
                 javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_F4, 0))) {
             table.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(ks, "ramasql.openCellList");
         }
+    }
+
+    /**
+     * Un passo di una procedura guidata che scorre in verticale solo se non ci sta (schermo basso, carattere grande:
+     * revisione T12.7); quando lo spazio c'è, occupa tutta l'altezza come prima.
+     */
+    public static JScrollPane stepScroll(JComponent step) {
+        class Step extends javax.swing.JPanel implements javax.swing.Scrollable {
+            private static final long serialVersionUID = 1L;
+
+            Step() {
+                super(new java.awt.BorderLayout());
+                setOpaque(false);
+                add(step, java.awt.BorderLayout.CENTER);
+            }
+
+            @Override
+            public Dimension getPreferredScrollableViewportSize() {
+                return getPreferredSize();
+            }
+
+            @Override
+            public int getScrollableUnitIncrement(java.awt.Rectangle r, int orientation, int direction) {
+                return Tokens.px(24);
+            }
+
+            @Override
+            public int getScrollableBlockIncrement(java.awt.Rectangle r, int orientation, int direction) {
+                return Math.max(Tokens.px(24), r.height - Tokens.px(24));
+            }
+
+            @Override
+            public boolean getScrollableTracksViewportWidth() {
+                return true;
+            }
+
+            @Override
+            public boolean getScrollableTracksViewportHeight() {
+                return getParent() instanceof javax.swing.JViewport v && v.getHeight() >= getPreferredSize().height;
+            }
+        }
+        JScrollPane s = new JScrollPane(new Step());
+        s.setBorder(null);
+        s.setOpaque(false);
+        s.getViewport().setOpaque(false);
+        s.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        return s;
     }
 
     /** Pannello di dettaglio che scorre invece di schiacciarsi quando lo spazio è poco. */

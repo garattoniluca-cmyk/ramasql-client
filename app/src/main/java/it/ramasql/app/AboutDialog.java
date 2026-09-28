@@ -67,6 +67,7 @@ public final class AboutDialog extends JDialog {
         text.setFocusable(true);
         text.setToolTipText(Texts.get("about.text.tooltip"));
         text.setColumns(52);
+        text.setRows(14);
 
         libraries = new JTable(new AbstractTableModel() {
             private static final long serialVersionUID = 1L;
@@ -99,7 +100,13 @@ public final class AboutDialog extends JDialog {
                 + Tokens.px(6)));
         JPanel middle = new JPanel(new BorderLayout(0, Tokens.px(Tokens.SPACE_12)));
         middle.setOpaque(false);
-        middle.add(text, BorderLayout.CENTER);
+        // il testo scorre: intero anche con il carattere grande o su uno schermo basso (revisione T12.7)
+        JScrollPane textScroll = new JScrollPane(text);
+        textScroll.setBorder(null);
+        textScroll.setOpaque(false);
+        textScroll.getViewport().setOpaque(false);
+        textScroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        middle.add(textScroll, BorderLayout.CENTER);
         JPanel libs = new JPanel(new BorderLayout(0, Tokens.px(Tokens.SPACE_4)));
         libs.setOpaque(false);
         libs.add(Styles.text(new JLabel(Texts.get("about.libraries")), "emphasis", Tokens.TEXT_PRIMARY),

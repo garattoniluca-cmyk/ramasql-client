@@ -558,4 +558,87 @@ class T124SoloTastieraTest {
             server.dropQuietly(copia);
         }
     }
+    /**
+     * Le scorciatoie della guida rapida che l'esercitazione non usa: F10 porta al menu in alto (Esc lo chiude); il tasto
+     * del menu apre il menu del nodo del navigatore; nella lista di una cella F4 la apre ed Esc la chiude lasciando il
+     * valore com'era.
+     */
+    @ParameterizedTest
+    @EnumSource(DbServer.class)
+    void t124_scorciatoieDellaGuida(DbServer server) throws Exception {
+        String catalog = DbServer.newCatalogName("k2");
+        StringBuilder ev = new StringBuilder("T12.4 — scorciatoie della guida rapida, " + server.label() + "\n");
+        Keys k = new Keys();
+        try {
+            server.createCatalog(catalog);
+            server.loadFixture(catalog, "biblioteca.sql");
+            try (ClientApp a = ClientApp.connect(server, dataDir)) {
+                a.ws.realOwner = a::frame;
+                onEdt(() -> {
+                    a.frame().setVisible(true);
+                    a.frame().toFront();
+                });
+                waitUntil("finestra attiva", ClientApp.TIMEOUT, () -> a.frame().isActive());
+                f6To(k, "il navigatore", a.nav().tree());
+                // F10: il menu in alto
+                k.press(KeyEvent.VK_F10);
+                waitUntil("menu in alto", 5_000, () -> {
+                    javax.swing.MenuElement[] p = javax.swing.MenuSelectionManager.defaultManager().getSelectedPath();
+                    return p.length > 0 && p[0] instanceof javax.swing.JMenuBar;
+                });
+                k.press(KeyEvent.VK_ESCAPE);
+                k.press(KeyEvent.VK_ESCAPE);
+                waitUntil("menu chiuso", 5_000,
+                        () -> javax.swing.MenuSelectionManager.defaultManager().getSelectedPath().length == 0);
+                ev.append("F10: il menu File si apre; Esc lo chiude\n");
+                // il tasto del menu sul nodo del navigatore
+                f6To(k, "il navigatore", a.nav().tree());
+                selectRow(k, a.nav().tree(), 0);
+                k.press(KeyEvent.VK_CONTEXT_MENU);
+                waitUntil("menu del nodo", 5_000,
+                        () -> javax.swing.MenuSelectionManager.defaultManager().getSelectedPath().length > 1);
+                k.press(KeyEvent.VK_ESCAPE);
+                waitUntil("menu del nodo chiuso", 5_000,
+                        () -> javax.swing.MenuSelectionManager.defaultManager().getSelectedPath().length == 0);
+                ev.append("tasto del menu sul server: il menu del nodo si apre; Esc lo chiude\n");
+                // F4 nella lista di una cella, poi Esc: il valore resta
+                navTo(k, a, catalog, "libri");
+                menu(k, "nav.menu.designTable");
+                waitUntil("editor di tabelle", ClientApp.TIMEOUT,
+                        () -> a.frame().tabs().selected() instanceof TableEditor);
+                TableEditor e = fromEdt(() -> (TableEditor) a.frame().tabs().selected());
+                f6To(k, "l'editor di tabelle", e);
+                tabOf(k, e, 2);
+                JTable t = fromEdt(() -> (JTable) byName(e, "fks.table"));
+                k.tabTo("fks.table", x -> x == t, false);
+                cell(k, t, 0, 4);
+                String before = fromEdt(() -> String.valueOf(t.getValueAt(0, 4)));
+                javax.swing.JComboBox<?> combo = fromEdt(() -> (javax.swing.JComboBox<?>)
+                        ((javax.swing.DefaultCellEditor) t.getCellEditor(0, 4)).getComponent());
+                k.press(KeyEvent.VK_F4);
+                waitUntil("lista aperta con F4", 5_000, combo::isPopupVisible);
+                k.press(KeyEvent.VK_DOWN);
+                String highlighted = fromEdt(() -> String.valueOf(popupList(combo).getSelectedValue()));
+                k.press(KeyEvent.VK_ESCAPE);
+                waitUntil("lista chiusa", 5_000, () -> !combo.isPopupVisible());
+                if (fromEdt(t::isEditing)) {
+                    k.press(KeyEvent.VK_ESCAPE);
+                }
+                waitUntil("modifica annullata", 5_000, () -> !t.isEditing());
+                assertEquals(before, fromEdt(() -> String.valueOf(t.getValueAt(0, 4))), "Esc lascia il valore com'era");
+                assertTrue(!fromEdt(e::isModified), "nessuna modifica alla tabella");
+                ev.append("F4 sulla cella ON DELETE: la lista si apre, la freccia evidenzia «").append(highlighted)
+                        .append("», Esc chiude e la cella resta «").append(before).append("»; tabella non modificata\n")
+                        .append("Tasti premuti: ").append(k.presses).append("\nEsito: SUPERATO\n");
+                onEdt(() -> a.frame().setVisible(false));
+            }
+        } catch (Throwable th) {
+            ev.append("Fuoco al momento dell'errore: ").append(Keys.describe(Keys.owner()))
+                    .append("\nEsito: FALLITO - ").append(th).append('\n');
+            throw th;
+        } finally {
+            Probe.writeText("step12", "T12.4-scorciatoie-" + server.id() + ".txt", ev.toString());
+            server.dropQuietly(catalog);
+        }
+    }
 }

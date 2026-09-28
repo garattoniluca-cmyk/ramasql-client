@@ -63,7 +63,7 @@ Schermate: 49; fotografie: 30
 - albero «navigator.tree»
 - linguette «zone.sqlPanel» [Registro, Anteprima, Messaggi]
 - campo di testo «panel.log.filter»
-- pulsante "Esporta…" «panel.log.export»
+- pulsante "Esporta registro…" «panel.log.export»
 - tabella «panel.log.table» [#, Ora, Origine, SQL, Esito, Durata, Righe]
 
 ## menu barra › Importa (2 controlli)
@@ -163,8 +163,8 @@ Schermate: 49; fotografie: 30
 - pulsante "Elimina indice" «indexes.remove»
 - elenco «indexes.columns»
 - lista a discesa «indexes.columnChoice» (6 voci)
-- pulsante "Aggiungi colonna" «indexes.addColumn»
-- pulsante "Togli colonna" «indexes.removeColumn»
+- pulsante "Aggiungi all'indice" «indexes.addColumn»
+- pulsante "Togli dall'indice" «indexes.removeColumn»
 - pulsante "Sposta su" «indexes.up»
 - pulsante "Sposta giù" «indexes.down»
 - pulsante "Verifica dati" «indexes.verifyData»
@@ -207,8 +207,8 @@ Schermate: 49; fotografie: 30
 - pulsante "Elimina indice" «indexes.remove»
 - elenco «indexes.columns»
 - lista a discesa «indexes.columnChoice» (1 voci)
-- pulsante "Aggiungi colonna" «indexes.addColumn»
-- pulsante "Togli colonna" «indexes.removeColumn»
+- pulsante "Aggiungi all'indice" «indexes.addColumn»
+- pulsante "Togli dall'indice" «indexes.removeColumn»
 - pulsante "Sposta su" «indexes.up»
 - pulsante "Sposta giù" «indexes.down»
 - pulsante "Verifica dati" «indexes.verifyData»
@@ -338,7 +338,7 @@ Schermate: 49; fotografie: 30
 - pulsante "Esegui" «script.run»
 - tabella «script.failures» [Riga, Istruzione, Errore]
 
-## modello ER (10 controlli)
+## modello ER (7 controlli)
 - pulsante "Suggerisci relazioni" «er.suggest»
 - pulsante "Disponi" «er.layout»
 - pulsante "Aggiorna dal database" «er.refresh»
@@ -346,9 +346,6 @@ Schermate: 49; fotografie: 30
 - pulsante "−" «er.zoomOut»
 - pulsante "+" «er.zoomIn»
 - pulsante "Salva" «er.save»
-- tabella «er.suggestions.table» [, Relazione, Fiducia]
-- pulsante "Chiudi" «er.suggestions.close»
-- pulsante "Accetta le spuntate" «er.suggestions.accept»
 
 ## menu modello ER › relazione (1 controlli)
 - voce "Chiave esterna «fk_libri_editori» del database (si cambia dall'editor di tabelle)" «er.relationship.physical»
@@ -407,5 +404,5 @@ Schermate: 49; fotografie: 30
 - pulsante "Copia" «showCreate.copy»
 - pulsante "Chiudi" «showCreate.close»
 
-Schermate senza revisione in docs/REVISIONE-APPLE.md: [schermata iniziale, area di lavoro, menu barra › Importa, menu barra › Modello ER, menu navigatore › SERVER, menu navigatore › CATALOG, menu navigatore › TABLE, menu navigatore › VIEW, editor SQL, griglia dati, griglia dati con la scheda record, editor di tabelle, tabella nuova, query visiva, importa › 1 file, importa › 1 file scelto, importa › 2 anteprima, importa › 3 tabella esistente, importa › 3 tabella nuova, importa › 4 opzioni, importa › 5 importa, dump › 1 cosa, dump › 2 opzioni, dump › 3 esporta, esegui script, modello ER, menu modello ER › relazione, finestra preview.dialog, finestra catalog.create.dialog, finestra profile.dialog, finestra settings.dialog, finestra about.dialog, finestra guide.dialog, finestra connection.error.dialog, finestra er.tables.dialog, finestra showCreate.dialog]
-Esito: FALLITO
+Schermate senza revisione in docs/REVISIONE-APPLE.md: []
+Esito: OK

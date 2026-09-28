@@ -1,5 +1,5 @@
 T7.7b — query nidificate su MariaDB
-Catalogo di test: ramasql_test_ui_visual77b_1uglmh
+Catalogo di test: ramasql_test_ui_visual77b_zgu93r
 — sopra la media:
 SELECT
 	`libri`.`titolo`,
@@ -13,7 +13,7 @@ WHERE
 							`libri`)
 ORDER BY
 	`libri`.`titolo` ASC
-  100 righe, uguali a quelle del riferimento scritto a mano: SELECT l.titolo, l.prezzo FROM `ramasql_test_ui_visual77b_1uglmh`.libri l WHERE l.prezzo > (SELECT AVG(l2.prezzo) FROM `ramasql_test_ui_visual77b_1uglmh`.libri l2) ORDER BY l.titolo
+  100 righe, uguali a quelle del riferimento scritto a mano: SELECT l.titolo, l.prezzo FROM `ramasql_test_ui_visual77b_zgu93r`.libri l WHERE l.prezzo > (SELECT AVG(l2.prezzo) FROM `ramasql_test_ui_visual77b_zgu93r`.libri l2) ORDER BY l.titolo
 — sopra la media dei libri dopo il 1990:
 SELECT
 	`libri`.`titolo`,
@@ -29,7 +29,7 @@ WHERE
 							`libri`.`anno` > 1990)
 ORDER BY
 	`libri`.`titolo` ASC
-  104 righe, uguali a quelle del riferimento scritto a mano: SELECT l.titolo, l.prezzo FROM `ramasql_test_ui_visual77b_1uglmh`.libri l WHERE l.prezzo > (SELECT AVG(l2.prezzo) FROM `ramasql_test_ui_visual77b_1uglmh`.libri l2 WHERE l2.anno > 1990) ORDER BY l.titolo
+  104 righe, uguali a quelle del riferimento scritto a mano: SELECT l.titolo, l.prezzo FROM `ramasql_test_ui_visual77b_zgu93r`.libri l WHERE l.prezzo > (SELECT AVG(l2.prezzo) FROM `ramasql_test_ui_visual77b_zgu93r`.libri l2 WHERE l2.anno > 1990) ORDER BY l.titolo
 — editori con almeno un libro:
 SELECT
 	`editori`.`nome`
@@ -44,7 +44,7 @@ WHERE
 				`libri`.`id_editore` = `editori`.`id`)
 ORDER BY
 	`editori`.`nome` ASC
-  20 righe, uguali a quelle del riferimento scritto a mano: SELECT e.nome FROM `ramasql_test_ui_visual77b_1uglmh`.editori e WHERE EXISTS (SELECT l.id FROM `ramasql_test_ui_visual77b_1uglmh`.libri l WHERE l.id_editore = e.id) ORDER BY e.nome
+  20 righe, uguali a quelle del riferimento scritto a mano: SELECT e.nome FROM `ramasql_test_ui_visual77b_zgu93r`.editori e WHERE EXISTS (SELECT l.id FROM `ramasql_test_ui_visual77b_zgu93r`.libri l WHERE l.id_editore = e.id) ORDER BY e.nome
 — prestiti per socio (tabella derivata):
 SELECT
 	t.`id_socio`,
@@ -61,7 +61,7 @@ WHERE
 	t.numero_prestiti > 3
 ORDER BY
 	t.id_socio ASC
-  100 righe, uguali a quelle del riferimento scritto a mano: SELECT t.id_socio, t.numero_prestiti FROM (SELECT p.id_socio, COUNT(*) AS numero_prestiti FROM `ramasql_test_ui_visual77b_1uglmh`.prestiti p GROUP BY p.id_socio) t WHERE t.numero_prestiti > 3 ORDER BY t.id_socio
+  100 righe, uguali a quelle del riferimento scritto a mano: SELECT t.id_socio, t.numero_prestiti FROM (SELECT p.id_socio, COUNT(*) AS numero_prestiti FROM `ramasql_test_ui_visual77b_zgu93r`.prestiti p GROUP BY p.id_socio) t WHERE t.numero_prestiti > 3 ORDER BY t.id_socio
 — derivata modificata:
 SELECT
 	t.`id_socio`,
@@ -80,5 +80,5 @@ WHERE
 	t.numero_prestiti > 3
 ORDER BY
 	t.id_socio ASC
-  90 righe, uguali a quelle del riferimento scritto a mano: SELECT t.id_socio, t.numero_prestiti FROM (SELECT p.id_socio, COUNT(*) AS numero_prestiti FROM `ramasql_test_ui_visual77b_1uglmh`.prestiti p WHERE p.id_libro > 10 GROUP BY p.id_socio) t WHERE t.numero_prestiti > 3 ORDER BY t.id_socio
+  90 righe, uguali a quelle del riferimento scritto a mano: SELECT t.id_socio, t.numero_prestiti FROM (SELECT p.id_socio, COUNT(*) AS numero_prestiti FROM `ramasql_test_ui_visual77b_zgu93r`.prestiti p WHERE p.id_libro > 10 GROUP BY p.id_socio) t WHERE t.numero_prestiti > 3 ORDER BY t.id_socio
 Esito: SUPERATO

@@ -4,4 +4,4 @@ JTable -> appunti di sistema -> letti da LibreOffice -> motore "Importazione tes
 [r5c1] [r5c2] [àèìòù € 😀] [r5c4]
 
 script: formati negli appunti visti da LibreOffice: ['text/plain;charset=utf-16', 'text/markdown']
-soffice-pid=37084 [exit 0]
+soffice-pid=40440 [exit 0]

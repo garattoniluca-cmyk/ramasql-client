@@ -158,14 +158,14 @@ public final class DataGrid extends JPanel {
     private final RecordForm form;
     private final CardLayout cards = new CardLayout();
     private final JPanel cardPanel = new JPanel(cards);
-    private final JToggleButton gridToggle = new JToggleButton(Texts.get("grid.view.grid"));
-    private final JToggleButton formToggle = new JToggleButton(Texts.get("grid.view.form"));
+    private final JToggleButton gridToggle = new it.ramasql.app.theme.Compact.Toggle(Texts.get("grid.view.grid"));
+    private final JToggleButton formToggle = new it.ramasql.app.theme.Compact.Toggle(Texts.get("grid.view.form"));
     private final JButton previousPage = new JButton(Texts.get("grid.page.previous"));
     private final JButton nextPage = new JButton(Texts.get("grid.page.next"));
     private final JLabel pageLabel = new JLabel();
-    private final JButton exportButton = new JButton(Texts.get("grid.export.button"));
+    private final JButton exportButton = new it.ramasql.app.theme.Compact.Button(Texts.get("grid.export.button"));
     private final Pill counter = new Pill("", Tokens.TEXT_SECONDARY, Tokens.BG_SUNKEN);
-    private final JButton discardButton = new JButton(Texts.get("grid.discard"));
+    private final JButton discardButton = new it.ramasql.app.theme.Compact.Button(Texts.get("grid.discard"));
     private final JButton confirmButton = new JButton(Texts.get("grid.confirm"));
     private final JLabel noticeLabel = new JLabel(" ");
     private final JLabel invalidLabel = new JLabel(" ");
@@ -320,7 +320,21 @@ public final class DataGrid extends JPanel {
      * (primario, Ctrl+S). Sotto, le righe degli avvisi; in cima, per la sola lettura, la fascia informativa.
      */
     private JComponent buildTop() {
-        JPanel bar = new JPanel();
+        // se lo spazio manca, prima Esporta CSV, poi Griglia/Scheda, poi Scarta restano con la sola icona:
+        // Conferma, l'azione principale, resta sempre intera e in vista
+        JPanel bar = new JPanel() {
+            private static final long serialVersionUID = 1L;
+
+            @Override
+            public void doLayout() {
+                it.ramasql.app.theme.Compact.fit(this, List.of(
+                        List.of((it.ramasql.app.theme.Compact.Part) exportButton),
+                        List.of((it.ramasql.app.theme.Compact.Part) gridToggle,
+                                (it.ramasql.app.theme.Compact.Part) formToggle),
+                        List.of((it.ramasql.app.theme.Compact.Part) discardButton)));
+                super.doLayout();
+            }
+        };
         bar.setLayout(new BoxLayout(bar, BoxLayout.X_AXIS));
         bar.setBackground(Tokens.BG_WINDOW);
         bar.setBorder(BorderFactory.createEmptyBorder(Tokens.px(Tokens.SPACE_8), Tokens.px(Tokens.SPACE_12),

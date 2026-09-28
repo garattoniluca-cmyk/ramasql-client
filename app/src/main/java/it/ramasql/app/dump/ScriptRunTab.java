@@ -187,7 +187,8 @@ public final class ScriptRunTab extends JPanel {
             public java.awt.Component getListCellRendererComponent(javax.swing.JList<?> list, Object value, int index,
                     boolean isSelected, boolean cellHasFocus) {
                 String text = FROM_SCRIPT.equals(value) ? Texts.get("script.target.fromScript")
-                        : NONE.equals(value) ? Texts.get("script.target.none") : String.valueOf(value);
+                        : NONE.equals(value) || value == null ? Texts.get("script.target.none")
+                        : String.valueOf(value);
                 return super.getListCellRendererComponent(list, text, index, isSelected, cellHasFocus);
             }
         });

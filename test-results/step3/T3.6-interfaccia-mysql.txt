@@ -1,30 +1,30 @@
 T3.6 — operazioni del navigatore con Esegui, su MySQL
-1) Crea il catalogo «ramasql_test_ui_ops_24gn9p» — anteprima CONFIRM: «CREATE DATABASE `ramasql_test_ui_ops_24gn9p` CHARACTER SET latin1 COLLATE latin1_swedish_ci;»
-   registro: #1 Navigatore OK 2 ms; messaggio: Crea il catalogo «ramasql_test_ui_ops_24gn9p»: eseguito (1 istruzione, 2 ms).
+1) Crea il catalogo «ramasql_test_ui_ops_q8ityp» — anteprima CONFIRM: «CREATE DATABASE `ramasql_test_ui_ops_q8ityp` CHARACTER SET latin1 COLLATE latin1_swedish_ci;»
+   registro: #1 Navigatore OK 2 ms; messaggio: Crea il catalogo «ramasql_test_ui_ops_q8ityp»: eseguito (1 istruzione, 2 ms).
    server: SCHEMATA → latin1 / latin1_swedish_ci; albero: catalogo comparso senza aggiornare
-2) Rinomina la tabella «autori» in «scrittori» — anteprima CONFIRM: «RENAME TABLE `ramasql_test_ui_ops_24gn9p`.`autori` TO `ramasql_test_ui_ops_24gn9p`.`scrittori`;»
-   registro: #2 Navigatore OK 9 ms; messaggio: Rinomina la tabella «autori» in «scrittori»: eseguito (1 istruzione, 9 ms).
+2) Rinomina la tabella «autori» in «scrittori» — anteprima CONFIRM: «RENAME TABLE `ramasql_test_ui_ops_q8ityp`.`autori` TO `ramasql_test_ui_ops_q8ityp`.`scrittori`;»
+   registro: #2 Navigatore OK 7 ms; messaggio: Rinomina la tabella «autori» in «scrittori»: eseguito (1 istruzione, 7 ms).
    server: scrittori presente, autori assente; albero aggiornato da solo
-3) Svuota la tabella «prestiti» — anteprima STRONG: «TRUNCATE TABLE `ramasql_test_ui_ops_24gn9p`.`prestiti`;»
-   registro: #3 Navigatore OK 27 ms; messaggio: Svuota la tabella «prestiti»: eseguito (1 istruzione, 27 ms).
+3) Svuota la tabella «prestiti» — anteprima STRONG: «TRUNCATE TABLE `ramasql_test_ui_ops_q8ityp`.`prestiti`;»
+   registro: #3 Navigatore OK 28 ms; messaggio: Svuota la tabella «prestiti»: eseguito (1 istruzione, 28 ms).
    server: COUNT(*) di prestiti = 0
-4) Elimina la tabella «prestiti» — anteprima STRONG: «DROP TABLE `ramasql_test_ui_ops_24gn9p`.`prestiti`;»
-   registro: #4 Navigatore OK 10 ms; messaggio: Elimina la tabella «prestiti»: eseguito (1 istruzione, 11 ms).
+4) Elimina la tabella «prestiti» — anteprima STRONG: «DROP TABLE `ramasql_test_ui_ops_q8ityp`.`prestiti`;»
+   registro: #4 Navigatore OK 8 ms; messaggio: Elimina la tabella «prestiti»: eseguito (1 istruzione, 8 ms).
    server: prestiti assente; albero aggiornato da solo
 5) Elimina editori (riferita da libri): rifiutata dal server — registro: ERRORE 3730 (HY000), riga evidenziata;
    Messaggi: Elimina la tabella «editori»: non riuscito.
-             Errore 3730 (SQLSTATE HY000) dal server: (conn=22010) Cannot drop table 'editori' referenced by a foreign key constraint 'fk_libri_editori' on table 'libri'.
+             Errore 3730 (SQLSTATE HY000) dal server: (conn=23169) Cannot drop table 'editori' referenced by a foreign key constraint 'fk_libri_editori' on table 'libri'.
              Cosa significa: Non si può eliminare una tabella a cui fanno riferimento chiavi esterne di altre tabelle: prima si elimina la chiave esterna o la tabella che la usa.
              Istruzioni applicate: 0 su 1 (senza transazioni: quelle applicate restano).
-6) Elimina il catalogo «ramasql_test_ui_ops_24gn9p» — anteprima STRONG: «DROP DATABASE `ramasql_test_ui_ops_24gn9p`;»
-   registro: #6 Navigatore OK 20 ms; messaggio: Elimina il catalogo «ramasql_test_ui_ops_24gn9p»: eseguito (1 istruzione, 20 ms).
+6) Elimina il catalogo «ramasql_test_ui_ops_q8ityp» — anteprima STRONG: «DROP DATABASE `ramasql_test_ui_ops_q8ityp`;»
+   registro: #6 Navigatore OK 26 ms; messaggio: Elimina il catalogo «ramasql_test_ui_ops_q8ityp»: eseguito (1 istruzione, 26 ms).
    server: catalogo assente; albero aggiornato da solo
 
 Registro (6 righe):
-  #1 Navigatore OK        2 ms  CREATE DATABASE `ramasql_test_ui_ops_24gn9p` CHARACTER SET latin1 COLLATE latin1_swedish_ci
-  #2 Navigatore OK        9 ms  RENAME TABLE `ramasql_test_ui_ops_24gn9p`.`autori` TO `ramasql_test_ui_ops_24gn9p`.`scrittori`
-  #3 Navigatore OK       27 ms  TRUNCATE TABLE `ramasql_test_ui_ops_24gn9p`.`prestiti`
-  #4 Navigatore OK       10 ms  DROP TABLE `ramasql_test_ui_ops_24gn9p`.`prestiti`
-  #5 Navigatore ERROR     1 ms  DROP TABLE `ramasql_test_ui_ops_24gn9p`.`editori`
-  #6 Navigatore OK       20 ms  DROP DATABASE `ramasql_test_ui_ops_24gn9p`
+  #1 Navigatore OK        2 ms  CREATE DATABASE `ramasql_test_ui_ops_q8ityp` CHARACTER SET latin1 COLLATE latin1_swedish_ci
+  #2 Navigatore OK        7 ms  RENAME TABLE `ramasql_test_ui_ops_q8ityp`.`autori` TO `ramasql_test_ui_ops_q8ityp`.`scrittori`
+  #3 Navigatore OK       28 ms  TRUNCATE TABLE `ramasql_test_ui_ops_q8ityp`.`prestiti`
+  #4 Navigatore OK        8 ms  DROP TABLE `ramasql_test_ui_ops_q8ityp`.`prestiti`
+  #5 Navigatore ERROR     1 ms  DROP TABLE `ramasql_test_ui_ops_q8ityp`.`editori`
+  #6 Navigatore OK       26 ms  DROP DATABASE `ramasql_test_ui_ops_q8ityp`
 Schermate: T3.6-1…6-mysql.png (anteprime), T3.6-registro-mysql.png
