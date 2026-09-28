@@ -1,5 +1,74 @@
 # JOURNAL.md — Diario cronologico (più recente in alto)
 
+## 2026-09-28 — RESOCONTO dell'esecuzione autonoma degli step 9–12 (`ADR-024`)
+
+**Step completati:** 9 (importazione CSV e JSON), 10 (dump e ripristino), 11 (modello ER e retroingegneria), 12 (rifiniture per l'aula e guida rapida), in ordine, ognuno con la sua voce qui sotto, la revisione di un sotto-agente indipendente con i difetti corretti, e il suo commit (`Step 9: …` … `Step 12: …`, più commit intermedi e delle evidenze; **nessun push**). **Non toccati**, come chiesto: step 13 (installer) e 14 (aula). Gli step 1–8 non sono regrediti: la verifica ripete tutti i loro test.
+
+### Output di `scripts\verify.ps1`
+
+```
+Credenziali di integrazione: caricate
+[INFO] BUILD SUCCESS
+Build Maven: OK
+Test eseguiti: 3287 - falliti: 0 - saltati: 0
+
+Step | superati (it)  | soglia (it) | diario       | esito
+1    |   442 (  90)  |    8 (  4)  | completo     | PASS
+2    |   184 (  17)  |    8 (  2)  | completo     | PASS
+3    |   324 (  61)  |   12 (  4)  | completo     | PASS
+4    |   600 (  24)  |   45 (  4)  | completo     | PASS
+5    |   272 (  84)  |   60 ( 20)  | completo     | PASS
+6    |   474 ( 244)  |   45 ( 12)  | completo     | PASS
+7    |   430 ( 160)  |   60 ( 10)  | completo     | PASS
+8    |   186 (  56)  |   30 ( 10)  | completo     | PASS
+9    |   117 (  20)  |   50 ( 10)  | completo     | PASS
+10   |    93 (  32)  |   40 ( 12)  | completo     | PASS
+11   |   101 (  11)  |   50 (  8)  | completo     | PASS
+12   |    53 (  24)  |   40 (  6)  | completo     | PASS
+
+VERIFY: PASS
+```
+
+### Decisioni prese dall'agente, da rivedere
+
+- `ADR-025` — importazione: lettori CSV/JSON propri in streaming (Commons CSV non usata), tipi dedotti su tutto il file, inserimento a lotti in autocommit (INSERT a più righe su InnoDB, riga per riga su MyISAM), «ignora duplicati» senza `INSERT IGNORE`.
+- `ADR-026` — dump e ripristino: file unico in streaming (`.part` rinominato alla fine), TIMESTAMP in UTC, routine/trigger/eventi non inclusi (v1), collation sostituite fra MariaDB e MySQL, registro riassunto per i file eseguiti, sessione rimessa com'era dalla pipeline, niente `COMMIT`/`ROLLBACK` generati.
+- `ADR-027` — modello ER in una **finestra propria** (non una scheda, perché si apre anche senza connessione) e voce *File → Apri modello ER…* (il menu *File* ha cinque voci).
+- `ADR-028` — suggerimenti, tastiera, schermi piccoli: Ctrl+F1 anche su alberi e tabelle; F6 fra le aree; **nella lista aperta le frecce non scelgono più da sole** (serve Invio, come in Windows); barre che si stringono lasciando le icone (*Esegui* e *Interrompi* per ultimi); menu del navigatore al rilascio di Maiusc+F10; la versione portabile si crea solo senza modifiche fuori dai commit.
+- Revisione «alla Apple» (`docs/REVISIONE-APPLE.md`): applicati gli interventi piccoli; **da decidere con l'utente** `BUG-028` (i doppioni di *Esegui* e *Interrompi* nella barra e nelle schede sono una scelta di `DESIGN.md`).
+
+### Difetti aperti (dettaglio in `docs/BUGS.md`)
+
+Dagli step precedenti: `BUG-003` (Calc: tabulazioni in una cella), `BUG-008` (MySQL 8.4 non provato), `BUG-009` (i test `office` vogliono Excel e LibreOffice), `BUG-012` (AUTO_INCREMENT di un registro rieseguito), `BUG-013` (funzioni e trigger su MySQL con log binario), `BUG-014` (azione FK predefinita diversa fra i server), `BUG-015` (interruzione ritardata da una lettura lunga), `BUG-018` (MariaDB accetta FK con righe orfane), `BUG-020` (TIME fuori intervallo). Dalla revisione dello Step 12, tutti di aspetto o di testo, «dopo»: `BUG-028` (da decidere), `BUG-029`–`BUG-036`. Chiusi negli step 9–12: `BUG-017`, `BUG-021`, `BUG-023`, `BUG-024`, `BUG-025`, `BUG-026`, `BUG-027`.
+
+### Test N da fare con Navicat (tocca all'utente)
+
+I cataloghi dei test (`ramasql_test_*`) si distruggono a fine prova: per questi controlli si ricostruiscono a mano con il client, in un catalogo di prova, e poi si guarda con Navicat.
+
+- **T9.9 — importazione.** Nel client: nuovo catalogo `ramasql_test_navicat_import`, *Importa → Esegui script SQL…* con `it-tests/fixtures/biblioteca.sql` e il catalogo come destinazione; poi *Importa → Importa dati da un file CSV o JSON…* con `it-tests/fixtures/import/soci-excel.csv` (salvato da Excel: `;`, Windows-1252, date gg/mm/aaaa, virgola decimale) in una **tabella nuova** `soci_excel`, e `it-tests/fixtures/import/libri.json` in una tabella nuova `libri_json`. In Navicat, aprire le due tabelle: **numero di righe** (100 e 200), **accenti** (Nicolò, Niccolò), **date** (giuste, non scambiate giorno/mese), **decimali** (con il punto nel server), **NULL** dove il file ha celle vuote, **tipi delle colonne** sensati (*Design Table*).
+- **T10.10 — il dump del client in Navicat.** Nel client: nello stesso catalogo, *Esporta/Dump* del catalogo intero (struttura e dati) in un file `.sql`. In Navicat: nuovo catalogo vuoto, *Execute SQL File* con quel file → nessun errore; confrontare con l'originale *Fields*, *Indexes*, *Foreign Keys* e i dati; poi *Tools → Structure Synchronization* e *Data Synchronization* fra `ramasql_test_navicat_import` e il catalogo ripristinato: **nessuna differenza**.
+- **T11.12 — modello ER.** Nel client: due cataloghi con `it-tests/fixtures/biblioteca.sql` e `it-tests/fixtures/biblioteca_myisam.sql` (come sopra), *Modello ER → Nuovo modello dal catalogo* su ciascuno (*Suggerisci relazioni* sul secondo). In Navicat: *ER Diagram* (o *Reverse Database to Model*) sugli stessi cataloghi. Su `biblioteca` le relazioni di Navicat devono essere le **fisiche** del client (5); su `biblioteca_myisam` Navicat non ne mostra nessuna, mentre il client mostra le **logiche** proposte: è la conferma del requisito 8.
+- **T10.8, metà Navicat** (predisposta): procedura in `test-results/step10/T10.8-navicat-procedura.md`; se si mette un dump di Navicat in `it-tests/fixtures/navicat/`, il test lo ripristina da solo.
+- Restano da fare anche i test N degli step 3–8 elencati nei resoconti precedenti.
+
+### Prove d'uso da fare con una persona
+
+- **T2.9** — test dei 10 secondi: `test-results/step2/T2.9-procedura.md`.
+- **T7.11** — prova d'uso del query builder: `test-results/step7/T7.11-procedura.md`.
+- **T12.14** — uno studente sceglie InnoDB/MyISAM e CASCADE/RESTRICT leggendo solo i suggerimenti: `test-results/step12/T12.14-procedura.md` (se non sa dire perché, il testo si riscrive: le chiavi sono nella procedura).
+- **T11.11, parte vera** — proiettare o stampare in A4 un PNG del modello ER (*Esporta PNG…*): nomi leggibili, zampe di gallina e tratteggio distinguibili (le misure automatiche sono in `test-results/step11/T11.11-*`).
+- **T10.8, metà Navicat** — vedi sopra.
+
+### Versione portabile
+
+La più recente è in `dist\` con il nome `RamaSQL-portabile-2026-09-28-<ora>` (e lo ZIP accanto), creata con `scripts\crea-portabile.ps1` dopo il commit di questo resoconto: doppio clic su `RamaSQL\RamaSQL.exe` (Java è incluso; se Windows avvisa: *Ulteriori informazioni* → *Esegui comunque*). Accanto ci sono `LEGGIMI.txt` (aggiornato agli step 9–12), `LICENZA.txt` e `RamaSQL-sorgenti.zip` (i sorgenti del commit da cui è fatta). La cartella esatta e la prova d'avvio sono nella riga qui sotto. `dist\RamaSQL-portabile-2026-09-28\` è la versione precedente (step 1–8); `dist\RamaSQL-portabile-2026-09-28-2031\` è quella fatta dal commit dello Step 12, con lo stesso programma: si possono cancellare.
+
+PORTABILE_ESATTA
+
+### Cosa si può fare adesso
+
+Tutto il perimetro v1 degli step 1–12: connessioni, navigatore, editor SQL, griglia con appunti e conferma, editor di tabelle con indici e chiavi esterne, query visiva e viste, importazione CSV/JSON, dump e ripristino (anche di dump di `mysqldump`/`mariadb-dump`), modello ER con retroingegneria e relazioni logiche; suggerimenti su ogni comando e su ogni voce delle liste, guida rapida (F1), tutto anche da tastiera e al proiettore. Prossimi passi, su richiesta: i test N con Navicat e le prove d'uso qui sopra, la decisione su `BUG-028`, poi lo Step 13 (installer).
+
 ## 2026-09-28 — Step 12: rifiniture per l'aula e guida rapida ✅ (esecuzione autonoma, `ADR-024`)
 
 **Dove si trova.** Su ogni comando, campo, linguetta, intestazione di colonna, nodo del navigatore e **su ogni voce delle liste a discesa** c'è un suggerimento in italiano, un trafiletto completo (`ADR-020`, realizzato come in `ADR-028`): nelle liste la spiegazione della voce evidenziata compare **accanto** alla lista aperta, e segue mouse e frecce. **Aiuto → Guida rapida** (F1) e **Aiuto → Informazioni** (licenza GPL-3, attribuzioni SQLeo/SQLeonardo, librerie con licenza, sorgenti). Gli errori frequenti del server arrivano con la spiegazione in italiano sotto il messaggio originale. **Tutto si fa da tastiera**: F6 fra le aree, Maiusc+F10 per il menu del nodo, Alt+Giù/F4 per le liste nelle celle, Ctrl+F1 per il suggerimento dell'elemento con il fuoco (guida rapida, sezione «Tutto da tastiera»). Al proiettore (1024×768, carattere al massimo) **nessuna finestra esce dallo schermo**: le finestre si riducono e la parte centrale scorre con i pulsanti in vista, i messaggi vanno a capo, le barre si stringono lasciando le icone (mai *Esegui* e *Conferma*). La versione portabile porta `RamaSQL-sorgenti.zip` accanto a `LICENZA.txt`.

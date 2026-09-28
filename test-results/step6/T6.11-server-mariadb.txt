@@ -1,9 +1,9 @@
 T6.11 — Tappa M1 su MariaDB
-1) catalogo ramasql_test_ui_m1a_7p1agh creato dal navigatore
+1) catalogo ramasql_test_ui_m1a_4k3hup creato dal navigatore
 2) 4 tabelle con 3 chiavi esterne e gli indici, dall'editor di struttura
 3) dati dal data-entry: 3 editori e 3 libri digitati, 20 autori incollati a blocco
 4) registro esportato: 141 righe → T6.11-registro-mariadb.sql
-5) catalogo ramasql_test_ui_m1b_mg88xk creato dal client e registro rieseguito dall'editor SQL: 37 istruzioni, tutte OK
+5) catalogo ramasql_test_ui_m1b_wp48k7 creato dal client e registro rieseguito dall'editor SQL: 37 istruzioni, tutte OK
 6) confronto fra i due cataloghi:
    editori: metadati uguali, CHECKSUM 609497978
    autori: metadati uguali, CHECKSUM 2308017346

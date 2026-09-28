@@ -1,5 +1,5 @@
 T7.4b — menu del join e verso dell'SQL su MariaDB
-Catalogo di test: ramasql_test_ui_visual74b_07tdr9
+Catalogo di test: ramasql_test_ui_visual74b_2k3hvt
 SQL prima della scelta:
 SELECT
 	`autori`.`cognome`,

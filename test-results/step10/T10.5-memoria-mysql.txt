@@ -4,6 +4,6 @@ T10.5 — memoria di picco misurata in un processo con l'heap limitato (MySQL)
   ripristino: OK executed=10011 completed=true failures=0 log=13 peakMb=46
 3 BLOB da 5 MB (un INSERT per riga), file di 30 MB, -Xmx96m:
   dump:       OK rows=3 statements=14 log=1 peakMb=105
-  ripristino: OK executed=14 completed=true failures=0 log=13 peakMb=94
+  ripristino: OK executed=14 completed=true failures=0 log=13 peakMb=95
 CHECKSUM TABLE uguale in entrambi i casi. peakMb = picco dell'heap usato nel processo; log = righe del registro del client (la riga riassuntiva del file più le sole istruzioni strutturali: non una per INSERT)
 Esito: OK

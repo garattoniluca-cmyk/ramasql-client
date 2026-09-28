@@ -1,6 +1,6 @@
 T10.5 — tipi difficili (MariaDB)
 Dump con la sessione a +02:00, ripristino con una sessione a -03:00
-Avvisi del dump: [Nel catalogo «ramasql_test_t105_tipi_mulky9c81kwr» le chiavi esterne di a_uno, b_due formano un ciclo: nel file i controlli delle chiavi esterne restano spenti durante il ripristino., Nel catalogo «ramasql_test_t105_tipi_mulky9c81kwr» le tabelle dipendenti hanno una chiave esterna verso sé stesse: nel file i controlli delle chiavi esterne restano spenti durante il ripristino, perché una riga può riferire una riga che viene dopo.]
+Avvisi del dump: [Nel catalogo «ramasql_test_t105_tipi_mullere2tg6t» le chiavi esterne di a_uno, b_due formano un ciclo: nel file i controlli delle chiavi esterne restano spenti durante il ripristino., Nel catalogo «ramasql_test_t105_tipi_mullere2tg6t» le tabelle dipendenti hanno una chiave esterna verso sé stesse: nel file i controlli delle chiavi esterne restano spenti durante il ripristino, perché una riga può riferire una riga che viene dopo.]
 Ripristino: 20 istruzioni, 0 errori, avvisi del server: [] (nessuno sui dati); sessione rimessa com'era dal file (time_zone -03:00)
 CHECKSUM TABLE uguale per [tipi, a_uno, b_due, dipendenti]
 Valori confrontati uno per uno (id, UNIX_TIMESTAMP dei TIMESTAMP, FLOAT come DOUBLE, geometrie, JSON, date zero, TIME negativi e oltre 24 h, colonne generate):

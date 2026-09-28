@@ -1,6 +1,6 @@
 T12.4 — esercitazione T6.11 solo da tastiera, MariaDB
 (ogni gesto è un tasto vero consegnato al componente con il fuoco; anteprime e conferme sono le finestre vere; restano finte solo le finestre dei file di Windows)
-1) catalogo ramasql_test_ui_k1a_jcszlr: F6 fino al navigatore, Maiusc+F10 sul server, «Nuovo catalogo…», nome, Invio, Invio nell'anteprima (34 tasti finora)
+1) catalogo ramasql_test_ui_k1a_5r349s: F6 fino al navigatore, Maiusc+F10 sul server, «Nuovo catalogo…», nome, Invio, Invio nell'anteprima (34 tasti finora)
 2) tabelle dall'editor (Maiusc+F10 sul catalogo → «Nuova tabella»; Tab, frecce, F2, Spazio, Alt+Giù nelle liste):
    editori: creata e verificata sul server
    autori: creata e verificata sul server
@@ -9,7 +9,7 @@ T12.4 — esercitazione T6.11 solo da tastiera, MariaDB
    (718 tasti finora)
 3) dati: 3 editori e 3 libri digitati, 20 autori incollati con Ctrl+V, Ctrl+S e Invio nell'anteprima (964 tasti finora)
 4) registro esportato senza il nome del catalogo: 141 righe
-5) catalogo ramasql_test_ui_k1b_guuj1a creato; «Importa» → «Esegui script SQL…» dalla barra (F6, frecce, Spazio, Giù, Invio), file, catalogo di destinazione, «Esegui», Invio
+5) catalogo ramasql_test_ui_k1b_csrobs creato; «Importa» → «Esegui script SQL…» dalla barra (F6, frecce, Spazio, Giù, Invio), file, catalogo di destinazione, «Esegui», Invio
 6) confronto:
    editori: stessa struttura (SHOW CREATE TABLE), CHECKSUM 609497978
    autori: stessa struttura (SHOW CREATE TABLE), CHECKSUM 2308017346

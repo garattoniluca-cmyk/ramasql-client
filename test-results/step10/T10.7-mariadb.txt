@@ -1,8 +1,8 @@
 T10.7 — dump totale e ripristino su server «vuoto» (MariaDB)
 Cataloghi dell'utente (letti soltanto): [bibliotecasoft]
-Dump delle copie [ramasql_test_ui_t107c0_ezc388]: ✔ Fatto: «totale-copie.sql» con 6 tabelle, 2 viste e 452 righe (38 istruzioni).
-ℹ Nel catalogo «ramasql_test_ui_t107c0_ezc388» le tabelle amministratori, prestiti hanno una chiave esterna verso sé stesse: nel file i controlli delle chiavi esterne restano spenti durante il ripristino, perché una riga può riferire una riga che viene dopo.
-  bibliotecasoft → ramasql_test_ui_t107c0_ezc388: 8 oggetti uguali all'originale [BASE TABLE · 2 righe, BASE TABLE · 30 righe, BASE TABLE · 413 righe, BASE TABLE · 0 righe, BASE TABLE · 2 righe, BASE TABLE · 5 righe, VIEW · 2 righe, VIEW · 413 righe]
+Dump delle copie [ramasql_test_ui_t107c0_cosrik]: ✔ Fatto: «totale-copie.sql» con 6 tabelle, 2 viste e 452 righe (38 istruzioni).
+ℹ Nel catalogo «ramasql_test_ui_t107c0_cosrik» le tabelle amministratori, prestiti hanno una chiave esterna verso sé stesse: nel file i controlli delle chiavi esterne restano spenti durante il ripristino, perché una riga può riferire una riga che viene dopo.
+  bibliotecasoft → ramasql_test_ui_t107c0_cosrik: 8 oggetti uguali all'originale [BASE TABLE · 2 righe, BASE TABLE · 30 righe, BASE TABLE · 413 righe, BASE TABLE · 0 righe, BASE TABLE · 2 righe, BASE TABLE · 5 righe, VIEW · 2 righe, VIEW · 413 righe]
 Ripristino: ✔ Fatto: 38 istruzioni eseguite su 38: 38 riuscite, 0 con errore (0,1 s).
 Conferma: STRONG · [SET NAMES utf8mb4;, , SET @OLD_FOREIGN_KEY_CHECKS = @@FOREIGN_KEY_CHECKS;]
 Dump totale reale (solo lettura, non ripristinato): 164104 byte, contiene CREATE DATABASE per [bibliotecasoft]

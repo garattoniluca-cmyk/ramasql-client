@@ -1,5 +1,5 @@
 DROP TABLE a, b_manca su MySQL: errore 1051; tabella a ANCORA PRESENTE (DDL atomico)
-cache dei metadati invalidata: [ramasql_test_t3_parziale_mull01tm7rxm/null]; elenco riletto: [a, c]
+cache dei metadati invalidata: [ramasql_test_t3_parziale_mullgf37cao/null]; elenco riletto: [a, c]
 nel registro esportato:
 -- DROP TABLE a, b_manca;
 -- (non riuscita: può essere stata applicata in parte: verifica sul server prima di rieseguire lo script)

@@ -1,5 +1,5 @@
 T8.5 — Modifica vista su 5 viste create fuori dal client, MariaDB
-Catalogo di test: ramasql_test_ui_vista85_hf8054
+Catalogo di test: ramasql_test_ui_vista85_cy1gwc
 — v_semplice: livello 2 (nel diagramma); eseguita: 24 righe = righe della vista; salvata di nuovo con CREATE OR REPLACE, righe invariate
 — v_join: livello 2 (nel diagramma); eseguita: 178 righe = righe della vista; salvata di nuovo con CREATE OR REPLACE, righe invariate
 — v_aggregata: livello 2 (nel diagramma); eseguita: 21 righe = righe della vista; salvata di nuovo con CREATE OR REPLACE, righe invariate
