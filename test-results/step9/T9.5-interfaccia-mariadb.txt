@@ -1,0 +1,4 @@
+T9.5 — Interrompi dalla procedura guidata (MariaDB)
+Rapporto: ✘ Interrotta: 45000 righe lette, 44000 inserite (restano nella tabella), 0 scartate, 0 duplicati ignorati · lotti: 45.
+Sul server: righe = 44000 (uguale)
+Esito: OK

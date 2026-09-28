@@ -143,6 +143,7 @@ public final class MainFrame extends JFrame implements ShellView {
         navigatorPanel.setOnNewTable(catalog -> openTableEditor(catalog, null));
         navigatorPanel.setOnOpenView(this::openView);
         navigatorPanel.setOnEditView(this::editView);
+        navigatorPanel.setOnImportData(this::openImport);
         navigatorPanel.setOnSelection(this::updateToolbar);
         settings.addListener(changed -> {
             if (workspace != null) {
@@ -363,6 +364,7 @@ public final class MainFrame extends JFrame implements ShellView {
                 openTableEditor(catalog, null);
             }
         });
+        button("import").addActionListener(e -> showImportMenu());
         button("run").addActionListener(e -> {
             SqlEditor editor = tabs.selectedEditor();
             if (editor != null) {
@@ -669,6 +671,37 @@ public final class MainFrame extends JFrame implements ShellView {
         });
     }
 
+    // ---------------------------------------------------------------- importazione (Step 9)
+
+    /** Il menu del pulsante «Importa»: dati da un file CSV o JSON (e, dallo Step 10, uno script SQL). */
+    private void showImportMenu() {
+        JPopupMenu menu = importMenu();
+        menu.show(button("import"), 0, button("import").getHeight());
+    }
+
+    /** Il menu del pulsante «Importa», con le voci che valgono adesso (anche per i test). */
+    public JPopupMenu importMenu() {
+        JPopupMenu menu = new JPopupMenu();
+        menu.setName("import.menu");
+        JMenuItem data = new JMenuItem(Texts.get("import.menu.data"), AppIcons.small(AppIcons.IMPORT));
+        data.setName("import.menu.data");
+        data.setToolTipText(Texts.get("import.menu.data.tooltip"));
+        data.addActionListener(e -> openImport(navigatorPanel.selectedCatalog(), navigatorPanel.selectedTableName()));
+        menu.add(data);
+        return menu;
+    }
+
+    /** Apre la procedura guidata «Importa dati» sul catalogo, con la tabella proposta (anche {@code null}). */
+    public it.ramasql.app.importer.ImportWizard openImport(String catalog, String table) {
+        if (workspace == null || catalog == null || catalog.isBlank()) {
+            return null;
+        }
+        it.ramasql.app.importer.ImportWizard wizard = tabs.openImport(workspace, catalog, table,
+                navigatorPanel::openTable);
+        updateToolbar();
+        return wizard;
+    }
+
     private void queryBuilderAlert(String text) {
         sqlPanel.message(PipelineView.MessageKind.WARNING, text);
     }
@@ -861,6 +894,9 @@ public final class MainFrame extends JFrame implements ShellView {
                 connected ? Texts.get("toolbar.disabled.noCatalog") : Texts.get("toolbar.disabled.notConnected"));
         enable(button("newView"), connected && catalog != null && !catalog.isBlank(),
                 Texts.get("toolbar.newView.tooltip"),
+                connected ? Texts.get("toolbar.disabled.noCatalog") : Texts.get("toolbar.disabled.notConnected"));
+        enable(button("import"), connected && catalog != null && !catalog.isBlank(),
+                Texts.get("toolbar.import.tooltip"),
                 connected ? Texts.get("toolbar.disabled.noCatalog") : Texts.get("toolbar.disabled.notConnected"));
         SqlEditor editor = tabs.selectedEditor();
         it.ramasql.app.visual.VisualQueryTab visual = tabs.selectedVisualQuery();

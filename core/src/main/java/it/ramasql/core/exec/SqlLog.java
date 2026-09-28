@@ -64,9 +64,13 @@ public final class SqlLog {
      * @param message        messaggio del server ({@code ""} se OK)
      * @param durationMillis durata
      * @param rows           righe interessate o lette
+     * @param note           spiegazione in più ({@code ""} se nessuna): per un'istruzione preparata, i lotti e le righe
+     * @param parameterized  istruzione preparata con segnaposti {@code ?} (i valori erano in un file, non nel testo):
+     *                       nell'esportazione si commenta, perché così non si può rieseguire
      */
     public record Entry(long sequence, Instant time, String connection, String origin, String sql, Outcome outcome,
-            int errorCode, String sqlState, String message, long durationMillis, long rows) {
+            int errorCode, String sqlState, String message, long durationMillis, long rows, String note,
+            boolean parameterized) {
 
         public Entry {
             Objects.requireNonNull(time, "time");
@@ -76,6 +80,7 @@ public final class SqlLog {
             Objects.requireNonNull(outcome, "outcome");
             sqlState = sqlState == null ? "" : sqlState;
             message = message == null ? "" : message;
+            note = note == null ? "" : note;
         }
 
         public boolean isOk() {
@@ -121,10 +126,16 @@ public final class SqlLog {
     /** Registra un'istruzione eseguita: solo {@link SqlExecutor}. */
     Entry add(String connection, String origin, String sql, Outcome outcome, int errorCode, String sqlState,
             String message, long durationMillis, long rows) {
+        return add(connection, origin, sql, outcome, errorCode, sqlState, message, durationMillis, rows, "", false);
+    }
+
+    /** Registra un'istruzione, con una nota e l'indicazione di istruzione preparata: solo {@link SqlExecutor}. */
+    Entry add(String connection, String origin, String sql, Outcome outcome, int errorCode, String sqlState,
+            String message, long durationMillis, long rows, String note, boolean parameterized) {
         Entry e;
         synchronized (entries) {
             e = new Entry(nextSequence++, Instant.now(), connection, origin, sql, outcome, errorCode, sqlState,
-                    message, durationMillis, rows);
+                    message, durationMillis, rows, note, parameterized);
             entries.add(e);
         }
         for (Listener l : listeners) {
@@ -209,6 +220,14 @@ public final class SqlLog {
         String catalog = options.unqualifyCatalog();
         for (Entry e : list) {
             out.append('\n').append("-- ").append(describe(e)).append('\n');
+            if (!e.note().isEmpty()) {
+                out.append("-- ").append(oneLine(e.note())).append('\n');
+            }
+            if (e.parameterized()) {
+                out.append(ScriptText.commentedOut(e.sql() + ";")).append('\n');
+                out.append("-- ").append(CoreMessages.get("log.export.parameterized")).append('\n');
+                continue;
+            }
             Replay r = catalog == null ? new Replay(ReplayKind.UNCHANGED, e.sql()) : replayForm(e.sql(), catalog);
             switch (r.kind()) {
                 case USE_ORIGIN -> {

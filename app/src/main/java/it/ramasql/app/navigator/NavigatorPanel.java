@@ -678,6 +678,12 @@ public final class NavigatorPanel extends JPanel {
 
     /** Chi apre la vista nella query visiva per modificarla (Step 8, «Modifica vista»). */
     private BiConsumer<String, String> onEditView = (c, v) -> { };
+    private BiConsumer<String, String> onImportData = (c, t) -> { };
+
+    /** «Importa dati…» sulla tabella (catalogo, tabella). */
+    public void setOnImportData(BiConsumer<String, String> handler) {
+        this.onImportData = handler;
+    }
 
     public void setOnEditView(BiConsumer<String, String> handler) {
         this.onEditView = handler == null ? (c, v) -> { } : handler;
@@ -762,6 +768,7 @@ public final class NavigatorPanel extends JPanel {
             case TABLE -> {
                 menu.add(item("nav.menu.openTable", () -> openTable(n.catalog(), n.name())));
                 menu.add(item("nav.menu.designTable", () -> designTable(n.catalog(), n.name())));
+                menu.add(item("nav.menu.importData", () -> onImportData.accept(n.catalog(), n.name())));
                 menu.addSeparator();
                 menu.add(item("nav.menu.rename", () -> renameTable(n.catalog(), n.name())));
                 menu.add(item("nav.menu.truncate", () -> propose(TreeScripts.truncateTable(n.catalog(), n.name()))));
@@ -889,6 +896,16 @@ public final class NavigatorPanel extends JPanel {
     /** Nessuna lettura in corso. */
     public boolean isIdle() {
         return pendingTasks == 0 && loading.isEmpty();
+    }
+
+    /** Il nome della tabella selezionata (nodo tabella); {@code null} se la selezione non è una tabella. */
+    public String selectedTableName() {
+        TreePath p = tree.getSelectionPath();
+        if (p == null) {
+            return null;
+        }
+        NavNode n = nodeOf(p);
+        return n.kind() == NavNode.Kind.TABLE ? n.name() : null;
     }
 
     /** Il catalogo del nodo selezionato (o del suo oggetto); {@code null} se nessuno. */

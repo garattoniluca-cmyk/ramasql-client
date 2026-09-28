@@ -221,6 +221,24 @@ public final class WorkTabs {
         return editor;
     }
 
+    private int importCounter;
+
+    /**
+     * Apre la procedura guidata «Importa dati» (Step 9) sul catalogo, con la tabella proposta come destinazione.
+     *
+     * @param table     tabella proposta ({@code null} = nessuna)
+     * @param openTable apre il data-entry di una tabella a importazione finita
+     */
+    public it.ramasql.app.importer.ImportWizard openImport(SessionWorkspace workspace, String catalog, String table,
+            java.util.function.BiConsumer<String, String> openTable) {
+        importCounter++;
+        it.ramasql.app.importer.ImportWizard wizard = new it.ramasql.app.importer.ImportWizard(workspace.pipeline(),
+                workspace.reader(), prompts.files(), catalog, table, openTable);
+        wizard.setName(tabName("import", catalog, "#" + importCounter));
+        add(wizard, Texts.get("tabs.import.title"), Texts.get("tabs.import.tooltip", catalog));
+        return wizard;
+    }
+
     // ---------------------------------------------------------------- chiusura
 
     /**
@@ -278,6 +296,13 @@ public final class WorkTabs {
             }
             visual.dispose();
         }
+        if (tab instanceof it.ramasql.app.importer.ImportWizard wizard) {
+            if (!wizard.canClose()) {
+                prompts.files().showError(Texts.get("tabs.import.title"), Texts.get("import.close.running"));
+                return false;   // un'importazione in corso si ferma con «Interrompi», non chiudendo la scheda
+            }
+            wizard.dispose();
+        }
         if (tab instanceof TableEditor editor && editor.isModified()) {
             switch (prompts.askPendingOnClose(Texts.get("tableeditor.close.question", editor.editedTable().name()))) {
                 case STAY -> {
@@ -313,6 +338,8 @@ public final class WorkTabs {
                 conLavoro.add(titleOf(c));
             } else if (c instanceof it.ramasql.app.visual.VisualQueryTab v && v.isModified()) {
                 conLavoro.add(titleOf(c));
+            } else if (c instanceof it.ramasql.app.importer.ImportWizard w && w.isRunning()) {
+                conLavoro.add(Texts.get("import.close.runningItem", titleOf(c)));
             }
         }
         if (conLavoro.isEmpty()) {
@@ -334,6 +361,8 @@ public final class WorkTabs {
                 editor.dispose();
             } else if (c instanceof it.ramasql.app.visual.VisualQueryTab visual) {
                 visual.dispose();
+            } else if (c instanceof it.ramasql.app.importer.ImportWizard wizard) {
+                wizard.stopForClose();   // un'importazione in corso si ferma: le righe inserite restano
             }
         }
         titles.clear();

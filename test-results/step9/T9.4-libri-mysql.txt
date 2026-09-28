@@ -1,0 +1,25 @@
+T9.4 — libri.json in una tabella nuova (MySQL)
+CREATE TABLE `ramasql_test_t94_libri_mula5eg83v89`.`libri_importati` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `titolo` VARCHAR(50) NOT NULL,
+  `isbn` CHAR(13) NOT NULL,
+  `anno` INT NULL,
+  `prezzo` DECIMAL(4,2) NOT NULL,
+  `disponibile` TINYINT(1) NOT NULL,
+  `note` VARCHAR(50) NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB;
+
+INSERT INTO `ramasql_test_t94_libri_mula5eg83v89`.`libri_importati` (`id`, `titolo`, `isbn`, `anno`, `prezzo`, `disponibile`, `note`) VALUES (?, ?, ?, ?, ?, ?, ?);
+
+Tipi dedotti e riletti dal server:
+id INT NOT NULL — sul server INT
+titolo VARCHAR(50) NOT NULL — sul server VARCHAR(50)
+isbn CHAR(13) NOT NULL — sul server CHAR(13)
+anno INT NULL — sul server INT
+prezzo DECIMAL(4,2) NOT NULL — sul server DECIMAL(4,2)
+disponibile TINYINT(1) NOT NULL — sul server TINYINT(1)
+note VARCHAR(50) NULL — sul server VARCHAR(50)
+
+Righe sul server: 200 (= righe del file)
+Esito: OK

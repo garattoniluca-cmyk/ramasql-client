@@ -63,6 +63,11 @@ public final class SwingWorkspacePrompts implements WorkspacePrompts {
     }
 
     @Override
+    public FilePrompts files() {
+        return new SwingFilePrompts(owner, workDirectory);
+    }
+
+    @Override
     public it.ramasql.app.tableeditor.TableEditorPrompts tableEditorPrompts() {
         return new it.ramasql.app.tableeditor.SwingTableEditorPrompts(owner::get);
     }

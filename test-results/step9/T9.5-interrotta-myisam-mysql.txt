@@ -1,0 +1,2 @@
+T9.5 — Interrompi su una tabella MyISAM (MySQL): inserite 21000, sul server 21000 (uguale)
+Esito: OK

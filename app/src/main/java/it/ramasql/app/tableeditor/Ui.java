@@ -30,12 +30,12 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableColumn;
 
 /** Piccoli pezzi d'interfaccia comuni alle schede, con le misure di DESIGN-SYSTEM §1.3. */
-final class Ui {
+public final class Ui {
 
     private Ui() {
     }
 
-    static JPanel buttonRow(JButton... buttons) {
+    public static JPanel buttonRow(JButton... buttons) {
         JPanel row = new JPanel(new FlowLayout(FlowLayout.LEFT, Tokens.SPACE_8, Tokens.SPACE_8));
         row.setOpaque(false);
         for (JButton b : buttons) {
@@ -44,7 +44,7 @@ final class Ui {
         return row;
     }
 
-    static JButton button(String name, String text, Runnable action) {
+    public static JButton button(String name, String text, Runnable action) {
         JButton b = new JButton(text);
         b.setName(name);
         b.addActionListener(e -> action.run());
@@ -55,7 +55,7 @@ final class Ui {
     }
 
     /** Pulsante primario: pieno d'accento, testo bianco (uno solo per schermata). */
-    static JButton primary(String name, String text, Runnable action) {
+    public static JButton primary(String name, String text, Runnable action) {
         JButton b = button(name, text, action);
         Styles.primary(b, Tokens.ACCENT);            // pieno d'accento con passaggio e pressione, testo bianco
         b.setPreferredSize(null);                       // misura ricalcolata con il grassetto
@@ -65,7 +65,7 @@ final class Ui {
     }
 
     /** Titolo di sezione: {@code emphasis}, colore del testo principale. */
-    static JLabel sectionTitle(String text) {
+    public static JLabel sectionTitle(String text) {
         JLabel label = new JLabel(text);
         Styles.text(label, "emphasis");
         label.setForeground(Tokens.TEXT_PRIMARY);
@@ -74,7 +74,7 @@ final class Ui {
     }
 
     /** Griglia ariosa: righe 28, divisori {@code border.subtle}, intestazione {@code bg.sunken}. */
-    static void styleTable(JTable table) {
+    public static void styleTable(JTable table) {
         table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         table.setRowHeight(Tokens.px(Tokens.ROW_HEIGHT));
         table.setShowVerticalLines(false);
@@ -97,7 +97,7 @@ final class Ui {
     }
 
     /** Pannello di dettaglio che scorre invece di schiacciarsi quando lo spazio è poco. */
-    static JScrollPane plainScroll(JComponent c) {
+    public static JScrollPane plainScroll(JComponent c) {
         JScrollPane s = new JScrollPane(c);
         s.setBorder(null);
         s.setOpaque(false);
@@ -106,14 +106,14 @@ final class Ui {
         return s;
     }
 
-    static JScrollPane scroll(JComponent c) {
+    public static JScrollPane scroll(JComponent c) {
         JScrollPane s = new JScrollPane(c);
         s.setBorder(BorderFactory.createLineBorder(Tokens.BORDER_SUBTLE));
         s.getViewport().setBackground(Tokens.BG_SURFACE);
         return s;
     }
 
-    static void narrow(TableColumn column, int width) {
+    public static void narrow(TableColumn column, int width) {
         column.setMinWidth(width);
         column.setMaxWidth(width);
         column.setPreferredWidth(width);

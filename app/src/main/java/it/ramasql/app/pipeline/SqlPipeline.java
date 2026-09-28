@@ -83,6 +83,88 @@ public final class SqlPipeline {
         return outcome;
     }
 
+    /**
+     * Come {@link #propose(SqlScript)} per un'importazione: l'anteprima mostra lo script (svuota o crea la tabella, poi
+     * l'{@code INSERT} preparata con il numero di lotti nel titolo); con <em>Esegui</em> l'esecutore lo esegue e poi
+     * inserisce le righe di {@code source} a lotti. L'ascoltatore è chiamato sul thread dell'esecutore.
+     *
+     * @return l'esito (sull'EDT, dopo il messaggio); completato con {@code null} se l'utente ha annullato o copiato
+     */
+    public CompletableFuture<it.ramasql.core.exec.BatchResult> proposeBatchInsert(SqlScript script,
+            it.ramasql.core.exec.BatchInsert insert, it.ramasql.core.exec.BatchSource source,
+            it.ramasql.core.exec.BatchListener listener) {
+        Objects.requireNonNull(script, "script");
+        view.scriptProposed(script);
+        ConfirmationPolicy.Confirmation confirmation = ConfirmationPolicy.evaluate(script);
+        PreviewDialog.Decision decision = prompts.preview(script, confirmation);
+        if (decision == PreviewDialog.Decision.COPY) {
+            prompts.copyToClipboard(script.text());
+            view.message(PipelineView.MessageKind.INFO, Texts.get("pipeline.copied", script.title()));
+        }
+        if (decision != PreviewDialog.Decision.EXECUTE) {
+            if (decision != PreviewDialog.Decision.COPY) {
+                view.message(PipelineView.MessageKind.INFO, Texts.get("pipeline.cancelled", script.title()));
+            }
+            CompletableFuture<ScriptResult> none = CompletableFuture.completedFuture(null);
+            last = none;
+            return CompletableFuture.completedFuture(null);
+        }
+        running++;
+        CompletableFuture<it.ramasql.core.exec.BatchResult> future;
+        try {
+            future = executor.submitBatchInsert(script, insert, source, listener);
+        } catch (RejectedExecutionException e) {
+            running--;
+            view.message(PipelineView.MessageKind.ERROR, Texts.get("pipeline.closed"));
+            return CompletableFuture.completedFuture(null);
+        }
+        CompletableFuture<it.ramasql.core.exec.BatchResult> shown = new CompletableFuture<>();
+        CompletableFuture<ScriptResult> marker = new CompletableFuture<>();
+        last = marker;
+        future.whenComplete((result, error) -> SwingUtilities.invokeLater(() -> {
+            running--;
+            if (error != null) {
+                view.message(PipelineView.MessageKind.ERROR, Texts.get("pipeline.failedToRun", script.title(),
+                        String.valueOf(error.getMessage())));
+                shown.completeExceptionally(error);
+                marker.completeExceptionally(error);
+            } else {
+                if (!result.started() || !result.before().script().isEmpty()) {
+                    view.scriptFinished(result.before());   // svuota / crea tabella: esito come ogni script
+                }
+                if (result.started()) {
+                    batchMessage(script, result);
+                }
+                shown.complete(result);
+                marker.complete(result.before());
+            }
+        }));
+        return shown;
+    }
+
+    /** L'esito dell'inserimento a lotti nella scheda Messaggi. */
+    private void batchMessage(SqlScript script, it.ramasql.core.exec.BatchResult r) {
+        long rejected = r.rejectedCount();
+        String counts = Texts.get("pipeline.batch.counts", r.inserted(), r.batches(), rejected, r.duplicatesIgnored(),
+                r.durationMillis());
+        if (r.fatal() != null) {
+            StringBuilder sb = new StringBuilder(Texts.get("pipeline.batch.failed", script.title(), counts));
+            sb.append('\n').append(Texts.get("panel.messages.serverError", r.fatal().code(),
+                    r.fatal().sqlState().isEmpty() ? "-" : r.fatal().sqlState(), r.fatal().message()));
+            it.ramasql.app.editor.ErrorExplainer.explain(r.fatal().code())
+                    .ifPresent(x -> sb.append('\n').append(Texts.get("panel.messages.explanation", x)));
+            view.message(PipelineView.MessageKind.ERROR, sb.toString());
+        } else if (r.sourceFailure() != null) {
+            view.message(PipelineView.MessageKind.ERROR,
+                    Texts.get("pipeline.batch.sourceFailed", script.title(), counts, r.sourceFailure()));
+        } else if (r.interrupted()) {
+            view.message(PipelineView.MessageKind.WARNING, Texts.get("pipeline.batch.interrupted", script.title(), counts));
+        } else {
+            view.message(rejected > 0 ? PipelineView.MessageKind.WARNING : PipelineView.MessageKind.SUCCESS,
+                    Texts.get("pipeline.batch.done", script.title(), counts));
+        }
+    }
+
     private CompletableFuture<ScriptResult> submit(SqlScript script, ExecutionListener listener) {
         running++;
         CompletableFuture<ScriptResult> future;

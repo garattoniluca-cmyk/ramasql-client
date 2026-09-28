@@ -12,6 +12,7 @@ package it.ramasql.core.exec;
 import java.sql.Blob;
 import java.sql.Clob;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
@@ -169,6 +170,54 @@ public final class SqlExecutor implements AutoCloseable {
         return future;
     }
 
+    /**
+     * Esegue lo script e poi un <b>inserimento a lotti</b> (l'importazione, {@code ADR-025}). L'ultima istruzione dello
+     * script deve essere {@link BatchInsert#statement()}: è ciò che l'anteprima ha mostrato. Le istruzioni prima (svuota
+     * la tabella, crea la tabella) si eseguono come in {@link #submit}; se una non riesce l'inserimento non comincia.
+     * Poi le righe arrivano da {@code source} un lotto alla volta, in autocommit, senza transazioni.
+     * {@link #interrupt()} ferma l'istruzione in corso ({@code KILL QUERY}) e l'inserimento; le righe già inserite
+     * restano e l'esito le conta. Nel registro: le istruzioni prima, una per una, e l'inserimento come <b>una</b> riga
+     * (l'istruzione preparata, i lotti, le righe inserite e scartate).
+     */
+    public CompletableFuture<BatchResult> submitBatchInsert(SqlScript script, BatchInsert insert, BatchSource source,
+            BatchListener listener) {
+        Objects.requireNonNull(script, "script");
+        Objects.requireNonNull(insert, "insert");
+        Objects.requireNonNull(source, "source");
+        if (script.isEmpty() || !script.statements().get(script.size() - 1).text().equals(insert.statement().text())) {
+            throw new IllegalArgumentException("l'ultima istruzione dello script deve essere l'INSERT preparata");
+        }
+        BatchListener l = listener == null ? new BatchListener() { } : listener;
+        if (closed) {
+            throw new RejectedExecutionException(CoreMessages.get("exec.closed"));
+        }
+        CompletableFuture<BatchResult> future = new CompletableFuture<>();
+        CompletableFuture<ScriptResult> marker = new CompletableFuture<>();
+        queued.add(marker);
+        try {
+            thread.execute(() -> {
+                if (!queued.remove(marker)) {
+                    future.completeExceptionally(new IllegalStateException(CoreMessages.get("exec.closed")));
+                    return;
+                }
+                try {
+                    future.complete(runBatchNow(script, insert, source, l));
+                } catch (Throwable t) {
+                    future.completeExceptionally(t);
+                }
+            });
+        } catch (RejectedExecutionException e) {
+            queued.remove(marker);
+            throw e;
+        }
+        marker.whenComplete((r, e) -> {
+            if (e != null) {
+                future.completeExceptionally(e);   // chiuso prima di partire
+            }
+        });
+        return future;
+    }
+
     /** Esegue lo script e aspetta la fine (per i test e per chi è già fuori dall'EDT). */
     public ScriptResult run(SqlScript script) {
         return run(script, null);
@@ -237,9 +286,22 @@ public final class SqlExecutor implements AutoCloseable {
         synchronized (lock) {
             current = run;
         }
+        try {
+            return runStatements(script, listener, rowsToRead, run);
+        } finally {
+            synchronized (lock) {
+                if (current == run) {
+                    current = null;
+                }
+            }
+        }
+    }
+
+    /** Le istruzioni dello script, con l'interruzione di {@code run} (che il chiamante ha reso quella corrente). */
+    private ScriptResult runStatements(SqlScript script, ExecutionListener listener, int rowsToRead, Run run) {
         long start = System.nanoTime();
         List<StatementResult> results = new ArrayList<>();
-        try {
+        {
             quietly(() -> listener.scriptStarted(script));
             Connection con = session.mainConnection();
             ensureAutocommit(con);
@@ -267,16 +329,270 @@ public final class SqlExecutor implements AutoCloseable {
                     break;
                 }
             }
-        } finally {
-            synchronized (lock) {
-                if (current == run) {
-                    current = null;
-                }
-            }
         }
         ScriptResult outcome = new ScriptResult(script, results, millisSince(start), run.cancel);
         quietly(() -> listener.scriptFinished(outcome));
         return outcome;
+    }
+
+    // ================================================================ inserimento a lotti (ADR-025)
+
+    private BatchResult runBatchNow(SqlScript script, BatchInsert insert, BatchSource source, BatchListener l) {
+        long start = System.nanoTime();
+        SqlScript before = new SqlScript(script.title(), script.origin(),
+                script.statements().subList(0, script.size() - 1));
+        // una sola esecuzione «corrente» per tutta l'importazione: Interrompi vale in ogni momento
+        Run run = new Run();
+        synchronized (lock) {
+            current = run;
+        }
+        ScriptResult beforeResult;
+        try {
+            beforeResult = runStatements(before, l, rowLimit, run);
+        } catch (RuntimeException e) {
+            clear(run);
+            throw e;
+        }
+        if (!beforeResult.completed()) {
+            clear(run);
+            return new BatchResult(beforeResult, false, 0, 0, 0, List.of(), 0, beforeResult.interrupted(), null, null,
+                    millisSince(start));
+        }
+        BatchRun b = new BatchRun(insert, l, run);
+        try {
+            Connection con = session.mainConnection();
+            ensureAutocommit(con);
+            int max = insert.rowsPerBatch();
+            while (!run.cancel && b.fatal == null) {
+                List<BatchSource.Row> rows;
+                try {
+                    rows = source.nextBatch(max);
+                } catch (Exception e) {
+                    b.sourceFailure = e.getMessage() == null ? e.getClass().getSimpleName() : e.getMessage();
+                    break;
+                }
+                if (rows == null || rows.isEmpty()) {
+                    break;
+                }
+                b.batches++;
+                if (insert.atomic()) {
+                    b.multiRow(con, rows);
+                } else {
+                    b.oneByOne(con, rows);
+                }
+                long batches = b.batches;
+                quietly(() -> l.batchFinished(batches, b.inserted, b.rejectedCount, b.duplicates));
+            }
+        } catch (RuntimeException e) {
+            b.fatal = new StatementResult.ServerError(0, "", CoreMessages.get("exec.internalError",
+                    e.getMessage() == null ? e.getClass().getSimpleName() : e.getMessage()));
+        } finally {
+            clear(run);
+            b.close();
+        }
+        boolean interrupted = run.cancel;
+        long duration = millisSince(start);
+        SqlLog.Outcome outcome = b.fatal != null ? SqlLog.Outcome.ERROR
+                : interrupted ? SqlLog.Outcome.INTERRUPTED : SqlLog.Outcome.OK;
+        String note = CoreMessages.get("log.batch.note", b.batches, b.inserted, b.rejectedCount, b.duplicates)
+                + (b.sourceFailure != null ? " · " + CoreMessages.get("log.batch.sourceFailure", b.sourceFailure) : "");
+        log.add(connectionLabel, script.originOf(insert.statement()), insert.statement().text(), outcome,
+                b.fatal == null ? 0 : b.fatal.code(), b.fatal == null ? "" : b.fatal.sqlState(),
+                b.fatal == null ? (interrupted ? CoreMessages.get("exec.interrupted") : "") : b.fatal.message(),
+                duration, b.inserted, note, true);
+        return new BatchResult(beforeResult, true, b.batches, b.inserted, b.duplicates, b.errors, b.rejectedCount,
+                interrupted, b.fatal, b.sourceFailure, duration);
+    }
+
+    private void clear(Run run) {
+        synchronized (lock) {
+            if (current == run) {
+                current = null;
+            }
+        }
+    }
+
+    /** Stato di un inserimento a lotti in corso. */
+    private final class BatchRun {
+        final BatchInsert insert;
+        final BatchListener listener;
+        final Run run;
+        long batches;
+        long inserted;
+        long duplicates;
+        long rejectedCount;
+        final List<BatchResult.RowError> errors = new ArrayList<>();
+        StatementResult.ServerError fatal;
+        String sourceFailure;
+        private PreparedStatement full;
+        private PreparedStatement single;
+
+        BatchRun(BatchInsert insert, BatchListener listener, Run run) {
+            this.insert = insert;
+            this.listener = listener;
+            this.run = run;
+        }
+
+        /**
+         * InnoDB: il lotto in una sola INSERT. Se il server la rifiuta (e non per un'interruzione) non ha lasciato
+         * righe: si divide a metà e si riprova ciascuna metà, fino alla singola riga, che dà il motivo del rifiuto.
+         * Così un duplicato fra mille righe costa una decina di istruzioni, non mille commit.
+         */
+        void multiRow(Connection con, List<BatchSource.Row> rows) {
+            if (rows.isEmpty() || run.cancel || fatal != null) {
+                return;
+            }
+            if (rows.size() == 1) {
+                one(con, rows.get(0));
+                return;
+            }
+            try {
+                PreparedStatement ps;
+                if (rows.size() == insert.rowsPerBatch()) {
+                    if (full == null) {
+                        full = con.prepareStatement(insert.multiRow(rows.size()));
+                    }
+                    ps = full;
+                } else {
+                    ps = con.prepareStatement(insert.multiRow(rows.size()));
+                }
+                try {
+                    int k = 1;
+                    for (BatchSource.Row r : rows) {
+                        for (Object v : r.params()) {
+                            ps.setObject(k++, v);
+                        }
+                    }
+                    inserted += ps.executeLargeUpdate();
+                } finally {
+                    if (ps != full) {
+                        ps.close();
+                    }
+                }
+            } catch (SQLException e) {
+                if (run.cancel || isConnectionError(e)) {
+                    stop(e);
+                    return;
+                }
+                int half = rows.size() / 2;
+                multiRow(con, rows.subList(0, half));
+                multiRow(con, rows.subList(half, rows.size()));
+            }
+        }
+
+        /** MyISAM e simili: righe una per volta, in un lotto JDBC (ogni riga ha il suo esito). */
+        void oneByOne(Connection con, List<BatchSource.Row> rows) {
+            int[] counts;
+            try {
+                PreparedStatement ps = single(con);
+                for (BatchSource.Row r : rows) {
+                    bind(ps, r);
+                    ps.addBatch();
+                }
+                counts = ps.executeBatch();
+            } catch (java.sql.BatchUpdateException e) {
+                counts = e.getUpdateCounts();
+                if (run.cancel || isConnectionError(e)) {
+                    countDone(counts);
+                    stop(e);
+                    return;
+                }
+            } catch (SQLException e) {
+                // senza gli esiti riga per riga non si sa che cosa è entrato (MyISAM non annulla): ci si ferma
+                // invece di ritentare, che potrebbe inserire due volte le stesse righe
+                stop(e);
+                if (fatal == null && !run.cancel) {
+                    fatal = new StatementResult.ServerError(e.getErrorCode(), e.getSQLState(), e.getMessage());
+                }
+                return;
+            }
+            for (int i = 0; i < rows.size(); i++) {
+                int c = i < counts.length ? counts[i] : Statement.EXECUTE_FAILED;
+                if (c >= 0 || c == Statement.SUCCESS_NO_INFO) {
+                    inserted += Math.max(1, c);
+                } else {
+                    if (run.cancel || fatal != null) {
+                        return;
+                    }
+                    one(con, rows.get(i));   // per sapere perché (o per tentarla, se il lotto si è fermato prima)
+                }
+            }
+        }
+
+        private void countDone(int[] counts) {
+            if (counts == null) {
+                return;
+            }
+            for (int c : counts) {
+                if (c >= 0 || c == Statement.SUCCESS_NO_INFO) {
+                    inserted += Math.max(1, c);
+                }
+            }
+        }
+
+        /** Una riga da sola: inserita, duplicato ignorato o rifiutata con il motivo del server. */
+        private void one(Connection con, BatchSource.Row r) {
+            try {
+                PreparedStatement ps = single(con);
+                ps.clearBatch();
+                bind(ps, r);
+                inserted += Math.max(0, ps.executeLargeUpdate());
+            } catch (SQLException e) {
+                if (run.cancel || isConnectionError(e)) {
+                    stop(e);
+                    return;
+                }
+                if (insert.ignoreDuplicates() && e.getErrorCode() == 1062) {
+                    duplicates++;
+                    return;
+                }
+                rejectedCount++;
+                BatchResult.RowError err = new BatchResult.RowError(r.line(), e.getErrorCode(), e.getSQLState(),
+                        e.getMessage());
+                if (errors.size() < BatchResult.MAX_DETAILS) {
+                    errors.add(err);
+                }
+                quietly(() -> listener.rowRejected(err));
+            }
+        }
+
+        private PreparedStatement single(Connection con) throws SQLException {
+            if (single == null) {
+                single = con.prepareStatement(insert.statement().text());
+            }
+            return single;
+        }
+
+        private void bind(PreparedStatement ps, BatchSource.Row r) throws SQLException {
+            Object[] p = r.params();
+            for (int i = 0; i < p.length; i++) {
+                ps.setObject(i + 1, p[i]);
+            }
+        }
+
+        private void stop(SQLException e) {
+            if (!run.cancel) {
+                fatal = new StatementResult.ServerError(e.getErrorCode(), e.getSQLState(), e.getMessage());
+            }
+        }
+
+        void close() {
+            for (PreparedStatement ps : new PreparedStatement[] {full, single}) {
+                if (ps != null) {
+                    try {
+                        ps.close();
+                    } catch (SQLException ignored) {
+                        // la connessione può essere già caduta
+                    }
+                }
+            }
+        }
+    }
+
+    /** Connessione caduta o server sparito: inutile ritentare le righe. */
+    private static boolean isConnectionError(SQLException e) {
+        String state = e.getSQLState();
+        return (state != null && state.startsWith("08")) || e instanceof java.sql.SQLNonTransientConnectionException;
     }
 
     /** Un ascoltatore che si guasta non ferma l'esecuzione né il registro. */

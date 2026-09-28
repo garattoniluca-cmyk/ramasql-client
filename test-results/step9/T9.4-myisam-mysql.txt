@@ -1,0 +1,5 @@
+Percorso MyISAM (MySQL): prestiti-errori.csv in biblioteca_myisam.prestiti
+Prima importazione: inserite 96, rifiutate le righe 11 (1062), 23, 37, 58; la riga 90 (libro inesistente) entra perché MyISAM non ha chiavi esterne
+Seconda, ignorando i duplicati: inserite 0, duplicati ignorati 97, scartate 3
+Sul server: prestiti = 500 + 96 (nessun doppio inserimento)
+Esito: OK

@@ -35,6 +35,14 @@ I test d'integrazione (`@Tag("it")`, modulo `it-tests`) girano contro **entrambi
 I test d'integrazione leggono le connessioni da variabili d'ambiente (mai da file in git):
 `RAMASQL_IT_MARIADB_URL`, `RAMASQL_IT_MARIADB_USER`, `RAMASQL_IT_MARIADB_PASSWORD` e le tre equivalenti `RAMASQL_IT_MYSQL_*`. Usano e distruggono solo cataloghi con prefisso `ramasql_test_`.
 
+## File di prova dell'importazione (Step 9)
+In `it-tests/fixtures/import/`: `soci.csv`, `libri.json`, `prestiti-errori.csv` (li scrive il generatore, `ImportFixturesTest` controlla che siano aggiornati) e `soci-excel.csv`, salvato **da Excel vero** («CSV (delimitato dal separatore di elenco)» con le impostazioni italiane: punto e virgola, Windows-1252, date gg/mm/aaaa, virgola decimale).
+```
+java it-tests\src	est\java\itamasql\itixtures\ImportFixtures.java it-testsixtures
+powershell -NoProfile -ExecutionPolicy Bypass -File it-testsixtures\import\crea-soci-excel.ps1
+```
+Il CSV da un milione di righe di T9.5 lo genera il test in una cartella temporanea (non va in git).
+
 ## Versione portabile da provare in aula (prima dell'installer)
 ```
 powershell -NoProfile -ExecutionPolicy Bypass -File scripts\crea-portabile.ps1

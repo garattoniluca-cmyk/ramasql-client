@@ -42,6 +42,9 @@ public interface WorkspacePrompts {
     /** Le finestre modali dell'editor SQL (apri/salva .sql, conferma rafforzata, errori). */
     it.ramasql.app.editor.EditorPrompts editorPrompts();
 
+    /** Scelta dei file (importazione, dump, script, modello ER) e conferme delle schede che li usano. */
+    FilePrompts files();
+
     /** Le finestre modali dell'editor di tabelle. */
     it.ramasql.app.tableeditor.TableEditorPrompts tableEditorPrompts();
 

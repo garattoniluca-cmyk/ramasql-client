@@ -22,7 +22,7 @@ Versione 0.2 — 2026-09-21. Da leggere prima di scrivere codice, per sapere dov
 └──────────────┘
 ```
 
-Regola delle dipendenze: `app` → `core`, `model`, `sqleo-qb` · `model` → `core` · `sqleo-qb` → (solo JDK + interfaccia `QbHost`) · `core` → (JDK, driver, Jackson, Commons CSV). **`core` e `model` non dipendono da Swing**: sono collaudabili senza interfaccia.
+Regola delle dipendenze: `app` → `core`, `model`, `sqleo-qb` · `model` → `core` · `sqleo-qb` → (solo JDK + interfaccia `QbHost`) · `core` → (JDK, driver, Jackson). **`core` e `model` non dipendono da Swing**: sono collaudabili senza interfaccia.
 
 ## 2. Struttura del repository
 
@@ -54,7 +54,7 @@ ramaSQLClient/
 | `core.exec` | **(Step 3)** Pipeline (§4): `SqlScript`, `SqlOrigin`, `SqlExecutor` (unico esecutore dell'utente: thread dedicato, una istruzione alla volta, arresto al primo errore, `KILL QUERY` dalla connessione di servizio, limite righe, invalidazione dei metadati dopo DDL, **mai transazioni**), `ScriptResult`/`StatementResult`/`ResultTable`, `SqlLog` (registro con origine/esito/durata/righe; esportazione `.sql` rieseguibile con le istruzioni fallite commentate), `ConfirmationPolicy` (conferma rafforzata con nome da riscrivere), `RiskClassifier`, `StatementSplitter` |
 | `core.data` | Lettura paginata/streaming dei risultati; **modello a modifiche pendenti** del data-entry (`RowChange` inserita/modificata/eliminata → DML, stato salvata/pendente/in errore); codifica e decodifica degli **appunti a blocchi** (testo tabulato, convenzione Excel) e validazione per tipo — tutto senza Swing, quindi collaudabile |
 | `core.verify` | **Verifica dopo l'applicazione**: confronta indici e FK richiesti con quelli riletti dal server e produce l'elenco delle differenze |
-| `core.importer` | Lettori CSV/JSON in streaming, deduzione dei tipi, mappatura, inserimento a lotti, rapporto scarti |
+| `core.importer` | **(Step 9, `ADR-025`)** `ImportFile` (file, CSV o JSON, formato; `detect` legge i primi 64 kB), `EncodingDetector`, `CsvSniffer`, `CsvParser` (streaming), `JsonArrayReader` (Jackson in streaming), `ImportSource`/`SourceRow`, `FileAnalyzer` (lettura completa in sottofondo: colonne, anteprima, `ColumnProfile` → `TypeInference`), `ValueParsing` (virgola decimale, date), `ValueConverter` (valori del file → testo per la colonna, scarti con motivo), `ImportPlanner` (abbinamento per nome, tabella nuova), `ImportPlan` (SQL per l'anteprima: `TRUNCATE`/`CREATE TABLE` + `INSERT` preparata), `ImportRows` (i lotti per l'esecutore), `ImportReport`. L'esecuzione è `SqlExecutor.submitBatchInsert` (`BatchInsert`, `BatchSource`, `BatchResult`) |
 | `core.dump` | Selezione oggetti, ordinamento per dipendenze, scrittura `.sql` in streaming, esecutore di script per il ripristino |
 | `core.policy` | Lettura di `aula.json` (modalità aula) |
 
@@ -79,7 +79,7 @@ azione UI ──► core.sqlgen ──► SqlScript (istruzioni + origine + peri
 ```
 
 - `SqlExecutor` è l'**unico** punto del prodotto che chiama `Statement.execute` per conto dell'utente. Le letture di metadati usano un canale interno separato, registrato come «interno» (visibile a richiesta).
-- Ogni `SqlStatement` porta: testo, origine, classe di rischio (`SAFE`, `MODIFIES`, `DESTRUCTIVE`), eventuali parametri (import a lotti: si registra l'istruzione preparata + conteggio).
+- Ogni `SqlStatement` porta: testo, origine, classe di rischio (`SAFE`, `MODIFIES`, `DESTRUCTIVE`). **Import a lotti** (Step 9, `ADR-025`): lo script mostrato termina con l'`INSERT` preparata (`BatchInsert.statement()`), che `SqlExecutor.submitBatchInsert` esegue a lotti con le righe di un `BatchSource`; nel registro una riga con l'istruzione preparata e la nota dei lotti e delle righe.
 - Anche l'editor SQL «raw» esegue tramite `SqlExecutor` (niente anteprima, ma registro e controlli `DESTRUCTIVE`/senza-WHERE sì).
 - **Nessuna gestione delle transazioni in v1**: la sessione è in autocommit, `SqlExecutor` non emette mai `START TRANSACTION`/`COMMIT`/`ROLLBACK`; uno script si esegue istruzione per istruzione e si ferma al primo errore riportando cosa è stato applicato. L'eventuale aggiunta futura (forse dopo) resta confinata qui.
 - Concorrenza: un esecutore a thread singolo per sessione; la UI riceve eventi su EDT (`SwingWorker`/`invokeLater`). Interruzione tramite connessione di servizio.
@@ -142,7 +142,7 @@ Niente rifattorizzazioni «estetiche»: il modulo resta il più vicino possibile
 | RSyntaxTextArea 4.0.1, AutoComplete 4.0.0 | editor SQL (Step 4) | BSD-3-Clause | ✅ |
 | MariaDB Connector/J 3.5.10 | driver **unico**, anche per MySQL (`ADR-015`) | LGPL-2.1+ | ✅ |
 | Jackson databind 2.22.2 | JSON (profili, impostazioni) | Apache-2.0 | ✅ |
-| Apache Commons CSV | CSV | Apache-2.0 | ✅ |
+| ~~Apache Commons CSV~~ | non usata: il lettore CSV è del progetto (`ADR-025`) | — | — |
 | JUnit 5, AssertJ, AssertJ-Swing | test | EPL-2.0 / Apache-2.0 | ✅ (solo test, non distribuite) |
 
 Ogni nuova dipendenza si aggiunge qui **prima** di entrare nel `pom.xml`.

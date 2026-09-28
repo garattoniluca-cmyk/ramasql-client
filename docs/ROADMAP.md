@@ -18,7 +18,7 @@ Stato: ✅ completato · 🔄 in corso · ⏳ da fare
 | 6 | **Indici, chiavi esterne, integrità referenziale** (con verifica sul server) | M | ✅ 2026-09-23 (Tappa M1) |
 | 7 | Query editor visivo (integrazione SQLeo) | L | ✅ 2026-09-27 |
 | 8 | Viste grafiche | M | ✅ 2026-09-27 (Tappa M2) |
-| 9 | Importazione CSV e JSON | M | ⏳ |
+| 9 | Importazione CSV e JSON | M | ✅ 2026-09-28 |
 | 10 | Dump selettivo/totale e ripristino | M | ⏳ |
 | 11 | Modello ER e retroingegneria | L | ⏳ |
 | 12 | Rifiniture per l'aula e guida rapida | S | ⏳ |

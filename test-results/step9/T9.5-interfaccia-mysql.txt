@@ -1,0 +1,4 @@
+T9.5 — Interrompi dalla procedura guidata (MySQL)
+Rapporto: ✘ Interrotta: 40000 righe lette, 39000 inserite (restano nella tabella), 0 scartate, 0 duplicati ignorati · lotti: 40.
+Sul server: righe = 39000 (uguale)
+Esito: OK

@@ -33,11 +33,11 @@ import it.ramasql.app.theme.Tokens;
  * {@code ⚠} su {@code warning.tint}, esito positivo {@code ✔} su {@code success.tint}, informazioni {@code ℹ} su
  * {@code accent.tint}; le righe neutre (elenco delle istruzioni) su {@code bg.sunken}.
  */
-final class Banner extends JPanel {
+public final class Banner extends JPanel {
 
     private static final long serialVersionUID = 1L;
 
-    enum Tone {
+    public enum Tone {
         DANGER("✘", Tokens.DANGER, Tokens.DANGER_TINT),
         WARNING("⚠", Tokens.WARNING, Tokens.WARNING_TINT),
         SUCCESS("✔", Tokens.SUCCESS, Tokens.SUCCESS_TINT),
@@ -55,23 +55,23 @@ final class Banner extends JPanel {
         }
     }
 
-    record Line(Tone tone, String text) {
+    public record Line(Tone tone, String text) {
     }
 
     private final List<Line> lines = new ArrayList<>();
 
-    Banner(String name) {
+    public Banner(String name) {
         setName(name);
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
         setOpaque(false);
         setVisible(false);
     }
 
-    void clear() {
+    public void clear() {
         set(List.of());
     }
 
-    void set(List<Line> newLines) {
+    public void set(List<Line> newLines) {
         lines.clear();
         lines.addAll(newLines);
         removeAll();
@@ -86,7 +86,7 @@ final class Banner extends JPanel {
         repaint();
     }
 
-    void set(Tone tone, String text) {
+    public void set(Tone tone, String text) {
         set(text == null || text.isEmpty() ? List.of() : List.of(new Line(tone, text)));
     }
 
@@ -98,12 +98,12 @@ final class Banner extends JPanel {
         set(out);
     }
 
-    List<Line> lines() {
+    public List<Line> lines() {
         return List.copyOf(lines);
     }
 
     /** Il testo come lo legge l'utente: una riga per messaggio, con il suo glifo. */
-    String text() {
+    public String text() {
         StringBuilder sb = new StringBuilder();
         for (Line l : lines) {
             sb.append(sb.isEmpty() ? "" : "\n").append(l.tone().glyph.isEmpty() ? "" : l.tone().glyph + " ")
@@ -133,7 +133,7 @@ final class Banner extends JPanel {
     }
 
     /** Testo a capo automatico che non allarga il contenitore oltre una misura leggibile. */
-    static JTextArea wrapText(String text, Color foreground) {
+    public static JTextArea wrapText(String text, Color foreground) {
         JTextArea area = new JTextArea(text) {
             private static final long serialVersionUID = 1L;
 

@@ -113,6 +113,41 @@ public final class FakeWorkspacePrompts implements WorkspacePrompts {
         };
     }
 
+    /** File scelti nelle finestre «Apri…» per scopo; nessuno = l'utente annulla. */
+    public final java.util.Map<it.ramasql.app.workspace.FilePrompts.Purpose, Path> filesToOpen =
+            new java.util.EnumMap<>(it.ramasql.app.workspace.FilePrompts.Purpose.class);
+    /** File scelti nelle finestre «Salva…» per scopo; nessuno = l'utente annulla. */
+    public final java.util.Map<it.ramasql.app.workspace.FilePrompts.Purpose, Path> filesToSave =
+            new java.util.EnumMap<>(it.ramasql.app.workspace.FilePrompts.Purpose.class);
+    /** Risposta alle conferme delle schede che usano i file; predefinito: sì. */
+    public boolean filesConfirmAnswer = true;
+
+    @Override
+    public it.ramasql.app.workspace.FilePrompts files() {
+        return new it.ramasql.app.workspace.FilePrompts() {
+            @Override
+            public Path chooseToOpen(Purpose purpose) {
+                return filesToOpen.get(purpose);
+            }
+
+            @Override
+            public Path chooseToSave(Purpose purpose, String suggestedName) {
+                return filesToSave.get(purpose);
+            }
+
+            @Override
+            public boolean confirm(String title, String message, String confirmLabel) {
+                messages.add(title + ": " + message);
+                return filesConfirmAnswer;
+            }
+
+            @Override
+            public void showError(String title, String message) {
+                errors.add(title + ": " + message);
+            }
+        };
+    }
+
     @Override
     public it.ramasql.app.tableeditor.TableEditorPrompts tableEditorPrompts() {
         return new it.ramasql.app.tableeditor.TableEditorPrompts() {

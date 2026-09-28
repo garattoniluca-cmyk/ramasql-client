@@ -6,3 +6,4 @@
 *.png binary
 *.ico binary
 *.jar binary
+it-tests/fixtures/import/soci-excel.csv binary

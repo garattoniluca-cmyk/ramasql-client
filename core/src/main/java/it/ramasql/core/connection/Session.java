@@ -230,6 +230,9 @@ public final class Session implements AutoCloseable {
         p.setProperty("tinyInt1isBit", "false");
         // riconoscibile in SHOW PROCESSLIST / performance_schema
         p.setProperty("connectionAttributes", "program_name:RamaSQL Client");
+        // lotti JDBC (import su MyISAM, ADR-025): una riga per istruzione, ciascuna con il suo esito, come su MySQL;
+        // il protocollo «bulk» di MariaDB darebbe un esito solo per l'intero lotto
+        p.setProperty("useBulkStmts", "false");
         return p;
     }
 
