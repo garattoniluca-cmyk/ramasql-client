@@ -1,4 +1,4 @@
-T10.9 — ripristino interrotto dopo 531 istruzioni su 30011 (MariaDB)
+T10.9 — ripristino interrotto dopo 533 istruzioni su 30011 (MariaDB)
 Sessione rimasta cambiata dal file: sql_mode = NO_AUTO_VALUE_ON_ZERO, time_zone = +00:00, controlli delle chiavi spenti
 Istruzioni proposte per rimetterla:
   SET SESSION sql_mode = 'IGNORE_SPACE,STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION'

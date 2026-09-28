@@ -1,9 +1,9 @@
 T8.7b — viste nidificate e viste reali, MariaDB
-Catalogo di test: ramasql_test_ui_vista87b_1zwjzt
+Catalogo di test: ramasql_test_ui_vista87b_nts39l
 Create nel diagramma: v_libri_sopra_media (sottoquery), v_prestiti_aperti, v_riepilogo (sopra v_prestiti_aperti); righe verificate sul server
 Riaperte: v_riepilogo (livello 1, entità del diagramma: v_prestiti_aperti), v_libri_sopra_media (livello 1, con il nodo della sottoquery)
 Eliminata v_prestiti_aperti: aprendo v_riepilogo → «Non riesco a leggere la vista «v_riepilogo»: La vista non è più valida: usa tabelle, colonne o viste che non esistono più (forse sono state eliminate o rinominate). Si corregge ricreando ciò che manca, oppure con «Modifica vista».
-[1356] (conn=26722) View 'ramasql_test_ui_vista87b_1zwjzt.v_riepilogo' references invalid table(s) or column(s) or function(s) or definer/invoker of view lack rights to use them»
-Vista reale di bibliotecasoft v_prestiti_dettaglio (copiata in ramasql_test_ui_bibliosoft_dkjw5u): livello 2, nel diagramma: [prestiti, utenti, libri, generi, amministratori]; righe uguali alla vista
-Vista reale di bibliotecasoft v_statistiche_libri (copiata in ramasql_test_ui_bibliosoft_dkjw5u): livello 2, nel diagramma: [libri, generi, prestiti]; righe uguali alla vista
+[1356] (conn=29207) View 'ramasql_test_ui_vista87b_nts39l.v_riepilogo' references invalid table(s) or column(s) or function(s) or definer/invoker of view lack rights to use them»
+Vista reale di bibliotecasoft v_prestiti_dettaglio (copiata in ramasql_test_ui_bibliosoft_9r83y3): livello 2, nel diagramma: [prestiti, utenti, libri, generi, amministratori]; righe uguali alla vista
+Vista reale di bibliotecasoft v_statistiche_libri (copiata in ramasql_test_ui_bibliosoft_9r83y3): livello 2, nel diagramma: [libri, generi, prestiti]; righe uguali alla vista
 Esito: SUPERATO

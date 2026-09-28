@@ -1,5 +1,5 @@
 T10.5/T10.9 — «Interrompi» nel dump e nel ripristino (MySQL)
-Dump interrotto dopo 26050 righe: «⚠ Interrotta: nessun file scritto (0 tabelle, 0 viste, 26050 righe e 26061 istruzioni erano pronte). Se «precedente.sql» esisteva già, è rimasto com'era.»; «precedente.sql» identico, nessun .part
-Ripristino interrotto dopo 15851 istruzioni: «⚠ Interrotto: 15851 istruzioni eseguite su 300011: 15851 riuscite, 0 con errore (15,9 s). Le istruzioni eseguite restano. ⚠ Il file ha lasciato cambiate impostazioni della sessione: modalità SQL, fuso orario, controlli delle chiavi esterne. Varrebbero anche per le tue istruzioni: rimettile con il pulsante qui sotto.»
+Dump interrotto dopo 17000 righe: «⚠ Interrotta: nessun file scritto (0 tabelle, 0 viste, 17000 righe e 17011 istruzioni erano pronte). Se «precedente.sql» esisteva già, è rimasto com'era.»; «precedente.sql» identico, nessun .part
+Ripristino interrotto dopo 15852 istruzioni: «⚠ Interrotto: 15852 istruzioni eseguite su 300011: 15852 riuscite, 0 con errore (49,5 s). Le istruzioni eseguite restano. ⚠ Il file ha lasciato cambiate impostazioni della sessione: modalità SQL, fuso orario, controlli delle chiavi esterne. Varrebbero anche per le tue istruzioni: rimettile con il pulsante qui sotto.»
 Rimesse dalla pipeline: [SET SESSION sql_mode = 'IGNORE_SPACE,ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION', SET SESSION time_zone = 'SYSTEM', SET FOREIGN_KEY_CHECKS = 1]
 Esito: OK

@@ -1,5 +1,5 @@
 Operazioni del navigatore su MariaDB
-1. [Navigatore] OK 0 ms — CREATE DATABASE `<nuovo>` CHARACTER SET latin1 COLLATE latin1_swedish_ci
+1. [Navigatore] OK 2 ms — CREATE DATABASE `<nuovo>` CHARACTER SET latin1 COLLATE latin1_swedish_ci
 2. [Navigatore] OK 3 ms — RENAME TABLE `<catalogo>`.`vecchia` TO `<catalogo>`.`nuova`
 3. [Navigatore] OK 2 ms — TRUNCATE TABLE `<catalogo>`.`nuova`
 4. [Navigatore] OK 1 ms — DROP VIEW `<catalogo>`.`v_vecchia`

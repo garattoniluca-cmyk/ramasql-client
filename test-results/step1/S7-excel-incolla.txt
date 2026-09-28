@@ -3,4 +3,4 @@ JTable -> appunti -> Excel (Paste in A1), celle rilette da Excel con Value2:
 [dice "ciao"] [] [r4c3] ["tra virgolette"]
 [r5c1] [r5c2] [àèìòù € 😀] [r5c4]
 
-script: excel-pid=36100 [exit 0]
+script: excel-pid=13620 [exit 0]

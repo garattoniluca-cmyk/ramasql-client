@@ -1,6 +1,6 @@
 T4.13 e T4.14 su MySQL
-Catalogo di test: ramasql_test_ui_vincoli_fjp5y2
-T4.13 — inserimento con id_socio=999999: «[1452] (conn=25876) Cannot add or update a child row: a foreign key constraint fails (`ramasql_test_ui_vincoli_fjp5y2`.`prestiti`, CONSTRAINT `fk_prestiti_soci` FOREIGN KEY (`id_socio`) REFERENCES `soci` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT) — Il valore non esiste nella tabella riferita dalla chiave esterna: prima va inserita la riga «padre».»; riga ancora in sospeso (INSERTED), prestiti sul server 500 righe (prima 500)
+Catalogo di test: ramasql_test_ui_vincoli_pktzws
+T4.13 — inserimento con id_socio=999999: «[1452] (conn=28291) Cannot add or update a child row: a foreign key constraint fails (`ramasql_test_ui_vincoli_pktzws`.`prestiti`, CONSTRAINT `fk_prestiti_soci` FOREIGN KEY (`id_socio`) REFERENCES `soci` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT) — Il valore non esiste nella tabella riferita dalla chiave esterna: prima va inserita la riga «padre».»; riga ancora in sospeso (INSERTED), prestiti sul server 500 righe (prima 500)
   corretto id_socio=1 → prestiti 501 righe
 T4.14 — note_libere (nessuna PK, nessun UNIQUE): sola lettura, «Questa tabella non ha una chiave primaria né un indice UNIQUE: il client non saprebbe quale riga modificare. Puoi copiare i dati.»; copia di un blocco 2×2: «una nota»1|un'altra»2|»
 T4.14 — vista v_prestiti_aperti: 5 colonne, sola lettura, «Le viste si leggono soltanto: i dati si modificano nelle tabelle da cui la vista li prende. Puoi copiarli.»

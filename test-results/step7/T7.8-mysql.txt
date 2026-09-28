@@ -1,5 +1,5 @@
 T7.8 — due schede «Query visiva» su MySQL
-Cataloghi: A = ramasql_test_ui_visual78a_o1tfln, B = ramasql_test_ui_visual78b_8dezfq
+Cataloghi: A = ramasql_test_ui_visual78a_659tie, B = ramasql_test_ui_visual78b_cbpchc
 SQL della scheda A:
 SELECT
 	`libri`.`titolo`,
@@ -24,5 +24,5 @@ WHERE
 	classe = '3A'
 ORDER BY
 	cognome ASC
-Eseguite: A con USE `ramasql_test_ui_visual78a_o1tfln`, B con USE `ramasql_test_ui_visual78b_8dezfq`; righe di B uguali al server: [[Rossi, 3A], [Verdi, 3A]]
+Eseguite: A con USE `ramasql_test_ui_visual78a_659tie`, B con USE `ramasql_test_ui_visual78b_cbpchc`; righe di B uguali al server: [[Rossi, 3A], [Verdi, 3A]]
 Esito: SUPERATO

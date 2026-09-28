@@ -1,5 +1,5 @@
 T9.4 — libri.json in una tabella nuova (MySQL)
-CREATE TABLE `ramasql_test_t94_libri_mullifehsonj`.`libri_importati` (
+CREATE TABLE `ramasql_test_t94_libri_mulnvezwu8z0`.`libri_importati` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `titolo` VARCHAR(50) NOT NULL,
   `isbn` CHAR(13) NOT NULL,
@@ -10,7 +10,7 @@ CREATE TABLE `ramasql_test_t94_libri_mullifehsonj`.`libri_importati` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB;
 
-INSERT INTO `ramasql_test_t94_libri_mullifehsonj`.`libri_importati` (`id`, `titolo`, `isbn`, `anno`, `prezzo`, `disponibile`, `note`) VALUES (?, ?, ?, ?, ?, ?, ?);
+INSERT INTO `ramasql_test_t94_libri_mulnvezwu8z0`.`libri_importati` (`id`, `titolo`, `isbn`, `anno`, `prezzo`, `disponibile`, `note`) VALUES (?, ?, ?, ?, ?, ?, ?);
 
 Tipi dedotti e riletti dal server:
 id INT NOT NULL — sul server INT

@@ -1,8 +1,8 @@
 T4.7 — tabella da 1000000 righe su MySQL
-Catalogo di test: ramasql_test_ui_grande_h16k73 (creato e popolato in 3846 ms con INSERT … SELECT, fuori dal client)
-Prima pagina: 5 ms (limite 1000 ms) — SQL nel registro: SELECT `id`, `testo`, `numero` FROM `ramasql_test_ui_grande_h16k73`.`grande` LIMIT 1001
-Pagina 2: 2 ms, prima riga id=1001 — SELECT `id`, `testo`, `numero` FROM `ramasql_test_ui_grande_h16k73`.`grande` LIMIT 1001 OFFSET 1000
-Ordinamento su «numero» (colonna senza indice), decrescente: 209 ms — SELECT `id`, `testo`, `numero` FROM `ramasql_test_ui_grande_h16k73`.`grande` ORDER BY `numero` DESC LIMIT 1001
-Memoria usata dopo le tre letture: 144 MB (limite 300 MB)
+Catalogo di test: ramasql_test_ui_grande_4fbwf2 (creato e popolato in 3860 ms con INSERT … SELECT, fuori dal client)
+Prima pagina: 10 ms (limite 1000 ms) — SQL nel registro: SELECT `id`, `testo`, `numero` FROM `ramasql_test_ui_grande_4fbwf2`.`grande` LIMIT 1001
+Pagina 2: 3 ms, prima riga id=1001 — SELECT `id`, `testo`, `numero` FROM `ramasql_test_ui_grande_4fbwf2`.`grande` LIMIT 1001 OFFSET 1000
+Ordinamento su «numero» (colonna senza indice), decrescente: 200 ms — SELECT `id`, `testo`, `numero` FROM `ramasql_test_ui_grande_4fbwf2`.`grande` ORDER BY `numero` DESC LIMIT 1001
+Memoria usata dopo le tre letture: 164 MB (limite 300 MB)
 Righe tenute in memoria dalla griglia: 1000 (di 1000000 sul server)
 Esito: SUPERATO

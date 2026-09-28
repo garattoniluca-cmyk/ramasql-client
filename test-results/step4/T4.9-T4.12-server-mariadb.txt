@@ -1,5 +1,5 @@
 T4.9 e T4.12 — data-entry senza Conferma, su MariaDB
-Catalogo di test: ramasql_test_ui_pendenti_sv7fqc (fixture biblioteca.sql)
+Catalogo di test: ramasql_test_ui_pendenti_cewc60 (fixture biblioteca.sql)
 soci sul server prima: 100 righe; prima riga [T0001037, Ricci, Alessandro, alessandro.ricci1@esempio.it]
 T4.9 — contatore: «3 inserimenti · 1 modifica · 0 eliminazioni in sospeso»; avviso su ordina/cambia pagina: «Prima conferma o scarta le modifiche in sospeso: cambiare pagina o ordinare non salva nulla.»
   registro: 0 istruzioni di scrittura; soci sul server: 100 righe (prima 100), prima riga invariata

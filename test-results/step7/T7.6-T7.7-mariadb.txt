@@ -1,5 +1,5 @@
 T7.6 e T7.7 su MariaDB
-Catalogo di test: ramasql_test_ui_visual76_fe91xx
+Catalogo di test: ramasql_test_ui_visual76_pk3dk7
 T7.6 — SQL del diagramma:
 SELECT
 	`libri`.`titolo`

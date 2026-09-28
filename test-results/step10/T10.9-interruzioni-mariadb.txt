@@ -1,5 +1,5 @@
 T10.5/T10.9 — «Interrompi» nel dump e nel ripristino (MariaDB)
-Dump interrotto dopo 13367 righe: «⚠ Interrotta: nessun file scritto (0 tabelle, 0 viste, 13367 righe e 13378 istruzioni erano pronte). Se «precedente.sql» esisteva già, è rimasto com'era.»; «precedente.sql» identico, nessun .part
-Ripristino interrotto dopo 15864 istruzioni: «⚠ Interrotto: 15864 istruzioni eseguite su 300011: 15864 riuscite, 0 con errore (6,9 s). Le istruzioni eseguite restano. ⚠ Il file ha lasciato cambiate impostazioni della sessione: modalità SQL, fuso orario, controlli delle chiavi esterne. Varrebbero anche per le tue istruzioni: rimettile con il pulsante qui sotto.»
+Dump interrotto dopo 16373 righe: «⚠ Interrotta: nessun file scritto (0 tabelle, 0 viste, 16373 righe e 16384 istruzioni erano pronte). Se «precedente.sql» esisteva già, è rimasto com'era.»; «precedente.sql» identico, nessun .part
+Ripristino interrotto dopo 15875 istruzioni: «⚠ Interrotto: 15875 istruzioni eseguite su 300011: 15875 riuscite, 0 con errore (5,8 s). Le istruzioni eseguite restano. ⚠ Il file ha lasciato cambiate impostazioni della sessione: modalità SQL, fuso orario, controlli delle chiavi esterne. Varrebbero anche per le tue istruzioni: rimettile con il pulsante qui sotto.»
 Rimesse dalla pipeline: [SET SESSION sql_mode = 'IGNORE_SPACE,STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION', SET SESSION time_zone = 'SYSTEM', SET FOREIGN_KEY_CHECKS = 1]
 Esito: OK

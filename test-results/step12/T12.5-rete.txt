@@ -1,10 +1,10 @@
-T12.5 — connessioni di rete durante una sessione d'uso completa (PID 23188)
+T12.5 — connessioni di rete durante una sessione d'uso completa (PID 13680)
 Sessione:
   MariaDB: collegamento
   MariaDB: navigatore aperto fino alle colonne di libri
   MariaDB: griglia dei dati di libri
   MariaDB: editor SQL, una SELECT e un UPDATE confermato
-  MariaDB: query visiva aperta (tab.visual.ramasql_test_ui_t125_5p6sdq.visual.1)
+  MariaDB: query visiva aperta (tab.visual.ramasql_test_ui_t125_y5p52b.visual.1)
   MariaDB: editor di tabelle di libri (5 linguette)
   MariaDB: importazione di soci.csv in una tabella nuova
   MariaDB: dump del catalogo (60723 byte)
@@ -16,7 +16,7 @@ Sessione:
   MySQL: navigatore aperto fino alle colonne di libri
   MySQL: griglia dei dati di libri
   MySQL: editor SQL, una SELECT e un UPDATE confermato
-  MySQL: query visiva aperta (tab.visual.ramasql_test_ui_t125_k6m362.visual.1)
+  MySQL: query visiva aperta (tab.visual.ramasql_test_ui_t125_aubyze.visual.1)
   MySQL: editor di tabelle di libri (5 linguette)
   MySQL: importazione di soci.csv in una tabella nuova
   MySQL: dump del catalogo (61203 byte)
@@ -24,23 +24,19 @@ Sessione:
   MySQL: modello ER dal database (7 entità)
   MySQL: guida rapida e «Informazioni su» aperte dal menu Aiuto
   MySQL: scollegamento
-Monitor di Windows (Get-NetTCPConnection sul PID, 6 letture): connessioni viste
-  Bound :::63197 > :::0
-  Bound :::63198 > :::0
-  Bound :::63199 > :::0
-  Bound :::63201 > :::0
-  Bound :::63204 > :::0
-  Bound :::63205 > :::0
-  Bound :::63206 > :::0
-  Bound :::63208 > :::0
-  Established 127.0.0.1:63197 > 127.0.0.1:3306
-  Established 127.0.0.1:63198 > 127.0.0.1:3306
-  Established 127.0.0.1:63199 > 127.0.0.1:3306
-  Established 127.0.0.1:63201 > 127.0.0.1:3306
-  Established 127.0.0.1:63204 > 127.0.0.1:3307
-  Established 127.0.0.1:63205 > 127.0.0.1:3307
-  Established 127.0.0.1:63206 > 127.0.0.1:3307
-  Established 127.0.0.1:63208 > 127.0.0.1:3307
+Monitor di Windows (Get-NetTCPConnection sul PID, 7 letture): connessioni viste
+  Bound :::62496 > :::0
+  Bound :::62497 > :::0
+  Bound :::62498 > :::0
+  Bound :::62503 > :::0
+  Bound :::62504 > :::0
+  Bound :::62505 > :::0
+  Established 127.0.0.1:62496 > 127.0.0.1:3306
+  Established 127.0.0.1:62497 > 127.0.0.1:3306
+  Established 127.0.0.1:62498 > 127.0.0.1:3306
+  Established 127.0.0.1:62503 > 127.0.0.1:3307
+  Established 127.0.0.1:62504 > 127.0.0.1:3307
+  Established 127.0.0.1:62505 > 127.0.0.1:3307
 Registratore di Java (JFR, letture e scritture su socket): destinazioni
   127.0.0.1:3306 (127.0.0.1)
   127.0.0.1:3307 (127.0.0.1)

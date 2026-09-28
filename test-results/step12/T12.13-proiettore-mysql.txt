@@ -1,10 +1,10 @@
 T12.13 — suggerimenti al proiettore (1024×768, carattere 28) e da tastiera, MySQL
-1) 413 testi impaginati: il più largo 672 px (settings.rowLimit.tooltip; limite leggibile 819 px), il più alto 353 px (schermo 728 px)
+1) 414 testi impaginati: il più largo 672 px (settings.rowLimit.tooltip; limite leggibile 819 px), il più alto 353 px (schermo 728 px)
 2) restano a schermo 60 s (richiesti almeno 20)
    dopo 20,5 s il suggerimento di JTextField «navigator.filter» è ancora a schermo
    Ctrl+F1 su  «navigator.tree» (voce scelta 51,295 345×28): «Il server MySQL locale a cui sei collegato. Qui sotto i suoi cataloghi (database); tasto destro per crearne uno nuovo.…» in 105,332 657×163
    Ctrl+F1 su JTable «columns.table» (voce scelta 363,373 86×63): «Il nome della colonna: lettere, cifre e «_», senza spazi (per convenzione in minuscolo).…» in 383,445 641×125
-3) Ctrl+F1 con il fuoco sul componente: 9 suggerimenti aperti (e chiusi con Esc) su 9 componenti che prendono il fuoco nella schermata (navigatore, editor di tabelle, pannello SQL; il fuoco dato con requestFocusInWindow, i tasti veri), tutti dentro lo schermo
+3) Ctrl+F1 con il fuoco sul componente: 8 suggerimenti aperti (e chiusi con Esc) su 8 componenti che prendono il fuoco nella schermata (navigatore, editor di tabelle, pannello SQL; il fuoco dato con requestFocusInWindow, i tasti veri), tutti dentro lo schermo
 4) liste dell'editor di tabelle al proiettore:
   columns.typeEditor (colonna «Tipo»)              lista 449,332 249×396, prima spiegazione 8,366 427×362
     29 voci spiegate

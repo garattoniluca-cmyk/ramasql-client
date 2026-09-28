@@ -1,7 +1,7 @@
 T3.1 — metadati letti da MySQL
 server: 8.0.40
 
-== /fixtures/biblioteca.expected.json (catalogo ramasql_test_t31_biblioteca_mullh1zlkjjh)
+== /fixtures/biblioteca.expected.json (catalogo ramasql_test_t31_biblioteca_mulnu06hnzgf)
 {
   "tables" : [ {
     "name" : "autori",
@@ -356,7 +356,7 @@ server: 8.0.40
 esito: UGUALE al riferimento
 TableDiff.diff(letto, letto): 0 istruzioni per ciascuna tabella
 
-== /fixtures/biblioteca_myisam.expected.json (catalogo ramasql_test_t31_biblioteca_myisam_mullh23fqk98)
+== /fixtures/biblioteca_myisam.expected.json (catalogo ramasql_test_t31_biblioteca_myisam_mulnu0ae64ra)
 {
   "tables" : [ {
     "name" : "autori",

@@ -16,7 +16,7 @@ Jar di terze parti del programma (dal classpath, tolti quelli delle sole prove):
   jsvg-2.1.0.jar → JSVG
   rsyntaxtextarea-4.0.1.jar → RSyntaxTextArea e AutoComplete
   autocomplete-4.0.0.jar → RSyntaxTextArea e AutoComplete
-Jar della versione portabile RamaSQL-portabile-2026-09-28-2031:
+Jar della versione portabile RamaSQL-portabile-2026-09-28-2044:
   autocomplete-4.0.0.jar → RSyntaxTextArea e AutoComplete
   flatlaf-3.7.2.jar → FlatLaf e FlatLaf Extras
   flatlaf-extras-3.7.2.jar → FlatLaf e FlatLaf Extras
