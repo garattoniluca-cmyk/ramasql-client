@@ -22,6 +22,7 @@
  * i testi non si leggono piu' dai ResourceBundle di SQLeo ma dalla facciata it.ramasql.qb.QbHost
  * (QbRuntime.host().text), cosi' l'applicazione fornisce l'italiano. Rimossi: elenco delle lingue,
  * ascoltatori del cambio lingua, scansione del classpath.
+ * Modificato per RamaSQL Client (2026-09-28, T12.3/T12.9): le chiavi dei testi mostrati si ricordano (keyOf) per i suggerimenti delle voci dei menu.
  */
 
 
@@ -32,14 +33,31 @@ import it.ramasql.qb.QbRuntime;
 
 public class I18n
 {
+    // RamaSQL (2026-09-28): da un testo mostrato alla sua chiave, per dare alle voci dei menu il suggerimento
+    // <chiave>.tooltip (it.ramasql.qb.QbTips)
+    private static final java.util.Map<String, String> KEYS = new java.util.concurrent.ConcurrentHashMap<>();
+
     public static String getString(String cID)
     {
-        return QbRuntime.host().text(cID, cID);
+        return remember(cID, QbRuntime.host().text(cID, cID));
     }
 
     public static String getString(String cID,String defaultValue)
     {
-        return QbRuntime.host().text(cID, defaultValue);
+        return remember(cID, QbRuntime.host().text(cID, defaultValue));
+    }
+
+    /** La chiave da cui viene un testo mostrato, {@code null} se non si sa. */
+    public static String keyOf(String text)
+    {
+        return text == null ? null : KEYS.get(text);
+    }
+
+    private static String remember(String cID, String text)
+    {
+        if (text != null && cID != null)
+            KEYS.put(text, cID);
+        return text;
     }
 
     public static String getFormattedString(String cID, String defaultValue, Object[] args)

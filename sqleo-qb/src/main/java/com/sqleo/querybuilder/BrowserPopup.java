@@ -18,6 +18,8 @@
  *
  *
  * Modificato per RamaSQL Client (2026-09-21): tolte dall'elenco delle aggregate le pseudo-funzioni di SQLeo (trasformazione a tabella incrociata e concatenazione), sostituite da group_concat nativo.
+ * Modificato per RamaSQL Client (2026-09-28, T12.3/T12.9): voce DISTINCT dal file dei testi e suggerimenti delle voci del menu.
+ * Modificato per RamaSQL Client (2026-09-28, revisione T12.7): «Aggiungi condizione WHERE/HAVING» con nomi diversi.
  */
 
 package com.sqleo.querybuilder;
@@ -93,6 +95,7 @@ public class BrowserPopup extends JPopupMenu implements MouseListener
 		addSeparator();
 		add(new ActionRemoveAll());
 		add(new ActionAddGroupBySyncSelect());
+		it.ramasql.qb.QbTips.explain(this);   // RamaSQL (2026-09-28, T12.9): i suggerimenti delle voci
 	}
 
 	public void mouseEntered(MouseEvent me){}
@@ -232,7 +235,7 @@ public class BrowserPopup extends JPopupMenu implements MouseListener
 	{
 		MenuItemDistinct()
 		{
-			super("distinct");
+			super(I18n.getString("querybuilder.menu.distinct", "distinct"));
 			addActionListener(this);
 		}
 		
@@ -361,6 +364,8 @@ public class BrowserPopup extends JPopupMenu implements MouseListener
 	
 	class ActionAddWhere extends ActionAddCondition
 	{
+		// RamaSQL (2026-09-28, revisione T12.7): WHERE e HAVING con due nomi diversi (erano uguali)
+		ActionAddWhere(){putValue(NAME, I18n.getString("querybuilder.menu.addWhereCondition","add where condition..."));}
 		void add(QueryTokens.Condition token)
 		{
 			BrowserPopup.this.builder.browser.addWhereClause(token);
@@ -381,6 +386,8 @@ public class BrowserPopup extends JPopupMenu implements MouseListener
 	
 	class ActionAddHaving extends ActionAddCondition
 	{
+		// RamaSQL (2026-09-28, revisione T12.7): WHERE e HAVING con due nomi diversi (erano uguali)
+		ActionAddHaving(){putValue(NAME, I18n.getString("querybuilder.menu.addHavingCondition","add having condition..."));}
 		void add(QueryTokens.Condition token)
 		{
 			BrowserPopup.this.builder.browser.addHavingClause(token);

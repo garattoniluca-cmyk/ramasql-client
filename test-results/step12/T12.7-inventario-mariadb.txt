@@ -1,7 +1,7 @@
 T12.7 — inventario delle schermate per la revisione «alla Apple» (MariaDB)
 Barra degli strumenti: 10 pulsanti (al più 10)
 Impostazioni: 4 voci (devono essere 4)
-Schermate: 49; fotografie: 30
+Schermate: 62; fotografie: 31
   T12.7-01-schermata-iniziale.png — schermata iniziale
   T12.7-02-area-di-lavoro.png — area di lavoro
   T12.7-03-editor-sql.png — editor SQL
@@ -10,28 +10,29 @@ Schermate: 49; fotografie: 30
   T12.7-06-editor-di-tabelle.png — editor di tabelle
   T12.7-07-tabella-nuova.png — tabella nuova
   T12.7-08-query-visiva.png — query visiva
-  T12.7-09-importa-1-file.png — importa › 1 file
-  T12.7-10-importa-1-file-scelto.png — importa › 1 file scelto
-  T12.7-11-importa-2-anteprima.png — importa › 2 anteprima
-  T12.7-12-importa-3-tabella-esistente.png — importa › 3 tabella esistente
-  T12.7-13-importa-3-tabella-nuova.png — importa › 3 tabella nuova
-  T12.7-14-importa-4-opzioni.png — importa › 4 opzioni
-  T12.7-15-importa-5-importa.png — importa › 5 importa
-  T12.7-16-dump-1-cosa.png — dump › 1 cosa
-  T12.7-17-dump-2-opzioni.png — dump › 2 opzioni
-  T12.7-18-dump-3-esporta.png — dump › 3 esporta
-  T12.7-19-esegui-script.png — esegui script
-  T12.7-20-modello-er.png — modello ER
-  T12.7-21-finestra-preview-dialog.png — finestra preview.dialog
+  T12.7-09-query-visiva-con-due-tabelle.png — query visiva con due tabelle
+  T12.7-10-importa-1-file.png — importa › 1 file
+  T12.7-11-importa-1-file-scelto.png — importa › 1 file scelto
+  T12.7-12-importa-2-anteprima.png — importa › 2 anteprima
+  T12.7-13-importa-3-tabella-esistente.png — importa › 3 tabella esistente
+  T12.7-14-importa-3-tabella-nuova.png — importa › 3 tabella nuova
+  T12.7-15-importa-4-opzioni.png — importa › 4 opzioni
+  T12.7-16-importa-5-importa.png — importa › 5 importa
+  T12.7-17-dump-1-cosa.png — dump › 1 cosa
+  T12.7-18-dump-2-opzioni.png — dump › 2 opzioni
+  T12.7-19-dump-3-esporta.png — dump › 3 esporta
+  T12.7-20-esegui-script.png — esegui script
+  T12.7-21-modello-er.png — modello ER
   T12.7-22-finestra-preview-dialog.png — finestra preview.dialog
-  T12.7-23-finestra-catalog-create-dialog.png — finestra catalog.create.dialog
-  T12.7-24-finestra-profile-dialog.png — finestra profile.dialog
-  T12.7-25-finestra-settings-dialog.png — finestra settings.dialog
-  T12.7-26-finestra-about-dialog.png — finestra about.dialog
-  T12.7-27-finestra-guide-dialog.png — finestra guide.dialog
-  T12.7-28-finestra-connection-error-dialog.png — finestra connection.error.dialog
-  T12.7-29-finestra-er-tables-dialog.png — finestra er.tables.dialog
-  T12.7-30-finestra-showcreate-dialog.png — finestra showCreate.dialog
+  T12.7-23-finestra-preview-dialog.png — finestra preview.dialog
+  T12.7-24-finestra-catalog-create-dialog.png — finestra catalog.create.dialog
+  T12.7-25-finestra-profile-dialog.png — finestra profile.dialog
+  T12.7-26-finestra-settings-dialog.png — finestra settings.dialog
+  T12.7-27-finestra-about-dialog.png — finestra about.dialog
+  T12.7-28-finestra-guide-dialog.png — finestra guide.dialog
+  T12.7-29-finestra-connection-error-dialog.png — finestra connection.error.dialog
+  T12.7-30-finestra-er-tables-dialog.png — finestra er.tables.dialog
+  T12.7-31-finestra-showcreate-dialog.png — finestra showCreate.dialog
 
 ## schermata iniziale (13 controlli)
 - pulsante "Connetti" «toolbar.connect»
@@ -251,6 +252,117 @@ Schermate: 49; fotografie: 30
 
 ## query visiva › Esito (1 controlli)
 - tabella «sqlEditor.outcomes» [#, Istruzione, Esito, Durata, Avvisi]
+
+## query visiva con due tabelle (24 controlli)
+- pulsante "Grafica" «visualQuery.view.graphic»
+- pulsante "SQL" «visualQuery.view.sql»
+- pulsante "Salva come vista…" «visualQuery.saveAsView»
+- pulsante "Salva .sql…" «visualQuery.save»
+- pulsante "Interrompi" «visualQuery.stop»
+- pulsante "Esegui" «visualQuery.run»
+- linguette «visualQuery.diagram» [Grafico]
+- elenco «qb.objects»
+- albero
+- casella "" «qb.field.select»
+- casella "" «qb.field.select»
+- casella "" «qb.field.select»
+- casella "" «qb.field.select»
+- casella "" «qb.field.select»
+- pulsante "×" «qb.entity.close»
+- casella "" «qb.field.select»
+- casella "" «qb.field.select»
+- casella "" «qb.field.select»
+- casella "" «qb.field.select»
+- casella "" «qb.field.select»
+- casella "" «qb.field.select»
+- pulsante "×" «qb.entity.close»
+- linguette «sqlEditor.results» [Esito]
+- tabella «sqlEditor.outcomes» [#, Istruzione, Esito, Durata, Avvisi]
+
+## query visiva con due tabelle › Grafico (15 controlli)
+- elenco «qb.objects»
+- albero
+- casella "" «qb.field.select»
+- casella "" «qb.field.select»
+- casella "" «qb.field.select»
+- casella "" «qb.field.select»
+- casella "" «qb.field.select»
+- pulsante "×" «qb.entity.close»
+- casella "" «qb.field.select»
+- casella "" «qb.field.select»
+- casella "" «qb.field.select»
+- casella "" «qb.field.select»
+- casella "" «qb.field.select»
+- casella "" «qb.field.select»
+- pulsante "×" «qb.entity.close»
+
+## query visiva con due tabelle › Esito (1 controlli)
+- tabella «sqlEditor.outcomes» [#, Istruzione, Esito, Durata, Avvisi]
+
+## menu query visiva › diagramma (6 controlli)
+- voce "Compatta le tabelle"
+- voce "Disponi a griglia"
+- voce "Disponi in automatico"
+- voce "Togli tutte le tabelle"
+- voce "Salva come immagine"
+- voce "Copia SQL"
+
+## menu query visiva › albero della query (12 controlli)
+- voce "DISTINCT (senza righe doppie)"
+- voce "Aggiungi espressione..."
+- voce "Aggiungi sottoquery"
+- voce "Aggiungi condizione WHERE..."
+- voce "Aggiungi a GROUP BY"
+- voce "Aggiungi condizione HAVING..."
+- voce "Aggiungi a ORDER BY"
+- voce "UNION"
+- voce "Modifica..."
+- voce "Togli"
+- voce "Togli tutto"
+- voce "Allinea alle colonne selezionate"
+
+## menu query visiva › tabella (7 controlli)
+- voce "Ordina per nome"
+- voce "Compatta"
+- voce "Seleziona tutto"
+- voce "Deseleziona tutto"
+- voce "Apri le tabelle che la referenziano"
+- voce "Apri le tabelle referenziate"
+- voce "Riferimenti..."
+
+## menu query visiva › campo (4 controlli)
+- voce "Nel risultato (SELECT)"
+- voce "Aggiungi condizione WHERE..."
+- voce "Aggiungi condizione HAVING..."
+- voce "Aggiungi espressione..."
+
+## menu query visiva › join (5 controlli)
+- voce "Solo le righe che corrispondono" «qb.join.kind.0»
+- voce "Tutte le righe di libri" «qb.join.kind.1»
+- voce "Tutte le righe di prestiti" «qb.join.kind.2»
+- voce "Condizione…"
+- voce "Togli"
+
+## query visiva › finestra MaskJoin (1 controlli)
+- lista a discesa «qb.join.operator» (7 voci)
+
+## query visiva › finestra MaskCondition (5 controlli)
+- lista a discesa «qb.condition.predicate» (2 voci)
+- campo di testo «qb.condition.left»
+- lista a discesa «qb.condition.operator» (17 voci)
+- casella "<html><i>SUBQUERY" «qb.condition.subquery»
+- campo di testo «qb.condition.right»
+
+## query visiva › finestra MaskAlias (1 controlli)
+- campo di testo «qb.alias.value»
+
+## query visiva › finestra MaskReferences (2 controlli)
+- elenco «qb.references.foreign»
+- elenco «qb.references.primary»
+
+## query visiva › finestra MaskExpression (2 controlli)
+- campo di testo «qb.expression.alias»
+- campo di testo «qb.expression.value»
 
 ## importa › 1 file (7 controlli)
 - pulsante "Scegli…" «import.file.choose»

@@ -18,9 +18,12 @@
  *
  *
  * Modificato per RamaSQL Client (2026-09-21): avvisi tramite la facciata QbHost invece degli avvisi della classe Application di SQLeo e di una finestra di conferma; tolto il supporto alla sintassi di join esterno (+) di un altro DBMS; le posizioni delle entita' nei commenti si leggono sempre (non piu' da Preferences); LIMIT della query principale letto nel modello (doParseLimit) invece del solo avviso; corretto l'ultimo DESC di ORDER BY perso davanti a LIMIT; corretto il verso dei join: con ON scritto come "tabella_aggiunta.col = tabella_precedente.col" le due tabelle venivano scambiate (un LEFT JOIN rigenerato al contrario), ora gli operandi si riordinano (doParseFrom, joinedRef).
+ * Modificato per RamaSQL Client (2026-09-28, T12.3): avviso di tabella o alias sconosciuti dal file dei testi.
  */
 
 package com.sqleo.querybuilder.syntax;
+
+import com.sqleo.common.util.I18n;
 
 import java.awt.Point;
 import java.io.IOException;
@@ -165,7 +168,7 @@ public class SQLParser
 				next = li.next();
 				if(next.toString().equalsIgnoreCase(_ReservedWords.ALL))
 				{
-					QbRuntime.host().alert("!!! UNION ALL changed in UNION syntax !!!");
+					QbRuntime.host().alert(I18n.getString("querybuilder.message.unionAll", "UNION ALL changed in UNION syntax"));
 
 				}
 				else
@@ -185,7 +188,7 @@ public class SQLParser
 			{
 				// RamaSQL: LIMIT della query principale lo legge toQueryModel; dentro una sottoquery resta non supportato
 				if(qe instanceof SubQuery)
-					QbRuntime.host().alert("LIMIT: syntax not supported yet in subquery");
+					QbRuntime.host().alert(I18n.getString("querybuilder.message.limitInSubquery", "LIMIT not supported in subquery"));
 				else
 					li.previous();
 				break;
@@ -685,7 +688,7 @@ public class SQLParser
 						// let contaisKey case sensitive but raise exception if Alias or Table not found
 						// to do raise exception
 						if(dot!=-1){
-							QbRuntime.host().alert("!!! condition table or alias not found: " + ref + " !!!");
+							QbRuntime.host().alert(I18n.getFormattedString("querybuilder.message.conditionAliasNotFound", "condition table or alias not found: {0}", new Object[]{ref}));
 						}
 
 					} // end #92
@@ -749,7 +752,7 @@ and
 						qs.addWhereClause(conditionToken);
 
 						addToFromClause = false;
-						QbRuntime.host().alert("!!! WARNING conditions on join are converted into where clause( " + conditionToken + " )!!!");
+						QbRuntime.host().alert(I18n.getFormattedString("querybuilder.message.joinConditionToWhere", "conditions on join are converted into where clause: {0}", new Object[]{"" + conditionToken}));
 					}
 				}
 		 		if(addToFromClause){		
@@ -1081,10 +1084,10 @@ and
 					else
 					{
 						// raise and display error message
-						// fix #199 QbRuntime.host().alert("Table or alias not found: " + owner);
+						// fix #199 QbRuntime.host().alert(I18n.getFormattedString("querybuilder.message.aliasNotFound", "Table or alias not found: {0}", new Object[]{owner}));
 				                if (DisplayMsg) {
 							// RamaSQL: un solo avviso tramite la facciata, senza finestra di conferma
-							QbRuntime.host().alert("Table or alias not found: " + owner);
+							QbRuntime.host().alert(I18n.getFormattedString("querybuilder.message.aliasNotFound", "Table or alias not found: {0}", new Object[]{owner}));
 							DisplayMsg = false;
 						}
 

@@ -32,6 +32,7 @@
  * a caricamento finito, se per quel livello non ci sono posizioni salvate, le tabelle si dispongono per collegamenti
  * (ViewDiagram.doArrangeEntitiesLayered, BUG-023: nessun join passa sotto un'altra tabella).
  * Modificato per RamaSQL Client (2026-09-28, T12.9): suggerimento (tooltip) delle linguette Grafico e SQL.
+ * Modificato per RamaSQL Client (2026-09-28, T12.3): avviso di connessione mancante dal file dei testi.
  */
 
 package com.sqleo.querybuilder;
@@ -321,7 +322,7 @@ public class QueryBuilder extends JTabbedPane implements ChangeListener
 				if(fresh!=null && fresh!=connection && !fresh.isClosed()){
 					setConnection(fresh);
 				}else{
-					host.alert("No connection exists!");
+					host.alert(I18n.getString("querybuilder.message.noConnection", "No connection exists!"));
 				}
 			}
 		} catch (SQLException sqle) {

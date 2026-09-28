@@ -16,9 +16,12 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
+ * Modificato per RamaSQL Client (2026-09-28, T12.3/T12.9): titolo delle finestre dal file dei testi.
  */
 
 package com.sqleo.querybuilder;
+
+import com.sqleo.common.util.I18n;
 
 import java.awt.Dialog;
 import java.awt.Frame;
@@ -39,7 +42,8 @@ public abstract class BaseMask extends BorderLayoutPanel
 	BaseMask(String title, QueryBuilder builder)
 	{
 		super(2,2);
-		this.title = title;
+		// RamaSQL (2026-09-28, T12.3): il titolo della finestra dal file dei testi, non la chiave inglese
+		this.title = I18n.getString("querybuilder.title." + title.replace(' ', '_'), title);
 		this.builder = builder;
 	}
 	

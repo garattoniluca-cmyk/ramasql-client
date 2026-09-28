@@ -175,6 +175,23 @@ final class Schermate {
         onEdt(() -> tabs(v, "tabella nuova", fresh));
         var visual = fromEdt(() -> a.frame().openVisualQuery(catalog));
         onEdt(() -> tabs(v, "query visiva", visual));
+        // con due tabelle collegate: i menu del query builder (diagramma, albero, tabella, campo, join) e le sue
+        // finestre (join, condizione, alias, riferimenti, espressione), come le vede l'utente
+        com.sqleo.querybuilder.QueryBuilder qb = fromEdt(visual::queryBuilder);
+        onEdt(() -> {
+            com.sqleo.querybuilder.QbOperations.addTable(qb, "prestiti");
+            com.sqleo.querybuilder.QbOperations.addTable(qb, "libri");
+        });
+        onEdt(() -> tabs(v, "query visiva con due tabelle", visual));
+        onEdt(() -> com.sqleo.querybuilder.QbOperations.menusForRendering(qb)
+                .forEach((name, menu) -> v.menu("query visiva › " + name, menu)));
+        onEdt(() -> {
+            for (javax.swing.JComponent mask : com.sqleo.querybuilder.QbOperations.masksForRendering(qb)) {
+                mask.setSize(mask.getPreferredSize());
+                mask.doLayout();
+                v.screen("query visiva › finestra " + mask.getName(), mask);
+            }
+        });
         ImportWizard imp = fromEdt(() -> a.frame().openImport(catalog, "soci"));
         onEdt(() -> tabs(v, "importa › 1 file", imp));
         ImportSupport.choose(a, imp, ImportSupport.fixture("soci.csv"));

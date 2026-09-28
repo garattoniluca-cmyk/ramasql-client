@@ -54,6 +54,13 @@ public interface QbHost {
     }
 
     /** Colore del diagramma; predefinito: il token di {@code DESIGN-SYSTEM.md}. */
+    /**
+     * Le spiegazioni delle voci di una lista a discesa del query builder (T12.10): il programma le mostra accanto alla
+     * lista aperta, come in tutte le sue liste. Per impostazione predefinita non fa nulla.
+     */
+    default void explainItems(javax.swing.JComboBox<?> combo, java.util.function.Function<Object, String> tip) {
+    }
+
     default java.awt.Color color(QbColor c) {
         return c.defaultColor();
     }

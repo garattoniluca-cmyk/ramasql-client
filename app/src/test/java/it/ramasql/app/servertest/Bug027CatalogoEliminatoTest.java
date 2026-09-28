@@ -28,7 +28,7 @@ import it.ramasql.core.exec.ScriptResult;
 /**
  * <b>BUG-027</b>: eliminato dal navigatore un catalogo intero ({@code DROP DATABASE}), i sorgenti grafici delle sue
  * viste escono da {@code viste.json}; restano quelli degli altri cataloghi e degli altri server. Se l'anteprima si
- * annulla, l'archivio non si tocca.
+ * annulla, o se il server rifiuta l'istruzione, l'archivio non si tocca.
  */
 @Tag("step12")
 @Tag("ui")
@@ -74,13 +74,24 @@ class Bug027CatalogoEliminatoTest {
                 assertTrue(store.find(address, catalog, "v_uno").isPresent(), "annullato: i sorgenti restano");
                 ev.append("1. Anteprima annullata: catalogo e sorgenti al loro posto\n");
 
-                // 2. DROP DATABASE riuscito, con la conferma scritta
                 a.ws.onPreview = d -> {
                     if (d.requiresTypedConfirmation()) {
                         d.confirmationField().setText(d.confirmation().typeToConfirm());
                     }
                     d.executeButton().doClick();
                 };
+                // 2. il server rifiuta (il catalogo l'ha già eliminato qualcun altro): l'archivio non si tocca
+                server.run("DROP DATABASE `" + other + "`");
+                a.menu(NavNode.Kind.CATALOG, other, other, "nav.menu.dropCatalog");
+                ScriptResult rifiutato = a.awaitLastProposal();
+                assertFalse(rifiutato.completed(), "il server ha rifiutato il DROP DATABASE");
+                Probe.onEdt(() -> { });
+                assertTrue(store.find(address, other, "v_uno").isPresent(),
+                        "DROP DATABASE non riuscito: i sorgenti restano");
+                ev.append("2. DROP DATABASE rifiutato dal server (").append(rifiutato.failure().orElseThrow().error())
+                        .append("): i sorgenti di quel catalogo restano nell'archivio\n");
+
+                // 3. DROP DATABASE riuscito, con la conferma scritta
                 a.menu(NavNode.Kind.CATALOG, catalog, catalog, "nav.menu.dropCatalog");
                 ScriptResult r = a.awaitLastProposal();
                 assertTrue(r.completed(), "DROP DATABASE riuscito");
@@ -91,11 +102,12 @@ class Bug027CatalogoEliminatoTest {
                 ViewSourceStore riletto = new ViewSourceStore(dataDir);
                 assertTrue(riletto.find(address, catalog, "v_uno").isEmpty(), "anche nel file viste.json");
                 assertTrue(riletto.find(address, catalog, "v_due").isEmpty(), "tutte le viste del catalogo");
-                assertTrue(riletto.find(address, other, "v_uno").isPresent(), "un altro catalogo resta");
+                assertTrue(riletto.find(address, other, "v_uno").isPresent(),
+                        "le voci del catalogo del DROP rifiutato restano");
                 assertTrue(riletto.find("altro-server:3306", catalog, "v_uno").isPresent(),
                         "lo stesso catalogo di un altro server resta");
-                ev.append("2. DROP DATABASE riuscito: tolte da viste.json v_uno e v_due del catalogo; restano la vista "
-                        + "di un altro catalogo e quella dello stesso catalogo su un altro server\nEsito: SUPERATO\n");
+                ev.append("3. DROP DATABASE riuscito: tolte da viste.json v_uno e v_due del catalogo; restano la vista "
+                        + "del catalogo il cui DROP è stato rifiutato e quella dello stesso catalogo su un altro server\nEsito: SUPERATO\n");
             }
         } catch (Throwable t) {
             ev.append("Esito: FALLITO - ").append(t).append('\n');

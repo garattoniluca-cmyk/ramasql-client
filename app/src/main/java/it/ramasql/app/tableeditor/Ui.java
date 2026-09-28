@@ -112,6 +112,8 @@ public final class Ui {
      * e la spiegazione accanto; le frecce scelgono, Invio conferma, Esc lascia com'era. Senza, in Swing la lista della
      * cella si chiude appena si comincia a modificarla.
      */
+    private static final String PENDING_OPEN = "ramasql.openCellList.pending";
+
     static void comboCellKeys(JTable table) {
         javax.swing.Action open = new javax.swing.AbstractAction() {
             private static final long serialVersionUID = 1L;
@@ -141,14 +143,26 @@ public final class Ui {
                     show.run();
                     return;
                 }
-                target.addFocusListener(new java.awt.event.FocusAdapter() {
+                // un solo ascoltatore in attesa per lista (Alt+Giù premuto due volte non ne lascia due), e se il
+                // fuoco non arriva la richiesta non resta in sospeso fino al prossimo clic
+                if (target instanceof JComponent j
+                        && j.getClientProperty(PENDING_OPEN) instanceof java.awt.event.FocusListener old) {
+                    target.removeFocusListener(old);
+                }
+                java.awt.event.FocusListener once = new java.awt.event.FocusAdapter() {
                     @Override
                     public void focusGained(java.awt.event.FocusEvent fe) {
                         target.removeFocusListener(this);
                         show.run();
                     }
-                });
-                target.requestFocusInWindow();
+                };
+                target.addFocusListener(once);
+                if (target instanceof JComponent j) {
+                    j.putClientProperty(PENDING_OPEN, once);
+                }
+                if (!target.requestFocusInWindow()) {
+                    target.removeFocusListener(once);
+                }
             }
         };
         table.getActionMap().put("ramasql.openCellList", open);
@@ -255,17 +269,13 @@ public final class Ui {
                 if (!isSelected) {
                     setBackground(tone.tint);
                 }
-                StringBuilder tip = new StringBuilder("<html>");
+                StringBuilder tip = new StringBuilder();
                 for (Object o : problems) {
-                    tip.append(escape(((Checks.Problem) o).message())).append("<br>");
+                    tip.append(((Checks.Problem) o).message()).append('\n');   // un paragrafo per problema, a capo
                 }
-                setToolTipText(tip.append("</html>").toString());
+                setToolTipText(tip.toString().strip());
             }
             return this;
-        }
-
-        private static String escape(String s) {
-            return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;");
         }
     }
 }

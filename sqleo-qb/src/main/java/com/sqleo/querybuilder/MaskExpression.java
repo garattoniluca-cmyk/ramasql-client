@@ -18,9 +18,12 @@
  *
  *
  * Modificato per RamaSQL Client (2026-09-21): titolo dei messaggi non piu' preso da _Version.
+ * Modificato per RamaSQL Client (2026-09-28, T12.3/T12.9): etichetta dal file dei testi e suggerimenti dei campi.
  */
 
 package com.sqleo.querybuilder;
+
+import com.sqleo.common.util.I18n;
 
 import java.awt.Dialog;
 import java.awt.Frame;
@@ -50,8 +53,10 @@ public class MaskExpression extends BaseMask
 		querytoken = token;
 		
 		BorderLayoutPanel north = new BorderLayoutPanel(2,2);
-		north.setComponentWest(new JLabel("Alias:"));
+		north.setComponentWest(new JLabel(I18n.getString("querybuilder.expression.alias", "Alias:")));
 		north.setComponentCenter(alias = new JTextField());
+		alias.setName("qb.expression.alias");
+		alias.setToolTipText(I18n.getString("querybuilder.expression.alias.tooltip", ""));
 		setComponentNorth(north);
 		
 		setComponentCenter(new JScrollPane(value = new JTextArea()));
@@ -59,6 +64,8 @@ public class MaskExpression extends BaseMask
 		value.setLineWrap(true);
 		value.setColumns(45);
 		value.setRows(10);
+		value.setName("qb.expression.value");
+		value.setToolTipText(I18n.getString("querybuilder.expression.value.tooltip", ""));
 	}
 
 	protected boolean onConfirm()
@@ -67,12 +74,12 @@ public class MaskExpression extends BaseMask
 		{
 			if(alias.getText() == null || alias.getText().trim().length() == 0)
 			{
-				String message = "Please, set a valid alias.";
+				String message = I18n.getString("querybuilder.message.aliasRequired", "Please, set a valid alias.");
 				
 				if(SwingUtilities.getWindowAncestor(builder) instanceof Frame)
-					JOptionPane.showMessageDialog((Frame)SwingUtilities.getWindowAncestor(builder),message,"RamaSQL",JOptionPane.WARNING_MESSAGE);
+					JOptionPane.showMessageDialog((Frame)SwingUtilities.getWindowAncestor(builder),message,I18n.getString("querybuilder.message.aliasRequired.title", "RamaSQL"),JOptionPane.WARNING_MESSAGE);
 				else if(SwingUtilities.getWindowAncestor(builder) instanceof Dialog)
-					JOptionPane.showMessageDialog((Dialog)SwingUtilities.getWindowAncestor(builder),message,"RamaSQL",JOptionPane.WARNING_MESSAGE);
+					JOptionPane.showMessageDialog((Dialog)SwingUtilities.getWindowAncestor(builder),message,I18n.getString("querybuilder.message.aliasRequired.title", "RamaSQL"),JOptionPane.WARNING_MESSAGE);
 							
 				return false;
 			}

@@ -20,6 +20,7 @@
  * Modificato per RamaSQL Client (2026-09-21): dimensioni scalate chieste alla facciata (QbRuntime.scaledDimension) invece che a Preferences.
  * Modificato per RamaSQL Client (2026-09-27): la maschera cambia solo l'operatore; il tipo di join (le due caselle «tutte le
  * righe di…», che insieme davano un FULL OUTER JOIN sconosciuto a MySQL/MariaDB) si sceglie dal menu del nodo del join.
+ * Modificato per RamaSQL Client (2026-09-28, T12.3/T12.9): suggerimenti dei campi.
  */
 
 package com.sqleo.querybuilder;
@@ -69,6 +70,9 @@ public class MaskJoin extends BaseMask
 		
 		operator = new JComboBox(new String[]{"=","<",">","<=",">=","<>","!="});
 		operator.setSelectedItem(relation.querytoken.getCondition().getOperator());
+		operator.setName("qb.join.operator");
+		it.ramasql.qb.QbTips.explainOperators(operator);
+		operator.setToolTipText(I18n.getString("querybuilder.join.operator.tooltip", ""));
 		
 		GridBagLayout gbl = new GridBagLayout();
 		JPanel pane = new JPanel(gbl);
@@ -94,12 +98,16 @@ public class MaskJoin extends BaseMask
 		
 		gbc.insets	= new Insets(8,0,0,0);
 		allLeft = new JCheckBox(I18n.getFormattedString("querybuilder.checkbox.allRowsFrom","all rows from {0}", new Object[]{ ""+relation.primaryEntity.getHeaderMenu().getText()}) );
+		allLeft.setName("qb.join.allLeft");
+		allLeft.setToolTipText(I18n.getString("querybuilder.join.allRowsFrom.tooltip", ""));
 		allLeft.setSelected(relation.querytoken.getType() == QueryTokens.Join.LEFT_OUTER || relation.querytoken.getType() == QueryTokens.Join.FULL_OUTER);
 		pane.add(allLeft);
 		gbl.setConstraints(allLeft, gbc);
 		
 		gbc.insets	= new Insets(0,0,0,0);
 		allRight = new JCheckBox(I18n.getFormattedString("querybuilder.checkbox.allRowsFrom","all rows from {0}", new Object[]{ "" + relation.foreignEntity.getHeaderMenu().getText()}) );
+		allRight.setName("qb.join.allRight");
+		allRight.setToolTipText(I18n.getString("querybuilder.join.allRowsFrom.tooltip", ""));
 		allRight.setSelected(relation.querytoken.getType() == QueryTokens.Join.RIGHT_OUTER || relation.querytoken.getType() == QueryTokens.Join.FULL_OUTER);
 		pane.add(allRight);
 		gbl.setConstraints(allRight, gbc);

@@ -78,8 +78,11 @@ final class GridCellRenderer extends DefaultTableCellRenderer {
         super.getTableCellRendererComponent(table, shown, isSelected, hasFocus, row, column);
         Font base = table.getFont();
         setFont(isNull ? Tokens.font(Tokens.CAPTION, Font.ITALIC) : base);
-        setToolTipText(null);
         int modelColumn = table.convertColumnIndexToModel(column);
+        // T12.9: anche la cella dice che cosa contiene (la colonna e il suo tipo); errori e testi lunghi lo sostituiscono
+        ColumnDef def = model.column(modelColumn);
+        setToolTipText(def == null ? null : Texts.get(model.isInsertRow(row) ? "dataGrid.cell.insert.tooltip"
+                : "dataGrid.cell.tooltip", def.name(), GridHeaderRenderer.typeText(def)));
         setHorizontalAlignment(alignment(model.column(modelColumn)));
         nullPill = isNull;
         modifiedMark = false;

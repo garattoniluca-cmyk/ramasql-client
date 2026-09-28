@@ -20,8 +20,8 @@ import javax.swing.JToggleButton;
 
 /**
  * Barre che si stringono (T12.6, revisione T12.7): quando lo spazio non basta, alcuni pulsanti con icona perdono la
- * scritta, a gradini, finché la barra ci sta; il nome resta nel suggerimento e per chi legge lo schermo. Il pulsante
- * principale (per esempio <i>Conferma</i>) non si tocca.
+ * scritta, a gradini, finché la barra ci sta; il nome diventa il titolo del suggerimento e resta per chi legge lo
+ * schermo. Chi usa queste barre decide l'ordine dei gradini: l'azione principale per ultima o mai.
  */
 public final class Compact {
 
@@ -66,6 +66,13 @@ public final class Compact {
         public String getText() {
             return compact ? "" : super.getText();
         }
+
+        /** Con la sola icona, il nome del pulsante diventa il titolo del suggerimento. */
+        @Override
+        public String getToolTipText() {
+            String base = super.getToolTipText();
+            return compact ? Tips.titled(super.getText(), base == null ? "" : base) : base;
+        }
     }
 
     public static class Toggle extends JToggleButton implements Part {
@@ -94,6 +101,13 @@ public final class Compact {
         @Override
         public String getText() {
             return compact ? "" : super.getText();
+        }
+
+        /** Con la sola icona, il nome del pulsante diventa il titolo del suggerimento. */
+        @Override
+        public String getToolTipText() {
+            String base = super.getToolTipText();
+            return compact ? Tips.titled(super.getText(), base == null ? "" : base) : base;
         }
     }
 

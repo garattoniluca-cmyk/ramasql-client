@@ -26,6 +26,7 @@
  * BUG-006); colori e spessore delle linee dalla facciata (QbHost.color, scala) invece che fissi (BUG-004).
  * Modificato per RamaSQL Client (2026-09-28): pathBoxes(), i rettangoli che contengono i tratti della linea, per
  * cercare un posto a una tabella nuova senza join che passino sotto altre tabelle (BUG-023).
+ * Modificato per RamaSQL Client (2026-09-28, T12.3/T12.9): suggerimenti delle voci del menu del join.
  */
 
 package com.sqleo.querybuilder;
@@ -677,6 +678,7 @@ public class DiagramRelation extends JPanel
 		popup.addSeparator();
 		popup.add(new ActionEdit());
 		popup.add(new ActionRemove());
+		it.ramasql.qb.QbTips.explain(popup);   // RamaSQL (2026-09-28, T12.9)
 		return popup;
 	}
 

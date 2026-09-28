@@ -174,10 +174,15 @@ public final class Tips {
                     || v.matches(".*_[a-z]{2}_0900.*")) {
                 parts.add(Texts.get("collation.part.language"));
             }
+            // senza _ai/_as il nome segue la regola del server: _ci ignora anche gli accenti, _cs li distingue
             if (v.contains("_ai")) {
                 parts.add(Texts.get("collation.part.ai"));
             } else if (v.contains("_as")) {
                 parts.add(Texts.get("collation.part.as"));
+            } else if (v.endsWith("_ci")) {
+                parts.add(Texts.get("collation.part.ai.implied"));
+            } else if (v.endsWith("_cs")) {
+                parts.add(Texts.get("collation.part.as.implied"));
             }
             if (v.endsWith("_ci")) {
                 parts.add(Texts.get("collation.part.ci"));

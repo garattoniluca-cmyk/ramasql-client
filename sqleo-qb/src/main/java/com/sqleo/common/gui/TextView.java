@@ -22,9 +22,12 @@
  *
  *
  * Modificato per RamaSQL Client (2026-09-21): tolti il completamento automatico (SuggestionsView, legato ad Application e alle finestre interne di SQLeo) e gli aiuti di editing CompoundUndoManager, LinePainter e TextLineNumber (file senza intestazione di licenza GPL, non copiati); dimensione del font chiesta alla facciata. Nel client l'editor SQL vero e' un altro componente: questa vista serve solo alla scheda syntax del query builder.
+ * Modificato per RamaSQL Client (2026-09-28, T12.3): voci del menu del testo dal file dei testi.
  */
 
 package com.sqleo.common.gui;
+
+import com.sqleo.common.util.I18n;
 
 import java.awt.Color;
 import java.awt.Container;
@@ -333,13 +336,13 @@ public class TextView extends BorderLayoutPanel
 		{
 			DefaultEditorKit kit = new DefaultEditorKit();
 			
-			add(createItem("Cut",DefaultEditorKit.cutAction,kit.getActions()));
-			add(createItem("Copy",DefaultEditorKit.copyAction,kit.getActions()));
-			add(createItem("Paste",DefaultEditorKit.pasteAction,kit.getActions()));
-			add(createItem("Delete",DefaultEditorKit.deletePrevCharAction,kit.getActions()));
+			add(createItem(I18n.getString("textview.cut", "Cut"),DefaultEditorKit.cutAction,kit.getActions()));
+			add(createItem(I18n.getString("textview.copy", "Copy"),DefaultEditorKit.copyAction,kit.getActions()));
+			add(createItem(I18n.getString("textview.paste", "Paste"),DefaultEditorKit.pasteAction,kit.getActions()));
+			add(createItem(I18n.getString("textview.delete", "Delete"),DefaultEditorKit.deletePrevCharAction,kit.getActions()));
 			addSeparator();
-			add(createItem("Select all",DefaultEditorKit.selectAllAction,kit.getActions()));
-			add(createItem("Clear all","Clear-all",new AbstractAction(){
+			add(createItem(I18n.getString("textview.selectAll", "Select all"),DefaultEditorKit.selectAllAction,kit.getActions()));
+			add(createItem(I18n.getString("textview.clearAll", "Clear all"),"Clear-all",new AbstractAction(){
 				private static final long serialVersionUID = 1L;
 				@Override
 				public void actionPerformed(ActionEvent e) {

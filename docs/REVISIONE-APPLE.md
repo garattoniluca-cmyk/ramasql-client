@@ -555,6 +555,63 @@ Fotografia 30.
 
 ---
 
+### «query visiva con due tabelle»
+
+Aggiunta dopo la revisione indipendente dello Step 12 (2026-09-28): la stessa scheda con *prestiti* e *libri* nel diagramma, per vedere i controlli che compaiono solo con le tabelle (le caselle delle colonne, la «×» di ogni tabella, i nodi dei join). Tratta anche le sue linguette e le finestre del query builder («query visiva › finestra MaskJoin», «… MaskCondition», «… MaskAlias», «… MaskReferences», «… MaskExpression»).
+
+| Controllo | Serve a | Verdetto |
+|---|---|---|
+| caselle delle colonne «qb.field.select» | R5 | resta: spuntata = la colonna nel risultato (il suggerimento lo dice) |
+| «qb.entity.close» *×* | R5 | resta |
+| finestra del join: operatore «qb.join.operator» | R5 | resta; le voci spiegano il confronto |
+| finestra della condizione: AND/OR, lato sinistro, operatore, *SUBQUERY*, lato destro | R5 | resta; ogni operatore ha la sua spiegazione (LIKE, IN, IS NULL, BETWEEN…) |
+| finestra dell'alias: nome della tabella (sola lettura) e alias | R5 | resta; le etichette erano in inglese («identifier:», «alias:»), ora in italiano |
+| finestra dei riferimenti: due elenchi | R5 | resta |
+| finestra dell'espressione: alias ed espressione | R5 | resta; l'etichetta «Alias:» e l'avviso «Please, set a valid alias.» erano in inglese, ora in italiano |
+
+### «menu query visiva › diagramma»
+
+| Controllo | Serve a | Verdetto |
+|---|---|---|
+| *Compatta le tabelle*, *Disponi a griglia*, *Disponi in automatico* | R5 | resta (solo aspetto del diagramma, l'SQL non cambia) |
+| *Togli tutte le tabelle* | R5 | resta (chiede conferma) |
+| *Salva come immagine* | R5 | resta |
+| *Copia SQL* | R5 | resta |
+
+### «menu query visiva › albero della query»
+
+| Controllo | Serve a | Verdetto |
+|---|---|---|
+| *DISTINCT (senza righe doppie)* | R5 | resta; era «distinct» in inglese |
+| *Aggiungi espressione…*, *Aggiungi sottoquery* | R5 | resta |
+| *Aggiungi condizione…* due volte (WHERE e HAVING) | R5 | **unire in due nomi diversi**: ora *Aggiungi condizione WHERE…* e *Aggiungi condizione HAVING…* (applicato) |
+| *Aggiungi a GROUP BY*, *Aggiungi a ORDER BY*, *Allinea alle colonne selezionate* | R5 | resta |
+| *UNION* | R5 | resta |
+| *Modifica…*, *Togli*, *Togli tutto* | R5 | resta |
+
+### «menu query visiva › tabella»
+
+| Controllo | Serve a | Verdetto |
+|---|---|---|
+| *Ordina per nome*, *Compatta* | R5 | resta (solo aspetto) |
+| *Seleziona tutto*, *Deseleziona tutto* | R5 | resta |
+| *Apri le tabelle che la referenziano*, *Apri le tabelle referenziate*, *Riferimenti…* | R5 | resta |
+
+### «menu query visiva › campo»
+
+| Controllo | Serve a | Verdetto |
+|---|---|---|
+| *Nel risultato (SELECT)* | R5 | resta; era «select» in inglese; fa la stessa cosa della casella della colonna, ma dal menu si raggiunge anche da tastiera |
+| *Aggiungi condizione WHERE…*, *Aggiungi condizione HAVING…*, *Aggiungi espressione…* | R5 | resta |
+
+### «menu query visiva › join»
+
+| Controllo | Serve a | Verdetto |
+|---|---|---|
+| *Solo le righe che corrispondono* / *Tutte le righe di …* (due) | R5 | resta: il tipo di join in parole semplici |
+| *Condizione…* | R5 | resta |
+| *Togli* | R5 | resta |
+
 ## 3. Interventi proposti
 
 Criteri:

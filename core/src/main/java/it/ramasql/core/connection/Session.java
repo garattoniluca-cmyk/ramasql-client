@@ -140,7 +140,7 @@ public final class Session implements AutoCloseable {
         private static final long serialVersionUID = 1L;
 
         DeadlineExpired() {
-            super("scadenza complessiva raggiunta", null, false, false);
+            super(it.ramasql.core.CoreMessages.get("connection.deadline"), null, false, false);
         }
     }
 

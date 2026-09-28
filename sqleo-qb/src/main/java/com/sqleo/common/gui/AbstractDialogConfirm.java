@@ -16,6 +16,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
+ * Modificato per RamaSQL Client (2026-09-28, T12.3/T12.9): suggerimento del pulsante di conferma.
  */
 
 package com.sqleo.common.gui;
@@ -57,6 +58,7 @@ public abstract class AbstractDialogConfirm extends AbstractDialogModal
 	{
 		super.initComponent(owner, title, size);
 		btnConfirm = insertButton(1,I18n.getString("application.ok","Ok"));
+		btnConfirm.setToolTipText(I18n.getString("application.ok.tooltip", ""));   // RamaSQL (2026-09-28)
 
 		ActionListener al = new ActionListener()
 		{

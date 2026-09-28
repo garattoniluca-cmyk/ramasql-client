@@ -27,6 +27,7 @@
  * doArrangeEntitiesLayered (per collegamenti, DiagramArrange) quando si aggiunge una tabella o si carica un modello,
  * finche' l'utente non sistema il diagramma da se' (trascinando un'entita' o con «Disponi a griglia»/«Disponi in
  * automatico»); dopo, solo la tabella nuova cerca un posto libero (onEntityAdded). Ordine di aggiunta delle entita'.
+ * Modificato per RamaSQL Client (2026-09-28, T12.3/T12.9): suggerimenti delle voci del menu del diagramma.
  */
 
 package com.sqleo.querybuilder;
@@ -124,6 +125,7 @@ public class ViewDiagram extends BorderLayoutPanel
 		jPopupMenuDiagram.add(builder.getActionMap().get(QueryActions.DIAGRAM_SAVE_AS_IMAGE));
 		jPopupMenuDiagram.addSeparator();
 		jPopupMenuDiagram.add(builder.getActionMap().get(QueryActions.COPY_SYNTAX));
+		it.ramasql.qb.QbTips.explain(jPopupMenuDiagram);   // RamaSQL (2026-09-28, T12.9)
 	
         desktop.addMouseListener(new MouseAdapter()
         {
@@ -876,5 +878,10 @@ public class ViewDiagram extends BorderLayoutPanel
 			super.endDraggingFrame(f);
 			ViewDiagram.this.doResize();
 		}
+	}
+	// RamaSQL (2026-09-28, T12.9): il menu del diagramma, per le prove di copertura dei suggerimenti
+	JPopupMenu diagramMenu()
+	{
+		return jPopupMenuDiagram;
 	}
 }

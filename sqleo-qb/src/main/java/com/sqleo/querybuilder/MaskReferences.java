@@ -24,6 +24,7 @@
  * Modificato per RamaSQL Client (2026-09-21): rimossa la definizione manuale dei metadati (ManualDBMetaData); metadati JDBC letti per catalogo (MySQL/MariaDB non hanno schemi); dimensioni scalate chieste alla facciata.
  * Modificato per RamaSQL Client (2026-09-27): tabelle referenziate e referenzianti dai metadati della facciata
  * (QbHost.metadata(), BUG-016) invece che da DatabaseMetaData.
+ * Modificato per RamaSQL Client (2026-09-28, T12.3/T12.9): suggerimenti degli elenchi.
  */
 
 package com.sqleo.querybuilder;
@@ -63,6 +64,10 @@ public class MaskReferences extends BaseMask
 
 		foreignTables = new JList();
 		primaryTables = new JList();
+		foreignTables.setName("qb.references.foreign");
+		foreignTables.setToolTipText(I18n.getString("querybuilder.menu.foreignTables.tooltip", ""));
+		primaryTables.setName("qb.references.primary");
+		primaryTables.setToolTipText(I18n.getString("querybuilder.menu.primaryTables.tooltip", ""));
 		
 		BorderLayoutPanel contentL = new BorderLayoutPanel();
 		contentL.setComponentNorth(new JLabel(I18n.getString("querybuilder.menu.foreignTables","foreign tables")));

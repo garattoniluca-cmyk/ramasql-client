@@ -33,7 +33,8 @@ import it.ramasql.core.metadata.FkAction;
 import it.ramasql.core.metadata.IndexKind;
 
 /**
- * <b>T12.11</b>: la qualità dei testi dei suggerimenti (tutte le chiavi {@code *.tooltip} del file di risorse, e le
+ * <b>T12.11</b>: la qualità dei testi dei suggerimenti (tutte le chiavi {@code *.tooltip} e {@code nav.tip.*} dei file di
+ * risorse del programma e del query builder, e le
  * spiegazioni composte delle voci delle liste). Ogni testo è un trafiletto completo in italiano: abbastanza lungo,
  * senza «TODO», segnaposti rimasti o frasi inglesi, senza duplicati copiati fra chiavi diverse; le scelte con
  * conseguenze sui dati (motori, azioni delle chiavi esterne, tipi d'indice, eliminazioni…) hanno almeno due frasi.
@@ -45,7 +46,8 @@ class T1211QualitaSuggerimentiTest {
             "(?iu)(^|[\\s«(])(il|lo|la|le|gli|un|una|di|da|per|che|non|con|si|è|e|del|della|dei|delle|degli|nel|"
                     + "nella|nelle|al|alla|alle|sono|o|in|questa|questo|qui|quando|anche|più|come|ogni)([\\s,.;:»)]|$)"
                     + "|(?iu)\\b(l|dell|nell|all|sull|dall|un)'\\p{L}");
-    private static final Pattern ENGLISH = Pattern.compile("(?i)\\b(the|and|click|please|select the|is not|this)\\b");
+    /** Parole inglesi (minuscole o a inizio frase): le parole chiave SQL tutte maiuscole, come AND, sono ciò che si insegna. */
+    private static final Pattern ENGLISH = Pattern.compile("\\b(?:[Tt]he|and|[Cc]lick|[Pp]lease|select the|is not|[Tt]his)\\b");
     private static final Pattern PLACEHOLDER_LEFT = Pattern.compile("TODO|FIXME|XXX|\\?\\?\\?|lorem", Pattern.CASE_INSENSITIVE);
     /** Chiavi in un'altra lingua per scelta (la voce «English» della lingua). */
     private static final Set<String> NOT_ITALIAN = Set.of("settings.language.en.tooltip");
@@ -55,15 +57,18 @@ class T1211QualitaSuggerimentiTest {
             "import.option.duplicates.ignore", "charset.utf8mb3", "charset.latin1", "tableeditor.type.FLOAT",
             "tableeditor.type.DOUBLE", "tableeditor.type.ENUM", "script.target.catalog");
 
+    /** I suggerimenti del programma e del query builder: le chiavi {@code *.tooltip} e quelle del navigatore. */
     static Map<String, String> tooltips() throws IOException {
-        Properties p = new Properties();
-        try (InputStream in = T1211QualitaSuggerimentiTest.class.getResourceAsStream("/it/ramasql/app/messages.properties")) {
-            p.load(new InputStreamReader(in, StandardCharsets.UTF_8));
-        }
         Map<String, String> out = new TreeMap<>();
-        for (String k : p.stringPropertyNames()) {
-            if (k.endsWith(".tooltip")) {
-                out.put(k, p.getProperty(k));
+        for (String res : List.of("/it/ramasql/app/messages.properties", "/it/ramasql/qb/qb_it.properties")) {
+            Properties p = new Properties();
+            try (InputStream in = T1211QualitaSuggerimentiTest.class.getResourceAsStream(res)) {
+                p.load(new InputStreamReader(in, StandardCharsets.UTF_8));
+            }
+            for (String k : p.stringPropertyNames()) {
+                if (k.endsWith(".tooltip") || k.startsWith("nav.tip.")) {
+                    out.put(k, p.getProperty(k));
+                }
             }
         }
         return out;
@@ -127,7 +132,7 @@ class T1211QualitaSuggerimentiTest {
             }
         }
         StringBuilder ev = new StringBuilder("T12.11 — qualità dei suggerimenti: " + all.size() + " testi controllati ("
-                + tips.size() + " chiavi *.tooltip del file di risorse e " + (all.size() - tips.size())
+                + tips.size() + " chiavi dei suggerimenti del programma e del query builder e " + (all.size() - tips.size())
                 + " spiegazioni composte delle voci)\nProblemi: " + problems.size() + "\n");
         problems.forEach(p -> ev.append("  ").append(p).append('\n'));
         ev.append("Esito: ").append(problems.isEmpty() ? "OK" : "FALLITO").append('\n');

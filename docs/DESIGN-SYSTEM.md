@@ -108,7 +108,7 @@ Uno stile unico in tutto il programma, pensato per essere **letto**, non intravi
 ### 3.10 Tastiera, schermi piccoli, barre che si stringono (Step 12, `ADR-028`)
 - **Aree**: F6 / Maiusc+F6 fra barra degli strumenti, navigatore, scheda aperta e pannello SQL; nella barra frecce e Spazio. Menu del nodo del navigatore con Maiusc+F10 (o il tasto del menu). Liste nelle celle con Alt+Giù o F4; nella lista aperta le frecce spostano l'evidenziazione (e la spiegazione accanto), Invio sceglie.
 - **Schermo**: nessuna finestra esce dallo schermo (1024×768 con il carattere a 28): la parte centrale scorre, i pulsanti restano fissi in basso; i messaggi vanno a capo a 60 caratteri; popup e liste aperte restano dentro lo schermo.
-- **Barre**: quando lo spazio manca si stringono prima gli spazi fra i gruppi, poi alcuni pulsanti mostrano la sola icona (il nome resta nel suggerimento), a gradini (`theme.Compact`); l'azione principale (*Esegui*, *Conferma*) tiene sempre la scritta finché è possibile.
+- **Barre**: quando lo spazio manca si stringono prima gli spazi fra i gruppi, poi alcuni pulsanti mostrano la sola icona (il nome diventa il titolo del suggerimento), a gradini (`theme.Compact`); *Conferma* della griglia tiene sempre la scritta, *Esegui* e *Interrompi* la perdono per ultimi.
 
 ## 4. Scrittura (ux-copy)
 Frasi brevi, in seconda persona, verbi d'azione nei pulsanti («Conferma», «Elimina tabella», «Connetti»), niente gergo tecnico dove non serve, il gergo SQL dove serve (è ciò che si insegna). Errori: *cosa è successo* + *cosa fare*, poi il messaggio originale.

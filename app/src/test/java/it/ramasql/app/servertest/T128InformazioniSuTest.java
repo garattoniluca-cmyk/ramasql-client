@@ -67,7 +67,7 @@ class T128InformazioniSuTest {
 
     /** Jar che servono solo alle prove (non entrano nel programma distribuito). */
     private static final List<String> TEST_ONLY = List.of("junit-", "opentest4j", "apiguardian", "surefire",
-            "maven-", "plexus-", "commons-", "assertj", "byte-buddy", "hamcrest",
+            "maven-", "plexus-", "assertj", "byte-buddy", "hamcrest",
             // arrivano con JUnit 6 (ambito test)
             "jspecify-", "open-test-reporting-");
 

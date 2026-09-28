@@ -221,6 +221,20 @@ final class TipCoverage {
         if (table.getColumnCount() == 0) {
             check(screen, table, tableTip);
         }
+        // le celle della griglia dei dati (T12.9): la prima riga e la riga d'inserimento, colonna per colonna
+        if ("dataGrid.table".equals(table.getName()) && table.getRowCount() > 0) {
+            for (int row : new int[] {0, table.getRowCount() - 1}) {
+                for (int col = 0; col < table.getColumnCount(); col++) {
+                    Rectangle r = table.getCellRect(row, col, false);
+                    MouseEvent e = new MouseEvent(table, MouseEvent.MOUSE_MOVED, 0, 0, r.x + r.width / 2,
+                            r.y + r.height / 2, 0, false);
+                    checked++;
+                    if (!has(table.getToolTipText(e))) {
+                        missing.add(screen + " › cella " + row + "," + col + " di " + describe(table));
+                    }
+                }
+            }
+        }
     }
 
     /** Le voci senza spiegazione di una lista a discesa (le intestazioni di gruppo, non sceglibili, non contano). */

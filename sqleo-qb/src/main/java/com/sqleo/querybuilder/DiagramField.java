@@ -20,6 +20,7 @@
  * Modificato per RamaSQL Client (2026-09-21): icona e dimensioni scalate chieste alla facciata (QbRuntime) invece che ad Application e Preferences; rimossa la trasformazione a tabella incrociata (pseudo-funzione eseguibile solo da SQLeo); la concatenazione di gruppo usa GROUP_CONCAT nativo di MySQL/MariaDB. Modificato per RamaSQL Client (2026-09-22): margine a destra del nome del campo (4 px scalati): il nome piu' lungo di un'entita' toccava il bordo del riquadro (controllo del margine di 2 px nello spike S5). Modificato per RamaSQL Client (2026-09-22): le icone del campo in WHERE si chiedono alla facciata (QbIcon.QB_WHERE, QbIcon.QB_KEYANDWHERE) invece che ai campi statici del renderer dell'albero, riscritto da zero.
  * Modificato per RamaSQL Client (2026-09-27): con l'icona del filtro l'entita' si allarga, se serve, invece di troncare il
  * nome del campo (BUG-011).
+ * Modificato per RamaSQL Client (2026-09-28, T12.3/T12.9): voce SELECT dal file dei testi e suggerimenti delle voci del menu.
  */
 
 package com.sqleo.querybuilder;
@@ -98,6 +99,10 @@ public class DiagramField extends JPanel implements ItemListener, MouseListener,
 
 		this.setLayout(new BorderLayout());
 		checkboxComponent = new JCheckBox();
+		// RamaSQL (2026-09-28, T12.9): la casella dice che cosa fa
+		checkboxComponent.setName("qb.field.select");
+		checkboxComponent.setToolTipText(I18n.getFormattedString("querybuilder.field.select.tooltip",
+				"{0}", new Object[]{label}));
 
 		labelComponent = new JLabel(label);
 		labelComponent.setHorizontalTextPosition(JLabel.LEFT);
@@ -169,21 +174,26 @@ public class DiagramField extends JPanel implements ItemListener, MouseListener,
 		getOwner().onSelectionChanged(this);
 	}
 
+	// RamaSQL (2026-09-28, T12.9): il menu del campo, con i suggerimenti delle voci (anche per le prove)
+	JPopupMenu fieldMenu()
+	{
+		JPopupMenu popup = new JPopupMenu(this.getName());
+		popup.addPopupMenuListener(this);
+		popup.add(new MenuItemSelect());
+		popup.addSeparator();
+		popup.add(new ActionAddWhere());
+		popup.add(new ActionAddHaving());
+		popup.addSeparator();
+		popup.add(new ActionAddExpression());
+		it.ramasql.qb.QbTips.explain(popup);
+		return popup;
+	}
+
 	public void mouseReleased(MouseEvent me)
 	{
 		if (SwingUtilities.isRightMouseButton(me))
 		{
-			JPopupMenu popup = new JPopupMenu(this.getName());
-			popup.addPopupMenuListener(this);
-
-			popup.add(new MenuItemSelect());
-			popup.addSeparator();
-			popup.add(new ActionAddWhere());
-			popup.add(new ActionAddHaving());
-			popup.addSeparator();
-			popup.add(new ActionAddExpression());
-
-			popup.show(this, me.getX(), me.getY());
+			fieldMenu().show(this, me.getX(), me.getY());
 		}
 		else if (!this.getOwner().builder.isDragAndDropEnabled())
 		{
@@ -252,7 +262,7 @@ public class DiagramField extends JPanel implements ItemListener, MouseListener,
 	{
 		private MenuItemSelect()
 		{
-			super("select");
+			super(I18n.getString("querybuilder.menu.select", "select"));
 			addActionListener(this);
 			setState(DiagramField.this.isSelected());
 		}

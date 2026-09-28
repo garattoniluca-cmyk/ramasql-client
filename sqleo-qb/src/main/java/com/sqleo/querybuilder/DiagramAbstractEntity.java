@@ -20,6 +20,7 @@
  * Modificato per RamaSQL Client (2026-09-21): titolo vuoto e nessuna icona nella barra delle entita' (sotto FlatLaf si vedeva il nome della classe); ricerca dei campi senza badare ai backtick.
  * Modificato per RamaSQL Client (2026-09-27): intestazione unica con nome e «×» (barra del titolo tolta), colori dalla
  * facciata (BUG-004); nessun alias automatico sulle colonne (QueryBuilder.autoAliasColumns).
+ * Modificato per RamaSQL Client (2026-09-28, T12.3/T12.9): suggerimenti delle voci del menu della tabella.
  */
 
 package com.sqleo.querybuilder;
@@ -73,6 +74,7 @@ public abstract class DiagramAbstractEntity extends JInternalFrame
 		header.addSeparator();
 		header.add(new ActionSelectAll());
 		header.add(new ActionDeselectAll());
+		it.ramasql.qb.QbTips.explain(header);   // RamaSQL (2026-09-28, T12.9)
 
 		// RamaSQL (2026-09-27, BUG-004): un'intestazione sola — nome della tabella (menu) e «×» sulla stessa riga, su
 		// fondo bg.sunken; la barra del titolo dell'internal frame, che restava vuota, si toglie

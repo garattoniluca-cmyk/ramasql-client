@@ -19,6 +19,7 @@
  *
  * Modificato per RamaSQL Client (2026-09-21): icona chiesta alla facciata (QbRuntime); rimosse le azioni Show content e Show definition, che aprivano finestre interne di SQLeo (ClientContent, ClientDefinition): nel client quelle funzioni stanno fuori dal query builder.
  * Modificato per RamaSQL Client (2026-09-27): intestazione con il nome senza backtick e l'alias solo se diverso dal nome.
+ * Modificato per RamaSQL Client (2026-09-28, T12.3/T12.9): suggerimenti delle voci del menu della tabella.
  */
 
 package com.sqleo.querybuilder;
@@ -55,6 +56,7 @@ public class DiagramEntity extends DiagramAbstractEntity
 		getHeaderMenu().add(new ActionOpenAllPrimaryTables());
 		getHeaderMenu().add(new ActionReferences());
 		getHeaderMenu().addSeparator();
+		it.ramasql.qb.QbTips.explain(getHeaderMenu());   // RamaSQL (2026-09-28, T12.9)
 		
 		setQueryToken(qtoken);
 	}

@@ -48,6 +48,9 @@ public final class RamaToolTipUI extends BasicToolTipUI {
     record Content(String title, List<String> paragraphs) {
     }
 
+    /** Segna un paragrafo da scrivere in grassetto. */
+    static final String BOLD = "\u0001";
+
     static Content parse(String text) {
         String t = text == null ? "" : text.strip();
         String title = null;
@@ -60,8 +63,15 @@ public final class RamaToolTipUI extends BasicToolTipUI {
         }
         List<String> paragraphs = new ArrayList<>();
         for (String p : t.split("\n")) {
-            if (!p.isBlank()) {
-                paragraphs.add(p.strip());
+            String s = p.strip();
+            // un titolo **…** in mezzo (per esempio nel suggerimento di una lista con la voce scelta): riga in grassetto
+            if (s.startsWith("**") && s.indexOf("**", 2) > 2) {
+                int end = s.indexOf("**", 2);
+                paragraphs.add(BOLD + s.substring(2, end).strip());
+                s = s.substring(end + 2).strip();
+            }
+            if (!s.isBlank()) {
+                paragraphs.add(s);
             }
         }
         return new Content(title, paragraphs);
@@ -124,12 +134,17 @@ public final class RamaToolTipUI extends BasicToolTipUI {
         int h = titleLines.size() * tm.getHeight();
         int gap = UIScale.scale(4);
         for (String p : content.paragraphs()) {
-            List<String> l = wrap(p, fm, max);
+            boolean bold = p.startsWith(BOLD);
+            FontMetrics pm = bold ? tm : fm;
+            List<String> l = new ArrayList<>(wrap(bold ? p.substring(1) : p, pm, max));
+            if (bold && !l.isEmpty()) {
+                l.set(0, BOLD + l.get(0));
+            }
             lines.add(l);
             for (String s : l) {
-                w = Math.max(w, fm.stringWidth(s));
+                w = Math.max(w, pm.stringWidth(s.startsWith(BOLD) ? s.substring(1) : s));
             }
-            h += l.size() * fm.getHeight();
+            h += l.size() * pm.getHeight();
         }
         h += Math.max(0, lines.size() - 1 + (titleLines.isEmpty() ? 0 : 1)) * gap;
         return new Layout(title, text, titleLines, lines, w, h);
@@ -175,11 +190,14 @@ public final class RamaToolTipUI extends BasicToolTipUI {
             g.setFont(l.textFont());
             FontMetrics fm = g.getFontMetrics();
             for (List<String> paragraph : l.lines()) {
+                boolean bold = !paragraph.isEmpty() && paragraph.get(0).startsWith(BOLD);
                 boolean warning = !paragraph.isEmpty() && paragraph.get(0).startsWith("Attenzione");
+                g.setFont(bold ? l.titleFont() : l.textFont());
+                FontMetrics pm = g.getFontMetrics();
                 g.setColor(warning ? Tokens.WARNING : Tokens.TEXT_PRIMARY);
                 for (String s : paragraph) {
-                    g.drawString(s, x, y + fm.getAscent());
-                    y += fm.getHeight();
+                    g.drawString(s.startsWith(BOLD) ? s.substring(1) : s, x, y + pm.getAscent());
+                    y += pm.getHeight();
                 }
                 y += gap;
             }

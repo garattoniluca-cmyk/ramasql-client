@@ -364,7 +364,8 @@ public final class SqlPanel extends JTabbedPane implements PipelineView {
                 case LogTableModel.COL_SQL -> {
                     setFont(Tokens.mono(Tokens.SMALL));
                     setText(SqlText.toHtml(LogTableModel.oneLine(e.sql())));
-                    setToolTipText("<html><pre>" + e.sql().replace("&", "&amp;").replace("<", "&lt;") + "</pre></html>");
+                    // testo semplice: il suggerimento va a capo entro la larghezza leggibile anche al proiettore
+                    setToolTipText(e.sql());
                 }
                 case LogTableModel.COL_OUTCOME -> {
                     switch (e.outcome()) {

@@ -297,15 +297,28 @@ class T125SoloIlServerTest {
                 ErModelWindow er = fromEdt(() -> a.frame().erWindows().get(a.frame().erWindows().size() - 1));
                 steps.add(server.label() + ": modello ER dal database (" + fromEdt(() -> er.panel().model().entities()
                         .size()) + " entità)");
-                onEdt(() -> {
-                    new GuideDialog(a.frame()).dispose();
-                    new AboutDialog(a.frame()).dispose();
-                });
-                steps.add(server.label() + ": guida rapida e «Informazioni su»");
+                // guida e Informazioni aperte davvero, dal menu Aiuto (la guida carica la sua pagina HTML)
+                for (String item : java.util.List.of("menu.help.guide", "menu.help.about")) {
+                    javax.swing.SwingUtilities.invokeLater(() -> ClientApp.menuItem(
+                            a.frame().getJMenuBar().getMenu(1).getPopupMenu(), item).doClick());
+                    waitUntil("finestra " + item, ClientApp.TIMEOUT, () -> shown() != null);
+                    java.awt.Window w = fromEdt(T125SoloIlServerTest::shown);
+                    onEdt(w::dispose);
+                }
+                steps.add(server.label() + ": guida rapida e «Informazioni su» aperte dal menu Aiuto");
             }
             steps.add(server.label() + ": scollegamento");
         } finally {
             server.dropQuietly(catalog);
         }
+    }
+
+    private static java.awt.Window shown() {
+        for (java.awt.Window w : java.awt.Window.getWindows()) {
+            if ((w instanceof GuideDialog || w instanceof AboutDialog) && w.isShowing()) {
+                return w;
+            }
+        }
+        return null;
     }
 }

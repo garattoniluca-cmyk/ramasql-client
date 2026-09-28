@@ -11,6 +11,12 @@
 $ErrorActionPreference = 'Stop'
 $root = Split-Path -Parent $PSScriptRoot
 Set-Location $root
+# i sorgenti allegati (git archive HEAD) devono essere quelli del programma: niente modifiche fuori dai commit
+# (le evidenze dei test in test-results\ non entrano nel programma)
+$sporche = @(& git status --porcelain | Where-Object { $_ -notmatch ' test-results/' })
+if ($sporche.Count -gt 0) {
+    throw ("ci sono modifiche non in un commit: prima il commit, poi la versione portabile`n" + ($sporche -join "`n"))
+}
 $jdk = (Get-ChildItem "$env:ProgramFiles\Eclipse Adoptium" -Directory -Filter 'jdk-25*' | Select-Object -First 1).FullName
 if (-not $jdk) { throw 'JDK 25 non trovato' }
 $env:JAVA_HOME = $jdk

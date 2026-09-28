@@ -18,9 +18,12 @@
  *
  * Modificato per RamaSQL Client (2026-09-27): la casella SUBQUERY si attiva anche con gli operatori di confronto
  * (=, <, >, <=, >=, <>, !=), non solo con IN ed EXISTS; lo stato dei campi si ricalcola anche all'apertura.
+ * Modificato per RamaSQL Client (2026-09-28, T12.3/T12.9): suggerimenti dei campi.
  */
 
 package com.sqleo.querybuilder;
+
+import com.sqleo.common.util.I18n;
 
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -59,6 +62,14 @@ public class MaskCondition extends BaseMask implements ItemListener ,ChangeListe
 		predicate = new JComboBox(new String[]{_ReservedWords.AND,_ReservedWords.OR});
 		operator = new JComboBox(new String[]{"=","<",">","<=",">=","<>","!=","LIKE","NOT LIKE","IS","IS NOT","IN","NOT IN","EXISTS","NOT EXISTS","BETWEEN","NOT BETWEEN"});
 		subquery = new JCheckBox("<html><i>SUBQUERY");
+		predicate.setName("qb.condition.predicate");
+		predicate.setToolTipText(I18n.getString("querybuilder.condition.predicate.tooltip", ""));
+		operator.setName("qb.condition.operator");
+		it.ramasql.qb.QbTips.explainOperators(predicate);
+		it.ramasql.qb.QbTips.explainOperators(operator);
+		operator.setToolTipText(I18n.getString("querybuilder.condition.operator.tooltip", ""));
+		subquery.setName("qb.condition.subquery");
+		subquery.setToolTipText(I18n.getString("querybuilder.condition.subquery.tooltip", ""));
 		subquery.setEnabled(false);
 		subquery.setSelected(querytoken.getRight() instanceof SubQuery);
 		
@@ -67,6 +78,10 @@ public class MaskCondition extends BaseMask implements ItemListener ,ChangeListe
 
 		JScrollPane scrollL = new JScrollPane(left = new JTextArea());
 		JScrollPane scrollR = new JScrollPane(right = new JTextArea());
+		left.setName("qb.condition.left");
+		left.setToolTipText(I18n.getString("querybuilder.condition.left.tooltip", ""));
+		right.setName("qb.condition.right");
+		right.setToolTipText(I18n.getString("querybuilder.condition.right.tooltip", ""));
 		
 		left.setWrapStyleWord(true);
 		right.setWrapStyleWord(true);

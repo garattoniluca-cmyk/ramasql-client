@@ -89,10 +89,15 @@ public final class WorkTabs {
         }
         TableGridDataSource source = new TableGridDataSource(workspace.executor(), table);
         DataGrid grid;
+        int before = generation;
         try {
             grid = DataGrid.forTable(table, source, pageSize, gridPrompts);
         } finally {
             opening.remove(name);
+        }
+        if (generation != before) {
+            // mentre si leggeva la prima pagina la connessione si è chiusa (e con lei le schede): questa non si apre
+            return null;
         }
         grid.setName(name);
         new GridApplier(workspace.pipeline(), workspace.view()).bind(grid, table);
@@ -413,7 +418,11 @@ public final class WorkTabs {
     }
 
     /** Chiude tutte le schede senza chiedere nulla: la connessione è finita, le schede non hanno più un server. */
+    /** Cresce a ogni chiusura di tutte le schede (fine della connessione): una lettura in corso sa di essere vecchia. */
+    private int generation;
+
     public void closeAllSilently() {
+        generation++;
         for (Component c : tabs.getComponents()) {
             if (c instanceof SqlEditor editor) {
                 editor.dispose();

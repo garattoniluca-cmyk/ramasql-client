@@ -405,10 +405,37 @@ public final class QbOperations {
             alias.setName("MaskAlias");
             out.add(alias);
         }
+        if (entities.length > 0 && entities[0] instanceof DiagramEntity entity) {
+            MaskReferences refs = new MaskReferences(entity, qb);
+            refs.setName("MaskReferences");
+            out.add(refs);
+        }
         MaskExpression expr = new MaskExpression(new QueryTokens.DefaultExpression("COUNT(*)"), qb);
         expr.onShow();
         expr.setName("MaskExpression");
         out.add(expr);
+        return out;
+    }
+
+    /**
+     * I menu del query builder con le voci che vede l'utente (per le prove di copertura dei suggerimenti, T12.9): del
+     * diagramma, dell'albero della query, della prima tabella, del suo primo campo e del primo join. Richiede almeno
+     * una tabella; il join solo se c'è.
+     */
+    public static java.util.Map<String, javax.swing.JPopupMenu> menusForRendering(QueryBuilder qb) {
+        java.util.Map<String, javax.swing.JPopupMenu> out = new java.util.LinkedHashMap<>();
+        out.put("diagramma", qb.diagram.diagramMenu());
+        out.put("albero della query", new BrowserPopup(qb));
+        DiagramAbstractEntity[] entities = qb.diagram.getEntities();
+        if (entities.length > 0) {
+            out.put("tabella", entities[0].getHeaderMenu().getPopupMenu());
+            if (entities[0].getFields().getComponentCount() > 0) {
+                out.put("campo", ((DiagramField) entities[0].getFields().getComponent(0)).fieldMenu());
+            }
+        }
+        if (qb.diagram.getRelations().length > 0) {
+            out.put("join", qb.diagram.getRelations()[0].joinMenu());
+        }
         return out;
     }
 

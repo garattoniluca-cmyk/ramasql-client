@@ -718,8 +718,9 @@ class T126T1212T1213SchermiESuggerimentiTest {
                     posted++;
                 }
                 ev.append("3) Ctrl+F1 con il fuoco sul componente: ").append(posted).append(" suggerimenti aperti (e "
-                        + "chiusi con Esc) su ").append(targets.size()).append(" componenti raggiungibili con Tab "
-                        + "(navigatore, editor di tabelle, barre), tutti dentro lo schermo\n");
+                        + "chiusi con Esc) su ").append(targets.size()).append(" componenti che prendono il fuoco "
+                        + "nella schermata (navigatore, editor di tabelle, pannello SQL; il fuoco dato con "
+                        + "requestFocusInWindow, i tasti veri), tutti dentro lo schermo\n");
                 // 4) le spiegazioni delle voci al proiettore: engine, collation, azioni; anche con le frecce
                 ev.append("4) liste dell'editor di tabelle al proiettore:\n");
                 Set<String> seen = hoverAllCombos(editor, screen, problems, ev);

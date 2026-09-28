@@ -93,4 +93,11 @@ public class AppQbHost extends BasicQbHost {
             case HEADER -> Tokens.BG_SUNKEN;
         };
     }
+
+    /** Le voci delle liste del query builder si spiegano come quelle del programma (T12.10, {@code ComboTips}). */
+    @Override
+    @SuppressWarnings("unchecked")
+    public void explainItems(javax.swing.JComboBox<?> combo, java.util.function.Function<Object, String> tip) {
+        it.ramasql.app.theme.ComboTips.install((javax.swing.JComboBox<Object>) combo, tip::apply);
+    }
 }

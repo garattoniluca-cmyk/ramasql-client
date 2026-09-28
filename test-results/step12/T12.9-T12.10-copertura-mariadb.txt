@@ -1,0 +1,5 @@
+T12.9 / T12.10 — suggerimenti su tutto il programma (MariaDB)
+Componenti controllati: 445; senza suggerimento: 0
+Liste a discesa trovate: [catalog.create.charset, catalog.create.collation, columns.typeEditor, fks.action, fks.childColumn, fks.parentColumn, fks.refTable, import.charset, import.kind, import.option.dates, import.option.duplicates, import.separator, import.target.table, indexes.columnChoice, indexes.kind, options.charset, options.collation, options.engine, qb.condition.operator, qb.condition.predicate, qb.join.operator, script.target, settings.language]
+Liste richieste da T12.10 assenti: []
+Esito: OK

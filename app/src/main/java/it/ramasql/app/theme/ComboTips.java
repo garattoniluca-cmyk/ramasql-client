@@ -63,23 +63,29 @@ public final class ComboTips {
     @SuppressWarnings("unchecked")
     public static <T> void install(JComboBox<T> combo, Function<? super T, String> tip) {
         combo.putClientProperty(PROPERTY, tip);
-        if (combo.getClientProperty(BASE_TIP) == null) {
-            combo.putClientProperty(BASE_TIP, combo.getToolTipText() == null ? "" : combo.getToolTipText());
+        if (combo.getClientProperty(STATE) != null) {
+            updateBaseTip(combo);   // già installata: cambia solo la funzione delle spiegazioni
+            return;
         }
+        combo.putClientProperty(BASE_TIP, combo.getToolTipText() == null ? "" : combo.getToolTipText());
         State state = new State();
         combo.putClientProperty(STATE, state);
-        ListCellRenderer<? super T> inner = combo.getRenderer();
-        combo.setRenderer((list, value, index, selected, focus) -> {
-            Component c = inner.getListCellRendererComponent(list, value, index, selected, focus);
-            if (c instanceof JComponent j && index >= 0) {
-                j.setToolTipText(null);   // la spiegazione compare accanto alla lista, non sopra la voce
+        wrapRenderer(combo);
+        // chi cambia il disegnatore o il suggerimento della lista dopo l'installazione non perde nulla
+        combo.addPropertyChangeListener("renderer", e -> {
+            if (e.getNewValue() != combo.getClientProperty(WRAPPER)) {
+                wrapRenderer(combo);
             }
-            return c;
+        });
+        combo.addPropertyChangeListener("ToolTipText", e -> {
+            if (!Boolean.TRUE.equals(combo.getClientProperty(COMPOSING))) {
+                combo.putClientProperty(BASE_TIP, e.getNewValue() == null ? "" : e.getNewValue());
+                updateBaseTip(combo);
+            }
         });
         combo.addActionListener(e -> updateBaseTip(combo));
+        ListSelectionListener follow = ev -> SwingUtilities.invokeLater(() -> show(combo, state));
         combo.addPopupMenuListener(new PopupMenuListener() {
-            private ListSelectionListener listener;
-
             @Override
             public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
                 fitRows(combo);
@@ -87,10 +93,13 @@ public final class ComboTips {
                 if (list == null) {
                     return;
                 }
-                state.list = list;
-                if (listener == null) {
-                    listener = ev -> SwingUtilities.invokeLater(() -> show(combo, state));
-                    list.addListSelectionListener(listener);
+                // dopo un cambio di carattere (updateUI) la lista aperta è un'altra: l'ascoltatore la segue
+                if (state.list != list) {
+                    if (state.list != null) {
+                        state.list.removeListSelectionListener(follow);
+                    }
+                    list.addListSelectionListener(follow);
+                    state.list = list;
                 }
                 SwingUtilities.invokeLater(() -> show(combo, state));
             }
@@ -106,6 +115,23 @@ public final class ComboTips {
             }
         });
         updateBaseTip(combo);
+    }
+
+    private static final String WRAPPER = "rama.comboTips.renderer";
+    private static final String COMPOSING = "rama.comboTips.composing";
+
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    private static void wrapRenderer(JComboBox<?> combo) {
+        ListCellRenderer inner = combo.getRenderer();
+        ListCellRenderer<Object> wrapper = (list, value, index, selected, focus) -> {
+            Component c = inner.getListCellRendererComponent(list, value, index, selected, focus);
+            if (c instanceof JComponent j && index >= 0) {
+                j.setToolTipText(null);   // la spiegazione compare accanto alla lista, non sopra la voce
+            }
+            return c;
+        };
+        combo.putClientProperty(WRAPPER, wrapper);
+        ((JComboBox<Object>) combo).setRenderer(wrapper);
     }
 
     private static final String MAX_ROWS = "rama.comboTips.maxRows";
@@ -141,8 +167,13 @@ public final class ComboTips {
         Object base = combo.getClientProperty(BASE_TIP);
         String selected = tipFor(combo, combo.getSelectedItem());
         String b = base == null ? "" : base.toString();
-        combo.setToolTipText(selected == null || selected.isBlank() ? (b.isEmpty() ? null : b)
-                : (b.isEmpty() ? selected : b + "\n" + selected));
+        combo.putClientProperty(COMPOSING, Boolean.TRUE);
+        try {
+            combo.setToolTipText(selected == null || selected.isBlank() ? (b.isEmpty() ? null : b)
+                    : (b.isEmpty() ? selected : b + "\n" + selected));
+        } finally {
+            combo.putClientProperty(COMPOSING, null);
+        }
     }
 
     /** La spiegazione di una voce, se la lista ne ha ({@code null} altrimenti). */
@@ -154,8 +185,8 @@ public final class ComboTips {
         }
         try {
             return ((Function<Object, String>) fn).apply(item);
-        } catch (ClassCastException e) {
-            return null;
+        } catch (RuntimeException e) {
+            return null;   // una spiegazione che non si compone non deve rompere la lista (né l'EDT)
         }
     }
 

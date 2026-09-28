@@ -207,6 +207,17 @@ public final class MainFrame extends JFrame implements ShellView {
      * navigatore, scheda aperta, pannello SQL); nella barra le frecce passano da un pulsante all'altro e Spazio lo
      * preme. I pulsanti della barra non sono fra le fermate di Tab (sarebbero dieci tasti in più a ogni giro).
      */
+    private GuideDialog guide;
+
+    /** F1: la guida rapida; se è già aperta, torna davanti (non se ne apre un'altra). */
+    private void showGuide() {
+        if (guide == null || !guide.isDisplayable()) {
+            guide = new GuideDialog(this);
+        }
+        guide.setVisible(true);
+        guide.toFront();
+    }
+
     private void installKeyboard() {
         // (i divisori non usano F6 per sé: RamaSqlLaf toglie il tasto dalle loro scorciatoie)
         javax.swing.JRootPane root = getRootPane();
@@ -230,10 +241,20 @@ public final class MainFrame extends JFrame implements ShellView {
                 moveArea(-1);
             }
         });
-        java.awt.KeyboardFocusManager.getCurrentKeyboardFocusManager().addPropertyChangeListener("focusOwner", e -> {
+        java.beans.PropertyChangeListener leaveToolbar = e -> {
             if (e.getNewValue() instanceof java.awt.Component c && SwingUtilities.getWindowAncestor(c) == this
                     && !inToolbar(c)) {
                 toolbarButtons.forEach(b -> b.setFocusable(false));
+            }
+        };
+        java.awt.KeyboardFocusManager.getCurrentKeyboardFocusManager().addPropertyChangeListener("focusOwner",
+                leaveToolbar);
+        // l'ascoltatore è di tutto il programma: se ne va con la finestra (niente finestre trattenute in memoria)
+        addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosed(WindowEvent e) {
+                java.awt.KeyboardFocusManager.getCurrentKeyboardFocusManager()
+                        .removePropertyChangeListener("focusOwner", leaveToolbar);
             }
         });
         setFocusTraversalPolicy(new javax.swing.LayoutFocusTraversalPolicy() {
@@ -416,7 +437,7 @@ public final class MainFrame extends JFrame implements ShellView {
         JMenu help = new JMenu(Texts.get("menu.help"));
         help.setName("menu.help");
         JMenuItem guide = item("menu.help.guide", AppIcons.MENU_ABOUT, KeyStroke.getKeyStroke(KeyEvent.VK_F1, 0),
-                () -> new GuideDialog(this).setVisible(true));
+                this::showGuide);
         guide.setToolTipText(Texts.get("menu.help.guide.tooltip"));
         help.add(guide);
         JMenuItem about = item("menu.help.about", AppIcons.MENU_ABOUT, null, () -> new AboutDialog(this).setVisible(true));
@@ -441,43 +462,6 @@ public final class MainFrame extends JFrame implements ShellView {
     }
 
     /**
-     * Barra corta, con icone e testo, a gruppi separati da spazio (non da linee): <em>Connessione</em> ·
-     * <em>Crea</em> · <em>Dati</em> · a destra <em>Esegui</em> (primario pieno) e <em>Interrompi</em> (contorno
-     * rosso). I comandi non ancora realizzati sono disabilitati, non nascosti — la barra non cambia forma — e lo
-     * dicono nel suggerimento.
-     */
-    /**
-     * Un pulsante della barra che, se la barra non basta (proiettore a 1024×768 con il carattere grande, T12.6), mostra
-     * solo l'icona: il nome resta nel suggerimento e per chi legge lo schermo.
-     */
-    private static final class ToolbarButton extends JButton {
-        private static final long serialVersionUID = 1L;
-        private boolean compact;
-
-        ToolbarButton(String text, javax.swing.Icon icon) {
-            super(text, icon);
-        }
-
-        void setCompact(boolean compact) {
-            if (this.compact != compact) {
-                this.compact = compact;
-                getAccessibleContext().setAccessibleName(compact ? super.getText() : null);
-                invalidate();   // la barra (e il pannello di Esegui e Interrompi) si rimisura
-                repaint();
-            }
-        }
-
-        boolean isCompact() {
-            return compact;
-        }
-
-        @Override
-        public String getText() {
-            return compact ? "" : super.getText();
-        }
-    }
-
-    /**
      * Se la barra non ci sta nemmeno con gli spazi fra i gruppi stretti al minimo: prima senza le scritte dei pulsanti
      * della barra, poi anche senza quelle di Esegui e Interrompi, finché basta.
      */
@@ -485,7 +469,7 @@ public final class MainFrame extends JFrame implements ShellView {
         for (int level = 0; level <= 2; level++) {
             for (JButton b : toolbarButtons) {
                 boolean action = b.getName().equals("toolbar.run") || b.getName().equals("toolbar.stop");
-                ((ToolbarButton) b).setCompact(action ? level >= 2 : level >= 1);
+                ((it.ramasql.app.theme.Compact.Part) b).setCompact(action ? level >= 2 : level >= 1);
             }
             // durante la disposizione le misure in memoria non si azzerano da sole: si rimisura da capo
             for (java.awt.Component c : bar.getComponents()) {
@@ -504,9 +488,15 @@ public final class MainFrame extends JFrame implements ShellView {
 
     /** La barra mostra solo le icone (schermo stretto o carattere grande). */
     public boolean isToolbarCompact() {
-        return toolbarButtons.stream().anyMatch(b -> ((ToolbarButton) b).isCompact());
+        return toolbarButtons.stream().anyMatch(b -> ((it.ramasql.app.theme.Compact.Part) b).isCompact());
     }
 
+    /**
+     * Barra corta, con icone e testo, a gruppi separati da spazio (non da linee): <em>Connessione</em> ·
+     * <em>Crea</em> · <em>Dati</em> · a destra <em>Esegui</em> (primario pieno) e <em>Interrompi</em> (contorno
+     * rosso). I comandi non ancora realizzati sono disabilitati, non nascosti — la barra non cambia forma — e lo
+     * dicono nel suggerimento.
+     */
     private JToolBar buildToolBar() {
         JToolBar bar = new JToolBar() {
             private static final long serialVersionUID = 1L;
@@ -528,7 +518,7 @@ public final class MainFrame extends JFrame implements ShellView {
         actions.setOpaque(false);
         for (int i = 0; i < TOOLBAR_KEYS.length; i++) {
             String key = TOOLBAR_KEYS[i];
-            JButton button = new ToolbarButton(Texts.get("toolbar." + key), AppIcons.toolbar(TOOLBAR_ICONS[i]));
+            JButton button = new it.ramasql.app.theme.Compact.Button(Texts.get("toolbar." + key), AppIcons.toolbar(TOOLBAR_ICONS[i]));
             button.setName("toolbar." + key);
             button.setEnabled(false);
             button.setIconTextGap(Tokens.px(6));

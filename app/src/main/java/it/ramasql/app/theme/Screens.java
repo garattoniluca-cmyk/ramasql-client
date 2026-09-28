@@ -62,8 +62,10 @@ public final class Screens {
 
     /**
      * I popup (suggerimenti, liste aperte, menu) restano dentro lo schermo utilizzabile (T12.13): se la posizione
-     * proposta li farebbe uscire da un bordo, si spostano all'interno. Su uno schermo vero Swing li tiene già dentro,
-     * e qui non cambia nulla; con lo schermo emulato delle prove si comporta come uno schermo di quella misura.
+     * proposta li farebbe uscire da un bordo, si spostano all'interno dello schermo su cui cadono (con il proiettore
+     * come secondo schermo, un popup che Swing mette sull'altro schermo resta lì). Su uno schermo vero Swing li tiene
+     * già dentro, e qui non cambia nulla; con lo schermo emulato delle prove si comporta come uno schermo di quella
+     * misura.
      */
     static final class InsideScreen extends javax.swing.PopupFactory {
 
@@ -76,7 +78,7 @@ public final class Screens {
         @Override
         public javax.swing.Popup getPopup(Component owner, Component contents, int x, int y) {
             if (contents != null) {
-                Rectangle s = usable(owner);
+                Rectangle s = usableAt(new java.awt.Point(x, y), owner);
                 Dimension d = contents.getPreferredSize();
                 x = Math.max(s.x, Math.min(x, s.x + s.width - d.width));
                 y = Math.max(s.y, Math.min(y, s.y + s.height - d.height));
@@ -113,6 +115,27 @@ public final class Screens {
         scroll.getVerticalScrollBar().setUnitIncrement(Tokens.px(24));
         scroll.getHorizontalScrollBar().setUnitIncrement(Tokens.px(24));
         return scroll;
+    }
+
+    /** Lo spazio utilizzabile dello schermo che contiene il punto (quello emulato, se c'è; altrimenti del componente). */
+    public static Rectangle usableAt(java.awt.Point p, Component c) {
+        if (System.getProperty(EMULATED) == null) {
+            try {
+                for (java.awt.GraphicsDevice d : java.awt.GraphicsEnvironment.getLocalGraphicsEnvironment()
+                        .getScreenDevices()) {
+                    GraphicsConfiguration gc = d.getDefaultConfiguration();
+                    if (gc.getBounds().contains(p)) {
+                        Rectangle b = gc.getBounds();
+                        Insets in = Toolkit.getDefaultToolkit().getScreenInsets(gc);
+                        return new Rectangle(b.x + in.left, b.y + in.top, b.width - in.left - in.right,
+                                b.height - in.top - in.bottom);
+                    }
+                }
+            } catch (java.awt.HeadlessException e) {
+                // nessuno schermo: vale quello del componente
+            }
+        }
+        return usable(c);
     }
 
     /** Lo spazio utilizzabile dello schermo della finestra (quello emulato, se c'è). */

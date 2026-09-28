@@ -82,9 +82,9 @@ class T129T1210SuggerimentiTest {
         onEdt(RamaSqlLaf::setup);
     }
 
-    @Test
-    void t129_t1210_ogniComponenteEOgniVoceHaIlSuoSuggerimento() throws Exception {
-        DbServer server = DbServer.MARIADB;
+    @org.junit.jupiter.params.ParameterizedTest
+    @org.junit.jupiter.params.provider.EnumSource(DbServer.class)
+    void t129_t1210_ogniComponenteEOgniVoceHaIlSuoSuggerimento(DbServer server) throws Exception {
         String catalog = DbServer.newCatalogName("t129");
         TipCoverage cov = new TipCoverage();
         StringBuilder ev = new StringBuilder("T12.9 / T12.10 — suggerimenti su tutto il programma (" + server.label()
@@ -160,7 +160,7 @@ class T129T1210SuggerimentiTest {
                     : t.getMessage().lines().findFirst().orElse("")).append('\n');
             throw t;
         } finally {
-            Probe.writeText("step12", "T12.9-T12.10-copertura.txt", ev.toString());
+            Probe.writeText("step12", "T12.9-T12.10-copertura-" + server.id() + ".txt", ev.toString());
             server.dropQuietly(catalog);
         }
     }

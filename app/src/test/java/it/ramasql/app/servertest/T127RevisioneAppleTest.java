@@ -135,9 +135,10 @@ class T127RevisioneAppleTest {
         return name.toLowerCase(Locale.ROOT).replaceAll("[^a-z0-9àèéìòù]+", "-").replaceAll("(^-|-$)", "");
     }
 
-    @Test
-    void t127_revisioneAppleDiOgniSchermata() throws Exception {
-        DbServer server = DbServer.MARIADB;
+    @org.junit.jupiter.params.ParameterizedTest
+    @org.junit.jupiter.params.provider.EnumSource(DbServer.class)
+    void t127_revisioneAppleDiOgniSchermata(DbServer server) throws Exception {
+        boolean photos0 = server == DbServer.MARIADB;   // le fotografie una volta sola (le schermate sono le stesse)
         String catalog = DbServer.newCatalogName("t127");
         Map<String, List<String>> inventory = new LinkedHashMap<>();
         List<String> photos = new ArrayList<>();
@@ -145,7 +146,7 @@ class T127RevisioneAppleTest {
             @Override
             public void screen(String name, Component root) {
                 inventory.putIfAbsent(name, controls(root));
-                if (!name.contains(" › ") || name.startsWith("importa") || name.startsWith("dump")) {
+                if (photos0 && (!name.contains(" › ") || name.startsWith("importa") || name.startsWith("dump"))) {
                     Window w = root instanceof Window win ? win : SwingUtilities.getWindowAncestor(root);
                     if (w != null) {
                         String file = String.format("T12.7-%02d-%s.png", photos.size() + 1, slug(name));
@@ -211,7 +212,7 @@ class T127RevisioneAppleTest {
                 .toList()).append('\n');
         boolean ok = toolbar <= 10 && settings == 4 && uncovered.isEmpty();
         ev.append("Esito: ").append(ok ? "OK" : "FALLITO").append('\n');
-        Probe.writeText("step12", "T12.7-inventario.txt", ev.toString());
+        Probe.writeText("step12", "T12.7-inventario-" + server.id() + ".txt", ev.toString());
         assertTrue(toolbar <= 10, "pulsanti della barra: " + toolbar);
         assertEquals(4, settings, "voci delle impostazioni");
         assertEquals(List.of(), uncovered.stream().distinct().toList(), "schermate senza revisione");
