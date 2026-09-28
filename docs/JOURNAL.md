@@ -63,7 +63,7 @@ I cataloghi dei test (`ramasql_test_*`) si distruggono a fine prova: per questi 
 
 La più recente è in `dist\` con il nome `RamaSQL-portabile-2026-09-28-<ora>` (e lo ZIP accanto), creata con `scripts\crea-portabile.ps1` dopo il commit di questo resoconto: doppio clic su `RamaSQL\RamaSQL.exe` (Java è incluso; se Windows avvisa: *Ulteriori informazioni* → *Esegui comunque*). Accanto ci sono `LEGGIMI.txt` (aggiornato agli step 9–12), `LICENZA.txt` e `RamaSQL-sorgenti.zip` (i sorgenti del commit da cui è fatta). La cartella esatta e la prova d'avvio sono nella riga qui sotto. `dist\RamaSQL-portabile-2026-09-28\` è la versione precedente (step 1–8); `dist\RamaSQL-portabile-2026-09-28-2031\` è quella fatta dal commit dello Step 12, con lo stesso programma: si possono cancellare.
 
-PORTABILE_ESATTA
+**Cartella:** `dist\RamaSQL-portabile-2026-09-28-2044\` (ZIP: `dist\RamaSQL-portabile-2026-09-28-2044.zip`, 131 MB), dal commit del resoconto. **Provata:** `RamaSQL.exe` si avvia e apre la finestra «RamaSQL Client 0.1.0-SNAPSHOT» (versione giusta nel titolo, `BUG-026`), che si chiude normalmente; `RamaSQL-sorgenti.zip` contiene 1489 file.
 
 ### Cosa si può fare adesso
 
