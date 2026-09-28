@@ -24,6 +24,7 @@ public enum SqlOrigin {
     QUERY_BUILDER("origin.queryBuilder"),
     IMPORT("origin.import"),
     DUMP("origin.dump"),
+    SCRIPT_FILE("origin.scriptFile"),
     ER_MODEL("origin.erModel");
 
     private final String key;

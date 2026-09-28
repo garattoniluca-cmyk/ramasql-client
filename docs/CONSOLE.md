@@ -38,10 +38,13 @@ I test d'integrazione leggono le connessioni da variabili d'ambiente (mai da fil
 ## File di prova dell'importazione (Step 9)
 In `it-tests/fixtures/import/`: `soci.csv`, `libri.json`, `prestiti-errori.csv` (li scrive il generatore, `ImportFixturesTest` controlla che siano aggiornati) e `soci-excel.csv`, salvato **da Excel vero** («CSV (delimitato dal separatore di elenco)» con le impostazioni italiane: punto e virgola, Windows-1252, date gg/mm/aaaa, virgola decimale).
 ```
-java it-tests\src	est\java\itamasql\itixtures\ImportFixtures.java it-testsixtures
-powershell -NoProfile -ExecutionPolicy Bypass -File it-testsixtures\import\crea-soci-excel.ps1
+java it-tests\src\test\java\it\ramasql\it\fixtures\ImportFixtures.java it-tests\fixtures
+powershell -NoProfile -ExecutionPolicy Bypass -File it-tests\fixtures\import\crea-soci-excel.ps1
 ```
 Il CSV da un milione di righe di T9.5 lo genera il test in una cartella temporanea (non va in git).
+
+## Dump e ripristino (Step 10)
+I test di T10.8 usano i programmi già presenti sul PC: `mariadb-dump.exe` di MariaDB 11.5 (il suo `mysqldump.exe` è lo stesso programma) e il `mysqldump.exe` **di Oracle** che arriva con MySQL Workbench 8.0 (`C:\Program Files\MySQL\MySQL Workbench 8.0 CE\`). La password passa dalla variabile `MYSQL_PWD` del processo figlio, mai sulla riga di comando. Un dump di Navicat messo in `it-tests\fixtures\navicat\*.sql` viene ripristinato anch'esso (procedura in `test-results\step10\T10.8-navicat-procedura.md`). T10.5 lancia il dump e il ripristino di un milione di righe in un processo Java a parte con `-Xmx64m` (`DumpChild`) per misurare la memoria di picco.
 
 ## Versione portabile da provare in aula (prima dell'installer)
 ```

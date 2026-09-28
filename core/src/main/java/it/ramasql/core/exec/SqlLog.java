@@ -67,10 +67,13 @@ public final class SqlLog {
      * @param note           spiegazione in più ({@code ""} se nessuna): per un'istruzione preparata, i lotti e le righe
      * @param parameterized  istruzione preparata con segnaposti {@code ?} (i valori erano in un file, non nel testo):
      *                       nell'esportazione si commenta, perché così non si può rieseguire
+     * @param file           il file {@code .sql} da cui viene l'istruzione ({@code ""} se nessuno): nell'esportazione
+     *                       le istruzioni di un file diventano un solo commento che rimanda al file (rieseguirne solo
+     *                       alcune — i {@code DROP} sì, i {@code CREATE} abbreviati no — distruggerebbe dati)
      */
     public record Entry(long sequence, Instant time, String connection, String origin, String sql, Outcome outcome,
             int errorCode, String sqlState, String message, long durationMillis, long rows, String note,
-            boolean parameterized) {
+            boolean parameterized, String file) {
 
         public Entry {
             Objects.requireNonNull(time, "time");
@@ -81,6 +84,12 @@ public final class SqlLog {
             sqlState = sqlState == null ? "" : sqlState;
             message = message == null ? "" : message;
             note = note == null ? "" : note;
+            file = file == null ? "" : file;
+        }
+
+        /** Viene dall'esecuzione di un file {@code .sql}. */
+        public boolean fromFile() {
+            return !file.isEmpty();
         }
 
         public boolean isOk() {
@@ -126,16 +135,23 @@ public final class SqlLog {
     /** Registra un'istruzione eseguita: solo {@link SqlExecutor}. */
     Entry add(String connection, String origin, String sql, Outcome outcome, int errorCode, String sqlState,
             String message, long durationMillis, long rows) {
-        return add(connection, origin, sql, outcome, errorCode, sqlState, message, durationMillis, rows, "", false);
+        return add(connection, origin, sql, outcome, errorCode, sqlState, message, durationMillis, rows, "", false, "");
     }
 
     /** Registra un'istruzione, con una nota e l'indicazione di istruzione preparata: solo {@link SqlExecutor}. */
     Entry add(String connection, String origin, String sql, Outcome outcome, int errorCode, String sqlState,
             String message, long durationMillis, long rows, String note, boolean parameterized) {
+        return add(connection, origin, sql, outcome, errorCode, sqlState, message, durationMillis, rows, note,
+                parameterized, "");
+    }
+
+    /** Registra un'istruzione eseguita da un file {@code .sql}: solo {@link SqlExecutor}. */
+    Entry add(String connection, String origin, String sql, Outcome outcome, int errorCode, String sqlState,
+            String message, long durationMillis, long rows, String note, boolean parameterized, String file) {
         Entry e;
         synchronized (entries) {
             e = new Entry(nextSequence++, Instant.now(), connection, origin, sql, outcome, errorCode, sqlState,
-                    message, durationMillis, rows, note, parameterized);
+                    message, durationMillis, rows, note, parameterized, file);
             entries.add(e);
         }
         for (Listener l : listeners) {
@@ -218,7 +234,25 @@ public final class SqlLog {
                     .append('\n');
         }
         String catalog = options.unqualifyCatalog();
-        for (Entry e : list) {
+        for (int i = 0; i < list.size(); i++) {
+            Entry e = list.get(i);
+            if (e.fromFile()) {
+                // le istruzioni consecutive dello stesso file: un solo rimando al file, niente da rieseguire qui
+                int j = i;
+                long statements = 0;
+                long fileFailed = 0;
+                while (j < list.size() && list.get(j).file().equals(e.file())) {
+                    statements++;
+                    if (!list.get(j).isOk()) {
+                        fileFailed++;
+                    }
+                    j++;
+                }
+                out.append('\n').append("-- ").append(CoreMessages.get("log.export.file", TIME.format(e.time()),
+                        e.file(), statements, fileFailed)).append('\n');
+                i = j - 1;
+                continue;
+            }
             out.append('\n').append("-- ").append(describe(e)).append('\n');
             if (!e.note().isEmpty()) {
                 out.append("-- ").append(oneLine(e.note())).append('\n');

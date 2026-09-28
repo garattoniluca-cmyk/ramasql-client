@@ -78,6 +78,16 @@ final class MetadataQueries {
             "SELECT COLLATION_NAME, CHARACTER_SET_NAME, IS_DEFAULT"
             + " FROM information_schema.COLLATIONS ORDER BY CHARACTER_SET_NAME, COLLATION_NAME";
 
+    /**
+     * MariaDB 10.10 e successivi: le collation UCA 14 ({@code utf8mb4_uca1400_ai_ci}, la predefinita di utf8mb4 in
+     * 11.x) valgono per più set di caratteri e in {@code COLLATIONS} compaiono con il nome corto e senza set; il nome
+     * completo e la predefinita di ogni set stanno qui.
+     */
+    static final String COLLATIONS_MARIADB =
+            "SELECT FULL_COLLATION_NAME, CHARACTER_SET_NAME, IS_DEFAULT"
+            + " FROM information_schema.COLLATION_CHARACTER_SET_APPLICABILITY ORDER BY CHARACTER_SET_NAME,"
+            + " FULL_COLLATION_NAME";
+
     private MetadataQueries() {
     }
 

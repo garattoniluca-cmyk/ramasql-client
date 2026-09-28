@@ -679,6 +679,12 @@ public final class NavigatorPanel extends JPanel {
     /** Chi apre la vista nella query visiva per modificarla (Step 8, «Modifica vista»). */
     private BiConsumer<String, String> onEditView = (c, v) -> { };
     private BiConsumer<String, String> onImportData = (c, t) -> { };
+    private BiConsumer<String, String> onExport = (c, t) -> { };
+
+    /** «Esporta…» su un catalogo (oggetto {@code null}), una tabella o una vista. */
+    public void setOnExport(BiConsumer<String, String> handler) {
+        this.onExport = handler;
+    }
 
     /** «Importa dati…» sulla tabella (catalogo, tabella). */
     public void setOnImportData(BiConsumer<String, String> handler) {
@@ -758,6 +764,7 @@ public final class NavigatorPanel extends JPanel {
             }
             case CATALOG -> {
                 menu.add(item("nav.menu.newTable", () -> onNewTable.accept(n.catalog())));
+                menu.add(item("nav.menu.export", () -> onExport.accept(n.catalog(), null)));
                 menu.addSeparator();
                 JMenuItem drop = item("nav.menu.dropCatalog", () -> propose(TreeScripts.dropCatalog(n.catalog())));
                 drop.setEnabled(!(n.data() instanceof CatalogInfo c && c.system()));
@@ -769,6 +776,7 @@ public final class NavigatorPanel extends JPanel {
                 menu.add(item("nav.menu.openTable", () -> openTable(n.catalog(), n.name())));
                 menu.add(item("nav.menu.designTable", () -> designTable(n.catalog(), n.name())));
                 menu.add(item("nav.menu.importData", () -> onImportData.accept(n.catalog(), n.name())));
+                menu.add(item("nav.menu.export", () -> onExport.accept(n.catalog(), n.name())));
                 menu.addSeparator();
                 menu.add(item("nav.menu.rename", () -> renameTable(n.catalog(), n.name())));
                 menu.add(item("nav.menu.truncate", () -> propose(TreeScripts.truncateTable(n.catalog(), n.name()))));
@@ -780,6 +788,7 @@ public final class NavigatorPanel extends JPanel {
             case VIEW -> {
                 menu.add(item("nav.menu.openView", () -> openView(n.catalog(), n.name())));
                 menu.add(item("nav.menu.editView", () -> onEditView.accept(n.catalog(), n.name())));
+                menu.add(item("nav.menu.export", () -> onExport.accept(n.catalog(), n.name())));
                 menu.addSeparator();
                 menu.add(item("nav.menu.dropView", () -> propose(TreeScripts.dropView(n.catalog(), n.name()))));
                 menu.addSeparator();
@@ -896,6 +905,16 @@ public final class NavigatorPanel extends JPanel {
     /** Nessuna lettura in corso. */
     public boolean isIdle() {
         return pendingTasks == 0 && loading.isEmpty();
+    }
+
+    /** Il nome della tabella o vista selezionata; {@code null} se la selezione non è né l'una né l'altra. */
+    public String selectedObjectName() {
+        TreePath p = tree.getSelectionPath();
+        if (p == null) {
+            return null;
+        }
+        NavNode n = nodeOf(p);
+        return n.kind() == NavNode.Kind.TABLE || n.kind() == NavNode.Kind.VIEW ? n.name() : null;
     }
 
     /** Il nome della tabella selezionata (nodo tabella); {@code null} se la selezione non è una tabella. */

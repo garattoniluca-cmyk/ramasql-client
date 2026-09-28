@@ -142,6 +142,103 @@ public final class SqlPipeline {
         return shown;
     }
 
+    /**
+     * Uno script da file (il ripristino di un dump, Step 10): l'anteprima mostra le istruzioni scelte prima del file
+     * (il {@code USE}) e le prime del file, con il totale nel titolo; la conferma tiene conto anche delle istruzioni
+     * distruttive più avanti nel file. Con <em>Esegui</em> l'esecutore legge il file a flusso ed esegue tutto.
+     *
+     * @return l'esito (sull'EDT); {@code null} se annullato o copiato
+     */
+    public CompletableFuture<it.ramasql.core.exec.ScriptFileResult> proposeScriptFile(
+            it.ramasql.core.exec.ScriptPreview preview, java.util.List<it.ramasql.core.exec.SqlStatement> before,
+            boolean continueOnError, String origin, it.ramasql.core.exec.ScriptFileListener listener) {
+        return proposeScriptFile(preview, before, continueOnError, origin, it.ramasql.core.exec.CollationCompat.none(),
+                listener);
+    }
+
+    /**
+     * Come sopra, con le collation sconosciute al server sostituite ({@code compat}): l'anteprima le mostra già
+     * sostituite, e così si eseguono e si registrano.
+     */
+    public CompletableFuture<it.ramasql.core.exec.ScriptFileResult> proposeScriptFile(
+            it.ramasql.core.exec.ScriptPreview preview, java.util.List<it.ramasql.core.exec.SqlStatement> before,
+            boolean continueOnError, String origin, it.ramasql.core.exec.CollationCompat compat,
+            it.ramasql.core.exec.ScriptFileListener listener) {
+        SqlScript shown = preview.previewScript(origin, before, compat);
+        view.scriptProposed(shown);
+        ConfirmationPolicy.Confirmation confirmation = preview.confirmation(origin, before);
+        PreviewDialog.Decision decision = prompts.preview(shown, confirmation);
+        if (decision != PreviewDialog.Decision.EXECUTE) {
+            if (decision == PreviewDialog.Decision.COPY) {
+                prompts.copyToClipboard(shown.text());
+                view.message(PipelineView.MessageKind.INFO, Texts.get("pipeline.copied", shown.title()));
+            } else {
+                view.message(PipelineView.MessageKind.INFO, Texts.get("pipeline.cancelled", shown.title()));
+            }
+            last = CompletableFuture.completedFuture(null);
+            return CompletableFuture.completedFuture(null);
+        }
+        it.ramasql.core.exec.ScriptReader reader;
+        try {
+            reader = preview.open();
+        } catch (java.io.IOException e) {
+            view.message(PipelineView.MessageKind.ERROR, Texts.get("pipeline.failedToRun", shown.title(), e.getMessage()));
+            return CompletableFuture.completedFuture(null);
+        }
+        running++;
+        CompletableFuture<it.ramasql.core.exec.ScriptFileResult> future;
+        try {
+            future = executor.submitScriptFile(before, reader, preview.file().getFileName().toString(),
+                    continueOnError, origin, compat, listener);
+        } catch (RejectedExecutionException e) {
+            running--;
+            try {
+                reader.close();
+            } catch (java.io.IOException ignored) {
+                // niente da fare
+            }
+            view.message(PipelineView.MessageKind.ERROR, Texts.get("pipeline.closed"));
+            return CompletableFuture.completedFuture(null);
+        }
+        CompletableFuture<it.ramasql.core.exec.ScriptFileResult> shownResult = new CompletableFuture<>();
+        CompletableFuture<ScriptResult> marker = new CompletableFuture<>();
+        last = marker;
+        future.whenComplete((result, error) -> SwingUtilities.invokeLater(() -> {
+            running--;
+            if (error != null) {
+                view.message(PipelineView.MessageKind.ERROR, Texts.get("pipeline.failedToRun", shown.title(),
+                        String.valueOf(error.getMessage())));
+                shownResult.completeExceptionally(error);
+                marker.completeExceptionally(error);
+                return;
+            }
+            String counts = Texts.get("pipeline.file.counts", result.executed(), preview.statements(),
+                    result.succeeded(), result.failureCount(), result.durationMillis());
+            PipelineView.MessageKind kind = result.completed() ? PipelineView.MessageKind.SUCCESS
+                    : result.interrupted() ? PipelineView.MessageKind.WARNING
+                    : result.failureCount() > 0 && !result.stoppedOnError() ? PipelineView.MessageKind.WARNING
+                    : PipelineView.MessageKind.ERROR;
+            StringBuilder sb = new StringBuilder(Texts.get(result.completed() ? "pipeline.file.done"
+                    : result.interrupted() ? "pipeline.file.interrupted" : switch (result.stop()) {
+                        case ERROR -> "pipeline.file.stopped";
+                        case CATALOG -> "pipeline.file.stoppedCatalog";
+                        case CONNECTION -> "pipeline.file.stoppedConnection";
+                        case NONE -> "pipeline.file.withErrors";
+                    }, shown.title(), counts));
+            if (!result.failures().isEmpty()) {
+                it.ramasql.core.exec.ScriptFileResult.Failure f = result.failures().get(0);
+                sb.append('\n').append(f.line() == 0 ? Texts.get("pipeline.file.firstErrorBefore", f.code(), f.message())
+                        : Texts.get("pipeline.file.firstError", f.line(), f.code(), f.message()));
+                it.ramasql.app.editor.ErrorExplainer.explain(f.code())
+                        .ifPresent(x -> sb.append('\n').append(Texts.get("panel.messages.explanation", x)));
+            }
+            view.message(kind, sb.toString());
+            shownResult.complete(result);
+            marker.complete(null);
+        }));
+        return shownResult;
+    }
+
     /** L'esito dell'inserimento a lotti nella scheda Messaggi. */
     private void batchMessage(SqlScript script, it.ramasql.core.exec.BatchResult r) {
         long rejected = r.rejectedCount();

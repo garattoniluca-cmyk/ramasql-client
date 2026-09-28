@@ -172,6 +172,18 @@ class DialogsTest {
                     d.dispose();
                 }
             }
+            // più oggetti, e un catalogo in fondo: la frase dice l'azione più grave, non la prima
+            PreviewDialog d = preview(SqlScript.of("t", "Script da file", "DROP TABLE IF EXISTS libri",
+                    "DROP TABLE IF EXISTS soci", "DROP DATABASE ramasql_test_y"));
+            try {
+                assertEquals("CONFERMO", d.confirmation().typeToConfirm());
+                String sentence = labels(d).stream().filter(t -> t.contains("Stai per")).findFirst().orElse("");
+                assertTrue(sentence.contains("fra cui interi cataloghi"), sentence);
+                assertFalse(sentence.contains("«CONFERMO»"), "niente «eliminare la tabella «CONFERMO»»: " + sentence);
+                assertEquals("Esegui", d.executeButton().getText());
+            } finally {
+                d.dispose();
+            }
         });
     }
 

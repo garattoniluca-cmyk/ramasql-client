@@ -41,6 +41,8 @@ Emersi dall'analisi di SQLeo — **rimossi nell'estrazione dello Step 1** (resta
 - stato `static` nel query builder (`QueryBuilder.identifierQuoteString`, `selectAllColumns`…): rischio di interferenza tra due schede (R-06, test T7.8).
 
 ## 1-bis. Note tecniche
+- **Dump e ripristino (Step 10, `ADR-026`), limiti noti v1:** routine, trigger ed eventi non entrano nel dump (l'esito lo dice); una vista che usa tabelle di **un altro catalogo** si ripristina solo se quel catalogo c'è già (il dump avvisa); un dump del client ripristinato con un programma che ignora `SET TIME_ZONE` scriverebbe i `TIMESTAMP` in UTC (`mysql`, `mariadb` e Navicat lo applicano); una riga oltre gli 8 MB può superare il `max_allowed_packet` predefinito (avviso nel dump). `mysqldump.exe` di MariaDB 11.5 è lo stesso programma di `mariadb-dump.exe`; il mysqldump di Oracle è quello di MySQL Workbench 8.0 (T10.8).
+- **MariaDB ≥ 10.10:** in `information_schema.COLLATIONS` le collation UCA 14 compaiono con il nome corto (`uca1400_ai_ci`) e senza set di caratteri, e utf8mb4 non ha una predefinita; nomi completi e predefinite stanno in `COLLATION_CHARACTER_SET_APPLICABILITY` (letta da `MetadataReader.collations()` dallo Step 10).
 - `NoDefaultCurrentDirectoryInExePath=1` su questo PC: negli script chiamare `.\mvnw.cmd` / `"%~dp0mvnw.cmd"`. Risolto in `avvia.cmd` (Step 0).
 - Le sessioni avviate prima dell'installazione del JDK vedono ancora Java 8: `avvia.cmd` cerca da solo il JDK 25.
 

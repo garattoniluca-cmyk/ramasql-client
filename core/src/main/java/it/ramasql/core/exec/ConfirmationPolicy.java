@@ -103,6 +103,34 @@ public final class ConfirmationPolicy {
         return Action.OTHER;
     }
 
+    /**
+     * L'azione più grave fra tutte le istruzioni distruttive dello script (eliminare un catalogo, poi una tabella, una
+     * vista, svuotare): per la frase della conferma quando lo script colpisce più oggetti — un {@code DROP DATABASE} in
+     * fondo a un file non deve passare per «eliminare la tabella».
+     */
+    public static Action mostSevereAction(SqlScript script) {
+        Action best = Action.OTHER;
+        for (SqlStatement s : script.statements()) {
+            if (s.risk() == RiskLevel.DESTRUCTIVE) {
+                Action a = actionOf(s.text());
+                if (severity(a) < severity(best)) {
+                    best = a;
+                }
+            }
+        }
+        return best;
+    }
+
+    private static int severity(Action a) {
+        return switch (a) {
+            case DROP_CATALOG -> 0;
+            case DROP_TABLE -> 1;
+            case DROP_VIEW -> 2;
+            case TRUNCATE -> 3;
+            case OTHER -> 4;
+        };
+    }
+
     /** L'azione di una singola istruzione (vedi {@link #actionOf(SqlScript)}). */
     public static Action actionOf(String sql) {
         List<SqlLexer.Token> t = SqlLexer.tokenize(SqlLexer.innermost(sql));

@@ -63,6 +63,9 @@ public final class MetadataReader {
         final ConcurrentMap<String, List<ColumnDef>> viewColumns = new ConcurrentHashMap<>();
     }
 
+    /** MariaDB ≥ 10.10: i nomi completi delle collation si leggono da COLLATION_CHARACTER_SET_APPLICABILITY. */
+    private final boolean fullCollationNames;
+
     /**
      * @param serviceConnection connessione su cui leggere (in pratica quella di servizio della sessione)
      * @param server            tipo e versione del server: decidono come interpretare i default
@@ -71,6 +74,7 @@ public final class MetadataReader {
         this.connection = Objects.requireNonNull(serviceConnection, "serviceConnection");
         Objects.requireNonNull(server, "server");
         // MariaDB ≥ 10.2.7 scrive COLUMN_DEFAULT come SQL ('IT', NULL, current_timestamp())
+        this.fullCollationNames = server.isMariaDb() && server.atLeast(10, 10);
         this.quotedDefaults = server.isMariaDb()
                 && (server.atLeast(10, 3) || (server.major() == 10 && server.minor() == 2 && server.patch() >= 7));
     }
@@ -106,7 +110,8 @@ public final class MetadataReader {
         List<CollationInfo> cached = collations;
         if (cached == null) {
             List<CollationInfo> list = new ArrayList<>();
-            for (String[] r : query(MetadataQueries.COLLATIONS)) {
+            for (String[] r : query(fullCollationNames ? MetadataQueries.COLLATIONS_MARIADB
+                    : MetadataQueries.COLLATIONS)) {
                 if (r[0] != null && r[1] != null) {
                     list.add(new CollationInfo(r[0], r[1], "Yes".equalsIgnoreCase(r[2])));
                 }

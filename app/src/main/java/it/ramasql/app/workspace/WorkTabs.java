@@ -239,6 +239,30 @@ public final class WorkTabs {
         return wizard;
     }
 
+    private int dumpCounter;
+
+    /** Apre la procedura guidata «Esporta / Dump» (Step 10), con catalogo e oggetto proposti (anche {@code null}). */
+    public it.ramasql.app.dump.DumpWizard openDump(SessionWorkspace workspace, String catalog, String object) {
+        dumpCounter++;
+        it.ramasql.app.dump.DumpWizard w = new it.ramasql.app.dump.DumpWizard(workspace.reader(), workspace.executor(),
+                prompts.files(), workspace.session().serverInfo().displayName(), catalog, object);
+        w.setName(tabName("dump", catalog, "#" + dumpCounter));
+        add(w, Texts.get("tabs.dump.title"), Texts.get("tabs.dump.tooltip"));
+        return w;
+    }
+
+    private int scriptCounter;
+
+    /** Apre la scheda «Esegui script SQL» (ripristino, Step 10), con il catalogo proposto per il {@code USE}. */
+    public it.ramasql.app.dump.ScriptRunTab openScriptRun(SessionWorkspace workspace, String catalog) {
+        scriptCounter++;
+        it.ramasql.app.dump.ScriptRunTab t = new it.ramasql.app.dump.ScriptRunTab(workspace.pipeline(),
+                workspace.reader(), prompts.files(), catalog);
+        t.setName(tabName("script", catalog, "#" + scriptCounter));
+        add(t, Texts.get("tabs.script.title"), Texts.get("tabs.script.tooltip"));
+        return t;
+    }
+
     // ---------------------------------------------------------------- chiusura
 
     /**
@@ -296,6 +320,14 @@ public final class WorkTabs {
             }
             visual.dispose();
         }
+        if (tab instanceof it.ramasql.app.dump.DumpWizard dump && !dump.canClose()) {
+            prompts.files().showError(Texts.get("tabs.dump.title"), Texts.get("dump.close.running"));
+            return false;
+        }
+        if (tab instanceof it.ramasql.app.dump.ScriptRunTab script && !script.canClose()) {
+            prompts.files().showError(Texts.get("tabs.script.title"), Texts.get("script.close.running"));
+            return false;
+        }
         if (tab instanceof it.ramasql.app.importer.ImportWizard wizard) {
             if (!wizard.canClose()) {
                 prompts.files().showError(Texts.get("tabs.import.title"), Texts.get("import.close.running"));
@@ -340,6 +372,10 @@ public final class WorkTabs {
                 conLavoro.add(titleOf(c));
             } else if (c instanceof it.ramasql.app.importer.ImportWizard w && w.isRunning()) {
                 conLavoro.add(Texts.get("import.close.runningItem", titleOf(c)));
+            } else if (c instanceof it.ramasql.app.dump.DumpWizard d && d.isRunning()) {
+                conLavoro.add(Texts.get("dump.close.runningItem", titleOf(c)));
+            } else if (c instanceof it.ramasql.app.dump.ScriptRunTab s && s.isRunning()) {
+                conLavoro.add(Texts.get("script.close.runningItem", titleOf(c)));
             }
         }
         if (conLavoro.isEmpty()) {
@@ -363,6 +399,10 @@ public final class WorkTabs {
                 visual.dispose();
             } else if (c instanceof it.ramasql.app.importer.ImportWizard wizard) {
                 wizard.stopForClose();   // un'importazione in corso si ferma: le righe inserite restano
+            } else if (c instanceof it.ramasql.app.dump.DumpWizard dump) {
+                dump.stopForClose();
+            } else if (c instanceof it.ramasql.app.dump.ScriptRunTab script) {
+                script.stopForClose();
             }
         }
         titles.clear();

@@ -144,6 +144,7 @@ public final class MainFrame extends JFrame implements ShellView {
         navigatorPanel.setOnOpenView(this::openView);
         navigatorPanel.setOnEditView(this::editView);
         navigatorPanel.setOnImportData(this::openImport);
+        navigatorPanel.setOnExport(this::openDump);
         navigatorPanel.setOnSelection(this::updateToolbar);
         settings.addListener(changed -> {
             if (workspace != null) {
@@ -269,6 +270,8 @@ public final class MainFrame extends JFrame implements ShellView {
         file.add(item("menu.file.importProfiles", AppIcons.MENU_IMPORT_PROFILES, null, connections::importProfiles));
         file.add(item("menu.file.exportProfiles", AppIcons.MENU_EXPORT_PROFILES, null, connections::exportProfiles));
         file.addSeparator();
+        file.add(item("menu.file.openModel", AppIcons.ER_MODEL, null, this::openErModelFile));
+        file.addSeparator();
         file.add(item("menu.file.settings", AppIcons.MENU_SETTINGS,
                 KeyStroke.getKeyStroke(KeyEvent.VK_COMMA, InputEvent.CTRL_DOWN_MASK), settings::edit));
         file.addSeparator();
@@ -365,6 +368,12 @@ public final class MainFrame extends JFrame implements ShellView {
             }
         });
         button("import").addActionListener(e -> showImportMenu());
+        button("erModel").addActionListener(e -> {
+            JPopupMenu menu = erMenu();
+            menu.show(button("erModel"), 0, button("erModel").getHeight());
+        });
+        button("export").addActionListener(e -> openDump(navigatorPanel.selectedCatalog(),
+                navigatorPanel.selectedObjectName()));
         button("run").addActionListener(e -> {
             SqlEditor editor = tabs.selectedEditor();
             if (editor != null) {
@@ -685,10 +694,37 @@ public final class MainFrame extends JFrame implements ShellView {
         menu.setName("import.menu");
         JMenuItem data = new JMenuItem(Texts.get("import.menu.data"), AppIcons.small(AppIcons.IMPORT));
         data.setName("import.menu.data");
+        String dataCatalog = navigatorPanel.selectedCatalog();
+        data.setEnabled(dataCatalog != null && !dataCatalog.isBlank());   // i dati vanno in un catalogo: prima lo si sceglie
         data.setToolTipText(Texts.get("import.menu.data.tooltip"));
         data.addActionListener(e -> openImport(navigatorPanel.selectedCatalog(), navigatorPanel.selectedTableName()));
         menu.add(data);
+        JMenuItem script = new JMenuItem(Texts.get("import.menu.script"), AppIcons.small(AppIcons.IMPORT));
+        script.setName("import.menu.script");
+        script.setToolTipText(Texts.get("import.menu.script.tooltip"));
+        script.addActionListener(e -> openScriptRun(navigatorPanel.selectedCatalog()));
+        menu.add(script);
         return menu;
+    }
+
+    /** Apre la scheda «Esegui script SQL» (ripristino di un dump). */
+    public it.ramasql.app.dump.ScriptRunTab openScriptRun(String catalog) {
+        if (workspace == null) {
+            return null;
+        }
+        it.ramasql.app.dump.ScriptRunTab tab = tabs.openScriptRun(workspace, catalog);
+        updateToolbar();
+        return tab;
+    }
+
+    /** Apre la procedura guidata «Esporta / Dump», con catalogo e oggetto proposti (anche {@code null}). */
+    public it.ramasql.app.dump.DumpWizard openDump(String catalog, String object) {
+        if (workspace == null) {
+            return null;
+        }
+        it.ramasql.app.dump.DumpWizard w = tabs.openDump(workspace, catalog, object);
+        updateToolbar();
+        return w;
     }
 
     /** Apre la procedura guidata «Importa dati» sul catalogo, con la tabella proposta (anche {@code null}). */
@@ -700,6 +736,147 @@ public final class MainFrame extends JFrame implements ShellView {
                 navigatorPanel::openTable);
         updateToolbar();
         return wizard;
+    }
+
+    // ---------------------------------------------------------------- modello ER (Step 11)
+
+    private final List<it.ramasql.app.er.ErModelWindow> erWindows = new ArrayList<>();
+
+    /** Il menu del pulsante «Modello ER»: nuovo modello dal catalogo scelto, oppure un modello salvato. */
+    public JPopupMenu erMenu() {
+        JPopupMenu menu = new JPopupMenu();
+        menu.setName("er.menu");
+        String catalog = navigatorPanel.selectedCatalog();
+        JMenuItem fresh = new JMenuItem(catalog == null ? Texts.get("er.menu.new.noCatalog")
+                : Texts.get("er.menu.new", catalog), AppIcons.small(AppIcons.ER_MODEL));
+        fresh.setName("er.menu.new");
+        fresh.setToolTipText(Texts.get("er.menu.new.tooltip"));
+        fresh.setEnabled(workspace != null && catalog != null && !catalog.isBlank());
+        fresh.addActionListener(e -> newErModel(catalog));
+        menu.add(fresh);
+        JMenuItem open = new JMenuItem(Texts.get("er.menu.open"), AppIcons.small(AppIcons.ER_MODEL));
+        open.setName("er.menu.open");
+        open.setToolTipText(Texts.get("er.menu.open.tooltip"));
+        open.addActionListener(e -> openErModelFile());
+        menu.add(open);
+        return menu;
+    }
+
+    /** Ciò che una finestra del modello chiede a questa. */
+    private final transient it.ramasql.app.er.ErContext erContext = new it.ramasql.app.er.ErContext() {
+        @Override
+        public it.ramasql.core.metadata.MetadataReader reader() {
+            return workspace == null ? null : workspace.reader();
+        }
+
+        @Override
+        public void openTableEditor(String catalog, String table) {
+            if (workspace == null) {
+                return;
+            }
+            navigatorPanel.designTable(catalog, table);
+            toFront();
+        }
+
+        @Override
+        public it.ramasql.app.workspace.FilePrompts files() {
+            return workspacePrompts.files();
+        }
+
+        @Override
+        public CloseChoice askSaveOnClose(String modelName) {
+            return switch (workspacePrompts.askPendingOnClose(Texts.get("er.close.question", modelName))) {
+                case CONFIRM -> CloseChoice.SAVE;
+                case DISCARD -> CloseChoice.DISCARD;
+                case STAY -> CloseChoice.STAY;
+            };
+        }
+    };
+
+    /** Le finestre dei modelli aperte. */
+    public List<it.ramasql.app.er.ErModelWindow> erWindows() {
+        erWindows.removeIf(w -> !w.isDisplayable());
+        return List.copyOf(erWindows);
+    }
+
+    /** Una finestra per il modello; si mostra se si vede la finestra principale (nei test resta nascosta). */
+    public it.ramasql.app.er.ErModelWindow openErWindow(it.ramasql.model.ErModel model, java.nio.file.Path file) {
+        it.ramasql.app.er.ErModelWindow w = new it.ramasql.app.er.ErModelWindow(model, file, erContext,
+                getIconImages());
+        erWindows.add(w);
+        w.setLocationRelativeTo(this);
+        if (isShowing()) {
+            w.setVisible(true);
+        }
+        return w;
+    }
+
+    /** Stato della retroingegneria in corso (per i test). */
+    private volatile boolean erLoading;
+
+    public boolean isErLoading() {
+        return erLoading;
+    }
+
+    /** «Nuovo modello dal catalogo»: retroingegneria in sottofondo, poi la disposizione automatica. */
+    public void newErModel(String catalog) {
+        if (workspace == null || catalog == null) {
+            return;
+        }
+        it.ramasql.core.metadata.MetadataReader reader = workspace.reader();
+        erLoading = true;
+        sqlPanel.message(PipelineView.MessageKind.INFO, Texts.get("er.new.running", catalog));
+        new javax.swing.SwingWorker<it.ramasql.model.ErModel, Void>() {
+            @Override
+            protected it.ramasql.model.ErModel doInBackground() throws Exception {
+                return it.ramasql.model.ReverseEngineer.fromCatalog(reader, catalog, List.of());
+            }
+
+            @Override
+            protected void done() {
+                erLoading = false;
+                try {
+                    it.ramasql.model.ErModel m = get();
+                    it.ramasql.app.er.ErModelWindow w = openErWindow(m, null);
+                    w.panel().autoLayout();
+                    sqlPanel.message(PipelineView.MessageKind.SUCCESS, Texts.get("er.new.done", catalog,
+                            m.entities().size(), m.physical().size()));
+                } catch (Exception e) {
+                    Throwable t = e.getCause() != null ? e.getCause() : e;
+                    sqlPanel.message(PipelineView.MessageKind.ERROR, Texts.get("er.new.failed", catalog, t.getMessage()));
+                }
+            }
+        }.execute();
+    }
+
+    /** «Apri modello ER…»: anche senza connessione. */
+    public void openErModelFile() {
+        java.nio.file.Path file = workspacePrompts.files().chooseToOpen(it.ramasql.app.workspace.FilePrompts.Purpose.MODEL);
+        if (file != null) {
+            openErModel(file);
+        }
+    }
+
+    /** Apre un modello salvato (lettura del file in sottofondo). */
+    public void openErModel(java.nio.file.Path file) {
+        erLoading = true;
+        new javax.swing.SwingWorker<it.ramasql.model.ErModel, Void>() {
+            @Override
+            protected it.ramasql.model.ErModel doInBackground() throws Exception {
+                return it.ramasql.model.ModelFile.read(file);
+            }
+
+            @Override
+            protected void done() {
+                erLoading = false;
+                try {
+                    openErWindow(get(), file);
+                } catch (Exception e) {
+                    Throwable t = e.getCause() != null ? e.getCause() : e;
+                    workspacePrompts.files().showError(Texts.get("er.menu.open"), t.getMessage());
+                }
+            }
+        }.execute();
     }
 
     private void queryBuilderAlert(String text) {
@@ -895,9 +1072,12 @@ public final class MainFrame extends JFrame implements ShellView {
         enable(button("newView"), connected && catalog != null && !catalog.isBlank(),
                 Texts.get("toolbar.newView.tooltip"),
                 connected ? Texts.get("toolbar.disabled.noCatalog") : Texts.get("toolbar.disabled.notConnected"));
-        enable(button("import"), connected && catalog != null && !catalog.isBlank(),
-                Texts.get("toolbar.import.tooltip"),
-                connected ? Texts.get("toolbar.disabled.noCatalog") : Texts.get("toolbar.disabled.notConnected"));
+        enable(button("import"), connected, Texts.get("toolbar.import.tooltip"),
+                Texts.get("toolbar.disabled.notConnected"));
+        enable(button("export"), connected, Texts.get("toolbar.export.tooltip"),
+                Texts.get("toolbar.disabled.notConnected"));
+        enable(button("erModel"), connected, Texts.get("toolbar.erModel.tooltip"),
+                Texts.get("toolbar.disabled.notConnected"));
         SqlEditor editor = tabs.selectedEditor();
         it.ramasql.app.visual.VisualQueryTab visual = tabs.selectedVisualQuery();
         boolean hasRunner = editor != null || visual != null;

@@ -45,6 +45,16 @@ public final class LogTableModel extends AbstractTableModel {
         fireTableRowsInserted(entries.size() - 1, entries.size() - 1);
     }
 
+    /** Più righe insieme, con un solo evento. */
+    void addAll(java.util.List<SqlLog.Entry> list) {
+        if (list.isEmpty()) {
+            return;
+        }
+        int from = entries.size();
+        entries.addAll(list);
+        fireTableRowsInserted(from, entries.size() - 1);
+    }
+
     void clear() {
         entries.clear();
         fireTableDataChanged();

@@ -170,8 +170,9 @@ public final class PreviewDialog extends JDialog {
     /** Conferma rafforzata: fascia rossa con la frase chiara e il campo in cui riscrivere il nome. */
     private JComponent strongPanel() {
         String name = confirmation.typeToConfirm();
-        JLabel sentence = new JLabel("<html>" + Texts.get("preview.strong.sentence", html(action()),
-                html(name)) + "</html>", NavigatorIcons.WARNING, JLabel.LEADING);
+        String text = manyObjects() ? Texts.get("preview.strong.sentence.many", html(action()))
+                : Texts.get("preview.strong.sentence", html(action()), html(name));
+        JLabel sentence = new JLabel("<html>" + text + "</html>", NavigatorIcons.WARNING, JLabel.LEADING);
         sentence.setName("preview.message");
         sentence.setIconTextGap(Tokens.px(Tokens.SPACE_8));
         sentence.setForeground(Tokens.TEXT_PRIMARY);
@@ -229,6 +230,15 @@ public final class PreviewDialog extends JDialog {
      * riconosciuta dal core anche con commenti iniziali, {@code DROP TEMPORARY TABLE} e {@code SET STATEMENT … FOR}.
      */
     String action() {
+        if (manyObjects()) {
+            return switch (ConfirmationPolicy.mostSevereAction(script)) {
+                case DROP_CATALOG -> Texts.get("preview.strong.many.dropCatalog");
+                case DROP_TABLE -> Texts.get("preview.strong.many.dropTable");
+                case DROP_VIEW -> Texts.get("preview.strong.many.dropView");
+                case TRUNCATE -> Texts.get("preview.strong.many.truncate");
+                case OTHER -> Texts.get("preview.strong.many.other");
+            };
+        }
         return switch (ConfirmationPolicy.actionOf(script)) {
             case DROP_TABLE -> Texts.get("preview.strong.dropTable");
             case DROP_VIEW -> Texts.get("preview.strong.dropView");
@@ -236,6 +246,11 @@ public final class PreviewDialog extends JDialog {
             case TRUNCATE -> Texts.get("preview.strong.truncate");
             case OTHER -> Texts.get("preview.strong.other");
         };
+    }
+
+    /** Lo script colpisce più oggetti (o non si riconosce quale): la parola da riscrivere è quella generica. */
+    private boolean manyObjects() {
+        return it.ramasql.core.CoreMessages.get("confirm.word").equals(confirmation.typeToConfirm());
     }
 
     /** Testo del pulsante che esegue: verbo d'azione (§4). */
@@ -247,7 +262,7 @@ public final class PreviewDialog extends JDialog {
         if (a.equals(Texts.get("preview.strong.truncate"))) {
             return Texts.get("preview.execute.truncate");
         }
-        if (a.equals(Texts.get("preview.strong.other"))) {
+        if (a.equals(Texts.get("preview.strong.other")) || manyObjects()) {
             return Texts.get("preview.execute");
         }
         return Texts.get("preview.execute.drop");

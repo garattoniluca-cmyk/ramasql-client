@@ -97,6 +97,11 @@ public final class SqlPanel extends JTabbedPane implements PipelineView {
     private final transient Supplier<String> exportCatalogCandidate;
 
     private final LogTableModel logModel = new LogTableModel();
+    /** Righe del registro arrivate e non ancora mostrate (da qualunque thread). */
+    private final java.util.concurrent.ConcurrentLinkedQueue<SqlLog.Entry> pendingEntries =
+            new java.util.concurrent.ConcurrentLinkedQueue<>();
+    private final java.util.concurrent.atomic.AtomicBoolean flushScheduled =
+            new java.util.concurrent.atomic.AtomicBoolean();
     private final JTable logTable = new JTable(logModel);
     private final TableRowSorter<LogTableModel> sorter = new TableRowSorter<>(logModel);
     private final JTextField logFilter = new JTextField(22);
@@ -134,23 +139,40 @@ public final class SqlPanel extends JTabbedPane implements PipelineView {
         log.addListener(new SqlLog.Listener() {
             @Override
             public void entryAdded(SqlLog.Entry entry) {
-                SwingUtilities.invokeLater(() -> {
-                    logModel.add(entry);
-                    int last = logTable.convertRowIndexToView(logModel.getRowCount() - 1);
-                    if (last >= 0) {
-                        logTable.scrollRectToVisible(logTable.getCellRect(last, 0, true));
-                    }
-                });
+                // a blocchi: le righe arrivate nel frattempo entrano con un solo passaggio sull'EDT (uno script
+                // lungo ne registra migliaia di fila, un evento per riga bloccherebbe l'interfaccia)
+                pendingEntries.add(entry);
+                if (flushScheduled.compareAndSet(false, true)) {
+                    SwingUtilities.invokeLater(SqlPanel.this::flushEntries);
+                }
             }
 
             @Override
             public void cleared() {
+                pendingEntries.clear();
                 SwingUtilities.invokeLater(logModel::clear);
             }
         });
     }
 
     // ------------------------------------------------------------------ Registro
+
+    /** Sull'EDT: le righe in attesa entrano tutte insieme, poi si scorre all'ultima. */
+    private void flushEntries() {
+        flushScheduled.set(false);
+        java.util.List<SqlLog.Entry> batch = new java.util.ArrayList<>();
+        for (SqlLog.Entry e; (e = pendingEntries.poll()) != null;) {
+            batch.add(e);
+        }
+        if (batch.isEmpty()) {
+            return;
+        }
+        logModel.addAll(batch);
+        int last = logTable.convertRowIndexToView(logModel.getRowCount() - 1);
+        if (last >= 0) {
+            logTable.scrollRectToVisible(logTable.getCellRect(last, 0, true));
+        }
+    }
 
     private JPanel buildLogTab() {
         logTable.setName("panel.log.table");

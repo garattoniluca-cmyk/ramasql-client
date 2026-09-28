@@ -29,6 +29,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.function.UnaryOperator;
+import java.util.regex.Pattern;
 
 import it.ramasql.core.CoreMessages;
 import it.ramasql.core.connection.Session;
@@ -587,6 +589,509 @@ public final class SqlExecutor implements AutoCloseable {
                 }
             }
         }
+    }
+
+    // ================================================================ lettura a flusso (dump, Step 10)
+
+    /**
+     * Legge le righe di una {@code SELECT} <b>a flusso</b> (il driver non le tiene tutte in memoria) e le passa una alla
+     * volta a {@code sink}: serve al dump, che le scrive nel file man mano. I valori arrivano come li scrive il server:
+     * {@code byte[]} per i tipi binari (BLOB, BINARY, BIT, geometrie), {@link String} per tutto il resto, {@code null}
+     * per NULL. Nel registro: la {@code SELECT} con il numero di righe lette. {@link #interrupt()} la ferma.
+     *
+     * @return righe lette
+     */
+    public CompletableFuture<Long> submitStreamRead(SqlStatement select, RowSink sink) {
+        Objects.requireNonNull(select, "select");
+        Objects.requireNonNull(sink, "sink");
+        if (closed) {
+            throw new RejectedExecutionException(CoreMessages.get("exec.closed"));
+        }
+        CompletableFuture<Long> future = new CompletableFuture<>();
+        CompletableFuture<ScriptResult> marker = new CompletableFuture<>();
+        queued.add(marker);
+        try {
+            thread.execute(() -> {
+                if (!queued.remove(marker)) {
+                    future.completeExceptionally(new IllegalStateException(CoreMessages.get("exec.closed")));
+                    return;
+                }
+                try {
+                    future.complete(streamNow(select, sink));
+                } catch (Throwable t) {
+                    future.completeExceptionally(t);
+                }
+            });
+        } catch (RejectedExecutionException e) {
+            queued.remove(marker);
+            throw e;
+        }
+        marker.whenComplete((r, e) -> {
+            if (e != null) {
+                future.completeExceptionally(e);
+            }
+        });
+        return future;
+    }
+
+    /** Chi riceve le righe lette a flusso; un'eccezione ferma la lettura (e finisce nell'esito). */
+    public interface RowSink {
+        void row(Object[] values) throws Exception;
+    }
+
+    private long streamNow(SqlStatement select, RowSink sink) throws Exception {
+        Run run = new Run();
+        synchronized (lock) {
+            current = run;
+        }
+        long start = System.nanoTime();
+        long rows = 0;
+        SqlLog.Outcome outcome = SqlLog.Outcome.OK;
+        StatementResult.ServerError error = null;
+        try {
+            Connection con = session.mainConnection();
+            ensureAutocommit(con);
+            try (Statement st = con.createStatement()) {
+                st.setFetchSize(1000);   // a flusso: il driver legge a blocchi, non tutto il risultato
+                try (ResultSet rs = st.executeQuery(select.text())) {
+                    ResultSetMetaData md = rs.getMetaData();
+                    int n = md.getColumnCount();
+                    boolean[] binary = new boolean[n + 1];
+                    for (int c = 1; c <= n; c++) {
+                        binary[c] = isBinary(md.getColumnType(c), md.getColumnTypeName(c));
+                    }
+                    while (rs.next()) {
+                        if (run.cancel) {
+                            break;
+                        }
+                        Object[] values = new Object[n];
+                        for (int c = 1; c <= n; c++) {
+                            values[c - 1] = binary[c] ? rs.getBytes(c) : rs.getString(c);
+                        }
+                        sink.row(values);
+                        rows++;
+                    }
+                }
+            }
+            if (run.cancel) {
+                outcome = SqlLog.Outcome.INTERRUPTED;
+            }
+            return rows;
+        } catch (SQLException e) {
+            outcome = run.cancel ? SqlLog.Outcome.INTERRUPTED : SqlLog.Outcome.ERROR;
+            error = new StatementResult.ServerError(e.getErrorCode(), e.getSQLState(), e.getMessage());
+            throw e;
+        } catch (Exception e) {
+            outcome = SqlLog.Outcome.ERROR;
+            error = new StatementResult.ServerError(0, "", e.getMessage() == null ? e.getClass().getSimpleName()
+                    : e.getMessage());
+            throw e;
+        } finally {
+            clear(run);
+            log.add(connectionLabel, select.origin(), select.text(), outcome, error == null ? 0 : error.code(),
+                    error == null ? "" : error.sqlState(), error == null ? "" : error.message(),
+                    millisSince(start), rows);
+        }
+    }
+
+    /** Tipi il cui valore è una sequenza di byte. */
+    private static boolean isBinary(int jdbcType, String typeName) {
+        return switch (jdbcType) {
+            case java.sql.Types.BINARY, java.sql.Types.VARBINARY, java.sql.Types.LONGVARBINARY, java.sql.Types.BLOB,
+                java.sql.Types.BIT -> true;
+            default -> typeName != null && typeName.toUpperCase(java.util.Locale.ROOT).matches(
+                    "GEOMETRY|POINT|LINESTRING|POLYGON|MULTIPOINT|MULTILINESTRING|MULTIPOLYGON|GEOMETRYCOLLECTION|GEOMCOLLECTION");
+        };
+    }
+
+    // ================================================================ script da file (ripristino, Step 10)
+
+    /** Oltre questa lunghezza un'istruzione si registra abbreviata (i dump hanno INSERT di centinaia di kB). */
+    static final int LOG_TEXT_LIMIT = 300;
+
+    /**
+     * Esegue uno script {@code .sql} letto <b>a flusso</b> da un file (il ripristino di un dump): un'istruzione alla
+     * volta, in autocommit, come {@link #submit}, ma senza tenere lo script in memoria. Con {@code continueOnError} un
+     * errore si annota e si va avanti; altrimenti ci si ferma — e ci si ferma comunque se non riesce un {@code USE} o un
+     * {@code CREATE DATABASE} (le istruzioni seguenti finirebbero nel catalogo sbagliato) o se cade la connessione.
+     * Nel registro finiscono, una per una (le lunghissime abbreviate, con la riga del file), le istruzioni che cambiano
+     * struttura, sessione o transazione, le distruttive e quelle non riuscite, al più {@link #MAX_FILE_LOG}; in fondo
+     * una riga riassuntiva conta tutte le altre (gli INSERT dei dati: un dump con un INSERT per riga ne ha milioni, che
+     * nel registro sommergerebbero memoria e interfaccia). Prima e dopo si leggono le impostazioni della sessione: se il
+     * file le ha lasciate cambiate, l'esito propone le istruzioni per rimetterle ({@link ScriptFileResult#restore()}).
+     * {@link #interrupt()} ferma l'istruzione in corso e lo script.
+     *
+     * @param before   istruzioni da eseguire prima del file (il {@code USE} del catalogo scelto), mostrate
+     *                 nell'anteprima; vuoto = nessuna
+     * @param reader   il file, già aperto (lo chiude l'esecutore)
+     * @param fileName per il registro
+     */
+    public CompletableFuture<ScriptFileResult> submitScriptFile(List<SqlStatement> before, ScriptReader reader,
+            String fileName, boolean continueOnError, String origin, ScriptFileListener listener) {
+        return submitScriptFile(before, reader, fileName, continueOnError, origin, UnaryOperator.identity(), listener);
+    }
+
+    /**
+     * Come {@link #submitScriptFile(List, ScriptReader, String, boolean, String, ScriptFileListener)}, con una
+     * sostituzione applicata a ogni istruzione prima di eseguirla (le collation che il server non conosce,
+     * {@link CollationCompat}): nel registro finisce il testo eseguito.
+     */
+    public CompletableFuture<ScriptFileResult> submitScriptFile(List<SqlStatement> before, ScriptReader reader,
+            String fileName, boolean continueOnError, String origin, UnaryOperator<String> rewrite,
+            ScriptFileListener listener) {
+        Objects.requireNonNull(reader, "reader");
+        UnaryOperator<String> rw = rewrite == null ? UnaryOperator.identity() : rewrite;
+        ScriptFileListener l = listener == null ? new ScriptFileListener() { } : listener;
+        if (closed) {
+            throw new RejectedExecutionException(CoreMessages.get("exec.closed"));
+        }
+        CompletableFuture<ScriptFileResult> future = new CompletableFuture<>();
+        CompletableFuture<ScriptResult> marker = new CompletableFuture<>();
+        queued.add(marker);
+        try {
+            thread.execute(() -> {
+                if (!queued.remove(marker)) {
+                    future.completeExceptionally(new IllegalStateException(CoreMessages.get("exec.closed")));
+                    return;
+                }
+                try {
+                    future.complete(runFileNow(before, reader, fileName, continueOnError, origin, rw, l));
+                } catch (Throwable t) {
+                    future.completeExceptionally(t);
+                } finally {
+                    try {
+                        reader.close();
+                    } catch (java.io.IOException ignored) {
+                        // il file si chiude comunque
+                    }
+                }
+            });
+        } catch (RejectedExecutionException e) {
+            queued.remove(marker);
+            throw e;
+        }
+        marker.whenComplete((r, e) -> {
+            if (e != null) {
+                future.completeExceptionally(e);
+            }
+        });
+        return future;
+    }
+
+    private ScriptFileResult runFileNow(List<SqlStatement> before, ScriptReader reader, String fileName,
+            boolean continueOnError, String origin, UnaryOperator<String> rewrite, ScriptFileListener l) {
+        long start = System.nanoTime();
+        Run run = new Run();
+        synchronized (lock) {
+            current = run;
+        }
+        FileRun f = new FileRun(fileName, origin);
+        String readError = null;
+        Connection con = null;
+        List<String> sessionBefore = null;
+        try {
+            con = session.mainConnection();
+            ensureAutocommit(con);
+            try {
+                sessionBefore = sessionState(con);
+            } catch (SQLException e) {
+                sessionBefore = null;   // senza lo stato di partenza non si propone il ripristino
+            }
+            SqlScript label = new SqlScript(fileName, origin, List.of());
+            int index = 0;
+            for (SqlStatement s : before) {
+                StatementResult r = runOne(con, index++, s, run, 1);
+                record(label, r);
+                quietly(() -> invalidateMetadata(s.text()));
+                if (!r.isOk()) {
+                    f.failureCount++;
+                    f.failures.add(new ScriptFileResult.Failure(0, s.text(), r.error() == null ? 0 : r.error().code(),
+                            r.error() == null ? "" : r.error().sqlState(), r.error() == null ? "" : r.error().message()));
+                    f.stop = r.status() == StatementResult.Status.INTERRUPTED ? ScriptFileResult.Stop.NONE
+                            : ScriptFileResult.Stop.CATALOG;
+                    return f.result(run.cancel, null, millisSince(start), List.of());
+                }
+            }
+            while (!run.cancel) {
+                ScriptReader.Statement st;
+                try {
+                    st = reader.next();
+                } catch (java.io.IOException e) {
+                    readError = e.getMessage() == null ? e.getClass().getSimpleName() : e.getMessage();
+                    break;
+                }
+                if (st == null) {
+                    break;
+                }
+                String text = rewrite.apply(st.text());
+                SqlStatement statement = SqlStatement.of(text, origin);
+                StatementResult r;
+                try {
+                    r = runOne(con, index++, statement, run, 1);
+                } catch (RuntimeException e) {
+                    r = internalError(index, statement, e, System.nanoTime());
+                }
+                String code = ScriptPreview.executable(text.length() > 400 ? text.substring(0, 400) : text).strip();
+                ScriptFileResult.Failure failure = f.executed(st, text, !text.equals(st.text()), code, statement, r);
+                quietly(() -> invalidateMetadata(text));
+                if (!r.isOk()) {
+                    if (r.status() == StatementResult.Status.INTERRUPTED) {
+                        break;
+                    }
+                    quietly(() -> l.statementFailed(failure));
+                    if (isConnectionLost(con, r)) {
+                        f.stop = ScriptFileResult.Stop.CONNECTION;
+                        break;
+                    }
+                    if (CATALOG_CHOICE.matcher(code).matches()) {
+                        // senza il catalogo giusto le istruzioni seguenti finirebbero in quello corrente
+                        f.stop = ScriptFileResult.Stop.CATALOG;
+                        break;
+                    }
+                    if (!continueOnError) {
+                        f.stop = ScriptFileResult.Stop.ERROR;
+                        break;
+                    }
+                }
+                long done = f.executed;
+                long chars = reader.charsConsumed();
+                quietly(() -> l.progress(done, chars));
+            }
+        } finally {
+            clear(run);
+        }
+        List<String> restore = List.of();
+        if (sessionBefore != null && f.stop != ScriptFileResult.Stop.CONNECTION) {
+            try {
+                restore = restoreStatements(sessionBefore, sessionState(con), f.locked && !f.transactionOpen());
+            } catch (SQLException | RuntimeException ignored) {
+                // senza lo stato della sessione non si propone nulla
+            }
+        }
+        ScriptFileResult result = f.result(run.cancel, readError, millisSince(start), restore);
+        f.summary(result);
+        return result;
+    }
+
+    /** {@code USE} o {@code CREATE DATABASE}: se non riescono, ci si ferma anche con «continua». */
+    private static final Pattern CATALOG_CHOICE = Pattern.compile(
+            "(?is)^(?:USE\\b|CREATE\\s+(?:DATABASE|SCHEMA)\\b).*");
+    /** Istruzioni registrate una per una: cambiano struttura, sessione o transazione. */
+    private static final Pattern STRUCTURAL = Pattern.compile(
+            "(?is)^(?:CREATE|ALTER|DROP|TRUNCATE|RENAME|USE|SET|LOCK|UNLOCK|BEGIN|START|COMMIT|ROLLBACK|SAVEPOINT"
+                    + "|RELEASE|GRANT|REVOKE|FLUSH|CALL|XA)\\b.*");
+    private static final Pattern IMPLICIT_COMMIT = Pattern.compile(
+            "(?is)^(?:ALTER|DROP|RENAME|TRUNCATE|LOCK|GRANT|REVOKE|CREATE(?!\\s+TEMPORARY))\\b.*"
+                    + "|^SET\\b.*\\bAUTOCOMMIT\\s*=\\s*(?:1|ON)\\b.*");
+    /**
+     * Avvisi che non dicono nulla sui dati e non si contano: le note di {@code IF [NOT] EXISTS} (1007 catalogo già
+     * presente, 1008 catalogo assente, 1050 tabella già presente, 1051 tabella assente, 1305 routine assente, 1360
+     * trigger assente, 4092 vista assente in MariaDB) e le sintassi deprecate (1287, 1681).
+     */
+    private static final Set<Integer> NOT_ABOUT_DATA = Set.of(1007, 1008, 1050, 1051, 1305, 1360, 4092, 1287, 1681);
+
+    /** Istruzioni di un file registrate una per una, al più; le altre si contano. */
+    static final int MAX_FILE_LOG = 5000;
+
+    /** Lo stato di un'esecuzione da file: conteggi, errori, avvisi, transazioni e tabelle bloccate dal file. */
+    private final class FileRun {
+        final String fileName;
+        final String origin;
+        long executed;
+        long ok;
+        long failureCount;
+        long warningCount;
+        long rows;
+        long logged;
+        long firstLine = -1;
+        long lastLine;
+        boolean locked;
+        boolean txOpen;
+        boolean autocommitOff;
+        ScriptFileResult.Stop stop = ScriptFileResult.Stop.NONE;
+        final List<ScriptFileResult.Failure> failures = new ArrayList<>();
+        final List<ScriptFileResult.Warning> warnings = new ArrayList<>();
+
+        FileRun(String fileName, String origin) {
+            this.fileName = fileName;
+            this.origin = origin;
+        }
+
+        boolean transactionOpen() {
+            return txOpen || autocommitOff;
+        }
+
+        ScriptFileResult.Failure executed(ScriptReader.Statement st, String text, boolean rewritten, String code,
+                SqlStatement statement, StatementResult r) {
+            ScriptFileResult.Failure failure = null;
+            executed++;
+            if (firstLine < 0) {
+                firstLine = st.line();
+            }
+            lastLine = st.line();
+            if (r.isOk()) {
+                ok++;
+                rows += Math.max(0, r.affectedRows());
+                track(code.toUpperCase(java.util.Locale.ROOT));
+            } else if (r.status() != StatementResult.Status.INTERRUPTED) {
+                failureCount++;
+                failure = new ScriptFileResult.Failure(st.line(), abbreviate(text, LOG_TEXT_LIMIT),
+                        r.error() == null ? 0 : r.error().code(), r.error() == null ? "" : r.error().sqlState(),
+                        r.error() == null ? "" : r.error().message());
+                if (failures.size() < BatchResult.MAX_DETAILS) {
+                    failures.add(failure);
+                }
+            }
+            for (StatementResult.Warning w : r.warnings()) {
+                if (NOT_ABOUT_DATA.contains(w.code())) {
+                    continue;
+                }
+                warningCount++;
+                if (warnings.size() < ScriptFileResult.MAX_WARNINGS) {
+                    warnings.add(new ScriptFileResult.Warning(st.line(), w.code(), w.message()));
+                }
+            }
+            boolean individually = !r.isOk() || STRUCTURAL.matcher(code).matches()
+                    || statement.risk() == RiskLevel.DESTRUCTIVE;
+            if (individually && logged < MAX_FILE_LOG) {
+                logged++;
+                recordFileStatement(origin, fileName, st, text, rewritten, r);
+            }
+            return failure;
+        }
+
+        /** Transazioni e blocchi aperti dal file, dal testo delle istruzioni riuscite. */
+        private void track(String code) {
+            if (code.matches("(?s)^LOCK\\s+TABLES?\\b.*")) {
+                locked = true;
+            } else if (code.matches("(?s)^UNLOCK\\s+TABLES?\\b.*")) {
+                locked = false;
+                txOpen = false;
+            }
+            if (IMPLICIT_COMMIT.matcher(code).matches()) {
+                txOpen = false;
+            }
+            if (code.matches("(?s)^(?:BEGIN(?:\\s+WORK)?|START\\s+TRANSACTION\\b.*)\\s*$")) {
+                txOpen = true;
+            } else if (code.matches("(?s)^(?:COMMIT|ROLLBACK)(?!\\s+(?:WORK\\s+)?TO\\b).*")) {
+                txOpen = false;
+            }
+            if (code.matches("(?s)^SET\\b.*\\bAUTOCOMMIT\\s*=\\s*(?:0|OFF)\\b.*")) {
+                autocommitOff = true;
+            } else if (code.matches("(?s)^SET\\b.*\\bAUTOCOMMIT\\s*=\\s*(?:1|ON)\\b.*")) {
+                autocommitOff = false;
+            }
+        }
+
+        ScriptFileResult result(boolean interrupted, String readError, long millis, List<String> restore) {
+            return new ScriptFileResult(executed, ok, failures, failureCount, interrupted, stop, readError, millis,
+                    warningCount, warnings, restore, transactionOpen());
+        }
+
+        /** In fondo al registro: una riga riassuntiva del file, con i conteggi di ciò che non è registrato a parte. */
+        void summary(ScriptFileResult r) {
+            if (executed == 0) {
+                return;
+            }
+            String text = CoreMessages.get("log.file.summary", fileName, executed, Math.max(firstLine, 0), lastLine, ok,
+                    failureCount, warningCount);
+            String note = CoreMessages.get("log.file.summaryNote", logged);
+            if (logged >= MAX_FILE_LOG) {
+                note += "; " + CoreMessages.get("log.file.summaryCapped", MAX_FILE_LOG);
+            }
+            SqlLog.Outcome outcome = r.interrupted() ? SqlLog.Outcome.INTERRUPTED
+                    : failureCount > 0 || r.readError() != null ? SqlLog.Outcome.ERROR : SqlLog.Outcome.OK;
+            ScriptFileResult.Failure firstFailure = failures.isEmpty() ? null : failures.get(0);
+            log.add(connectionLabel, origin, text, outcome, firstFailure == null ? 0 : firstFailure.code(),
+                    firstFailure == null ? "" : firstFailure.sqlState(), firstFailure == null
+                            ? (r.readError() == null ? "" : r.readError()) : firstFailure.message(),
+                    r.durationMillis(), rows, note, false, fileName);
+        }
+    }
+
+    /** La connessione è caduta (o il server è sparito): inutile andare avanti. */
+    private static boolean isConnectionLost(Connection con, StatementResult r) {
+        StatementResult.ServerError e = r.error();
+        if (e != null && (e.sqlState().startsWith("08") || Set.of(2002, 2003, 2006, 2013, 1927, 4031).contains(e.code()))) {
+            return true;
+        }
+        try {
+            return con.isClosed();
+        } catch (SQLException ex) {
+            return true;
+        }
+    }
+
+    /** Le impostazioni della sessione che uno script può cambiare (lettura interna, non registrata). */
+    private static List<String> sessionState(Connection con) throws SQLException {
+        try (Statement st = con.createStatement(); ResultSet rs = st.executeQuery(
+                "SELECT @@SESSION.sql_mode, @@SESSION.time_zone, @@SESSION.foreign_key_checks,"
+                        + " @@SESSION.unique_checks, @@SESSION.character_set_client, @@SESSION.collation_connection")) {
+            rs.next();
+            List<String> out = new ArrayList<>();
+            for (int i = 1; i <= 6; i++) {
+                String v = rs.getString(i);
+                out.add(v == null ? "" : v);
+            }
+            return out;
+        }
+    }
+
+    /** Le istruzioni che rimettono la sessione com'era prima del file (vuoto se non è cambiato nulla). */
+    static List<String> restoreStatements(List<String> before, List<String> after, boolean unlock) {
+        List<String> out = new ArrayList<>();
+        if (unlock) {
+            out.add("UNLOCK TABLES");
+        }
+        if (!before.get(0).equals(after.get(0))) {
+            out.add("SET SESSION sql_mode = " + it.ramasql.core.sqlgen.SqlLiterals.string(before.get(0)));
+        }
+        if (!before.get(1).equals(after.get(1))) {
+            out.add("SET SESSION time_zone = " + it.ramasql.core.sqlgen.SqlLiterals.string(before.get(1)));
+        }
+        if (!before.get(2).equals(after.get(2))) {
+            out.add("SET FOREIGN_KEY_CHECKS = " + (isOn(before.get(2)) ? 1 : 0));
+        }
+        if (!before.get(3).equals(after.get(3))) {
+            out.add("SET UNIQUE_CHECKS = " + (isOn(before.get(3)) ? 1 : 0));
+        }
+        if (!before.get(4).equals(after.get(4)) || !before.get(5).equals(after.get(5))) {
+            String charset = before.get(4);
+            String collation = before.get(5);
+            if (charset.matches("\\w+")) {
+                out.add("SET NAMES " + charset + (collation.matches("\\w+") && collation.toLowerCase(java.util.Locale.ROOT)
+                        .startsWith(charset.toLowerCase(java.util.Locale.ROOT) + "_") ? " COLLATE " + collation : ""));
+            }
+        }
+        return out;
+    }
+
+    private static boolean isOn(String v) {
+        return v.equals("1") || v.equalsIgnoreCase("ON");
+    }
+
+    /** Nel registro: l'istruzione, abbreviata se lunghissima (con la riga del file per ritrovarla). */
+    private void recordFileStatement(String origin, String fileName, ScriptReader.Statement st, String text,
+            boolean rewritten, StatementResult r) {
+        SqlLog.Outcome outcome = switch (r.status()) {
+            case OK -> SqlLog.Outcome.OK;
+            case FAILED -> SqlLog.Outcome.ERROR;
+            case INTERRUPTED -> SqlLog.Outcome.INTERRUPTED;
+        };
+        StatementResult.ServerError e = r.error();
+        boolean longText = text.length() > LOG_TEXT_LIMIT;
+        String shown = longText ? abbreviate(text, LOG_TEXT_LIMIT) : text;
+        String note = longText ? CoreMessages.get("log.file.abbreviated", text.length(), st.line(), fileName)
+                : CoreMessages.get("log.file.line", st.line(), fileName);
+        if (rewritten) {
+            note += " · " + CoreMessages.get("log.file.rewritten");
+        }
+        log.add(connectionLabel, origin, shown, outcome, e == null ? 0 : e.code(), e == null ? "" : e.sqlState(),
+                e == null ? "" : e.message(), r.durationMillis(), r.affectedRows(), note, false, fileName);
+    }
+
+    static String abbreviate(String text, int max) {
+        return text.length() <= max ? text : text.substring(0, max) + " …";
     }
 
     /** Connessione caduta o server sparito: inutile ritentare le righe. */

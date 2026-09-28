@@ -45,6 +45,8 @@ public final class Tokens {
     public static final Color DANGER_TINT = new Color(0xFDECEC);
     public static final Color ENGINE_INNODB = new Color(0x2563EB);
     public static final Color ENGINE_MYISAM = new Color(0x8B5CF6);
+    /** Fondo tenue dell'intestazione di una tabella MyISAM nel modello ER (viola all'11%). */
+    public static final Color ENGINE_MYISAM_TINT = new Color(0x8B, 0x5C, 0xF6, 28);
     public static final Color SERVER_MARIADB = new Color(0x0E7490);
     public static final Color SERVER_MYSQL = new Color(0xEA580C);
     /** Chiave primaria (icona «chiave oro», §2). */

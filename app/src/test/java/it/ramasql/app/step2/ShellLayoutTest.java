@@ -118,7 +118,9 @@ class ShellLayoutTest {
         MainFrame frame = appWithSampleProfiles(new FakePrompts()).frame();
         onEdt(() -> {
             assertEquals(2, frame.getJMenuBar().getMenuCount());
-            assertEquals(List.of("Importa profili…", "Esporta profili…", "Impostazioni…", "Esci"), items(frame.getJMenuBar().getMenu(0)));
+            // Step 11 (ADR-027): «Apri modello ER…» è l'unico modo di riaprire un modello senza connessione
+            assertEquals(List.of("Importa profili…", "Esporta profili…", "Apri modello ER…", "Impostazioni…", "Esci"),
+                    items(frame.getJMenuBar().getMenu(0)));
             assertEquals(List.of("Informazioni"), items(frame.getJMenuBar().getMenu(1)));
             assertEquals("File", frame.getJMenuBar().getMenu(0).getText());
             assertEquals("Aiuto", frame.getJMenuBar().getMenu(1).getText());
