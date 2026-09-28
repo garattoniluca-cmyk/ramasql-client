@@ -1,0 +1,3 @@
+T12.11 — qualità dei suggerimenti: 345 testi controllati (329 chiavi *.tooltip del file di risorse e 16 spiegazioni composte delle voci)
+Problemi: 0
+Esito: OK

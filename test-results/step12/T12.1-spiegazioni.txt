@@ -1,0 +1,15 @@
+T12.1 — spiegazioni in italiano degli errori frequenti
+1044: L'utente non ha il permesso di usare questo catalogo.
+1045: Accesso negato: nome utente o password non corretti.
+1049: Il catalogo (database) indicato non esiste.
+1054: La colonna indicata non esiste: controlla il nome e, se usi un alias, a quale tabella appartiene.
+1062: Valore duplicato: esiste già una riga con lo stesso valore nella chiave primaria o in un indice UNIQUE.
+1064: L'SQL non è scritto correttamente (errore di sintassi). Guarda il punto evidenziato: spesso manca una virgola o un apice, c'è una parola chiave sbagliata o nel posto sbagliato.
+1146: La tabella indicata non esiste nel catalogo in uso: controlla il nome o il catalogo (USE).
+1215: Il server non ha potuto creare la chiave esterna. Di solito la colonna riferita non è una chiave (serve un indice, meglio la chiave primaria) oppure le due colonne hanno tipi diversi (per esempio INT e INT UNSIGNED): correggi e riprova.
+1005: La tabella o la chiave esterna non si è potuta creare. Se il messaggio cita «errno: 150», la chiave esterna è scritta male: la colonna riferita deve avere un indice e lo stesso tipo della colonna che la riferisce, e la tabella deve essere InnoDB.
+1822: Manca l'indice sulla colonna riferita: una chiave esterna può puntare solo a una colonna che è chiave (primaria o UNIQUE) nella tabella «padre».
+1451: Non si può eliminare o modificare questa riga: altre righe la usano attraverso una chiave esterna.
+1452: Il valore non esiste nella tabella riferita dalla chiave esterna: prima va inserita la riga «padre».
+2003: Il programma non raggiunge il server: il server è spento, l'indirizzo o la porta sono sbagliati, oppure un firewall blocca la connessione. Controlla che il servizio di MariaDB/MySQL sia avviato e i dati della connessione.
+Esito: OK

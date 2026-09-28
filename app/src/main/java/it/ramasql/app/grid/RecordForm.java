@@ -176,6 +176,8 @@ public final class RecordForm extends JPanel {
             field = new JTextField(30);
         }
         field.setName("recordForm.field." + def.name());
+        field.setToolTipText(Texts.get("recordForm.field.tooltip", def.name(), def.fullType()
+                + (def.unsigned() ? " UNSIGNED" : ""), def.nullable() ? "" : Texts.get("recordForm.field.notNull")));
         field.getDocument().addDocumentListener(new DocumentListener() {
             @Override
             public void insertUpdate(DocumentEvent e) {

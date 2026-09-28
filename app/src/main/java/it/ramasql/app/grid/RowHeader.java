@@ -45,6 +45,8 @@ final class RowHeader extends JList<String> {
     RowHeader(JTable table, IntFunction<Integer> absoluteNumber) {
         this.table = table;
         this.absoluteNumber = absoluteNumber;
+        setName("dataGrid.rowHeader");
+        setToolTipText(it.ramasql.app.Texts.get("dataGrid.rowHeader.tooltip"));
         HeaderListModel listModel = new HeaderListModel();
         setModel(listModel);
         table.getModel().addTableModelListener(e -> listModel.changed(e));
