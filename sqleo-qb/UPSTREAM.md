@@ -141,10 +141,27 @@ commento `RamaSQL (2026-09-28…)` accanto a ogni punto toccato.
 | `querybuilder/QueryBuilder.java` (T12.9) | suggerimenti (tooltip) delle linguette Grafico e SQL, dal file dei testi |
 | `querybuilder/ViewObjects.java` (T12.9) | suggerimento dell'elenco delle tabelle e delle viste |
 | `querybuilder/ViewBrowser.java` (T12.9) | l'albero della query è registrato presso il `ToolTipManager`: ogni nodo mostra il suo suggerimento |
+| `common/util/I18n.java` (T12.3/T12.9) | ricorda da quale chiave viene ogni testo mostrato (`keyOf`), per dare alle voci dei menu il suggerimento `<chiave>.tooltip` |
+| `common/gui/AbstractDialogConfirm.java` (T12.3/T12.9) | suggerimento del pulsante di conferma delle finestre del query builder |
+| `common/gui/AbstractDialogModal.java` (T12.3/T12.9) | suggerimento del pulsante di chiusura |
+| `common/gui/TextView.java` (T12.3/T12.9) | voci del menu del testo (Taglia, Copia…) dal file dei testi invece che in inglese (T12.3) |
+| `querybuilder/BaseMask.java` (T12.3/T12.9) | il titolo delle finestre (alias, condizione, espressione, join) dal file dei testi invece della chiave inglese (T12.3) |
+| `querybuilder/MaskAlias.java` (T12.3/T12.9) | etichette e avviso «alias mancante» dal file dei testi (erano in inglese), suggerimenti dei campi |
+| `querybuilder/MaskExpression.java` (T12.3/T12.9) | etichetta e avviso «alias mancante» dal file dei testi (erano in inglese), suggerimenti dei campi |
+| `querybuilder/MaskCondition.java` (T12.3/T12.9) | suggerimenti dei campi e spiegazione di ogni operatore e di AND/OR (`QbTips.explainOperators`) |
+| `querybuilder/MaskJoin.java` (T12.3/T12.9) | suggerimenti e spiegazione degli operatori del confronto |
+| `querybuilder/MaskReferences.java` (T12.3/T12.9) | suggerimenti dei due elenchi |
+| `querybuilder/BrowserPopup.java` (T12.3/T12.9) | voce DISTINCT dal file dei testi, WHERE e HAVING con nomi diversi (erano uguali), suggerimenti delle voci |
+| `querybuilder/DiagramField.java` (T12.3/T12.9) | voce «Nel risultato (SELECT)» dal file dei testi (era «select»), menu del campo in `fieldMenu()` con i suggerimenti, suggerimento della casella della colonna |
+| `querybuilder/ViewDiagram.java` (T12.3/T12.9) | suggerimenti delle voci del menu del diagramma; `diagramMenu()` per le prove |
+| `querybuilder/DiagramRelation.java` (T12.3/T12.9) | suggerimenti delle voci del menu del join |
+| `querybuilder/DiagramEntity.java` (T12.3/T12.9) | suggerimenti delle voci del menu della tabella |
+| `querybuilder/DiagramAbstractEntity.java` (T12.3/T12.9) | suggerimenti delle voci del menu della tabella |
+| `querybuilder/syntax/SQLParser.java` (T12.3/T12.9) | avvisi del parser (UNION ALL, LIMIT, alias sconosciuti, condizioni del JOIN) dal file dei testi invece che in inglese (T12.3) |
 
 Codice nostro aggiunto: `com/sqleo/querybuilder/DiagramArrange.java` (disposizione per collegamenti e ricerca di un posto
 libero, nel pacchetto per raggiungerne i membri di pacchetto) e `it/ramasql/qb/OffEdtQbMetadata.java` (metadati letti
-fuori dall'EDT con un'attesa che non congela l'interfaccia); nel disegnatore dei nodi, già nostro (`QueryModelTreeCellRenderer`), il suggerimento di ogni nodo (`tipFor`, T12.9). Test: `T12DisposizioneDelDiagrammaTest`,
+fuori dall'EDT con un'attesa che non congela l'interfaccia); nel disegnatore dei nodi, già nostro (`QueryModelTreeCellRenderer`), il suggerimento di ogni nodo (`tipFor`, T12.9); `it/ramasql/qb/QbTips.java` (suggerimenti delle voci dei menu e spiegazioni degli operatori). Test: `T12DisposizioneDelDiagrammaTest`,
 `T12MetadatiFuoriDallEdtTest`.
 
 ## Rimosso rispetto all'originale
