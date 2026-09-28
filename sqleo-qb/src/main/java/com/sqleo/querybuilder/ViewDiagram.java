@@ -23,6 +23,10 @@
  *
  * Modificato per RamaSQL Client (2026-09-21): tolta la filigrana col nome del programma originale dall'immagine esportata del diagramma (dipendeva da _Version).
  * Modificato per RamaSQL Client (2026-09-27): colori del fondo e dei campi dalla facciata (QbHost.color, BUG-004).
+ * Modificato per RamaSQL Client (2026-09-28): disposizione che evita i join sotto le altre tabelle (BUG-023):
+ * doArrangeEntitiesLayered (per collegamenti, DiagramArrange) quando si aggiunge una tabella o si carica un modello,
+ * finche' l'utente non sistema il diagramma da se' (trascinando un'entita' o con «Disponi a griglia»/«Disponi in
+ * automatico»); dopo, solo la tabella nuova cerca un posto libero (onEntityAdded). Ordine di aggiunta delle entita'.
  */
 
 package com.sqleo.querybuilder;
@@ -71,6 +75,12 @@ public class ViewDiagram extends BorderLayoutPanel
 	
 	private Point nextGoodPoint = new Point(10,10);
 	private Point maxCorner = new Point(0,0); 
+
+	// RamaSQL (2026-09-28, BUG-023): ordine in cui le entita' sono entrate nel diagramma (la disposizione per
+	// collegamenti parte dalla prima) e livelli della query che l'utente ha sistemato a mano
+	private final java.util.Map<DiagramAbstractEntity,Long> addedOrder = new java.util.WeakHashMap<DiagramAbstractEntity,Long>();
+	private long addedCount = 0;
+	private final java.util.Map<Object,Boolean> userArranged = new java.util.WeakHashMap<Object,Boolean>();
 	
 	private DiagramRelation highlight;
 	private DiagramRelation temporany;
@@ -176,6 +186,7 @@ public class ViewDiagram extends BorderLayoutPanel
 	
 	void addEntity(DiagramAbstractEntity item, Point location)
 	{
+		if(!addedOrder.containsKey(item)) addedOrder.put(item, Long.valueOf(addedCount++)); // RamaSQL (2026-09-28, BUG-023)
 		item.setLocation(location);
 		item.setVisible(true);
 
@@ -479,8 +490,61 @@ public class ViewDiagram extends BorderLayoutPanel
 		out.close();
 	}
 	
+	/** RamaSQL (2026-09-28, BUG-023): le entita' nell'ordine in cui sono entrate nel diagramma. */
+	java.util.List<DiagramAbstractEntity> getEntitiesInOrder()
+	{
+		java.util.List<DiagramAbstractEntity> list = new java.util.ArrayList<DiagramAbstractEntity>(java.util.Arrays.asList(getEntities()));
+		list.sort(java.util.Comparator.comparingLong(e -> addedOrder.containsKey(e) ? addedOrder.get(e).longValue() : Long.MAX_VALUE));
+		return list;
+	}
+
+	/** RamaSQL (2026-09-28, BUG-023): il livello di query visibile e' stato sistemato a mano dall'utente. */
+	boolean isUserArranged()
+	{
+		return Boolean.TRUE.equals(userArranged.get(currentLevel()));
+	}
+
+	void setUserArranged(boolean b)
+	{
+		Object level = currentLevel();
+		if(level!=null) userArranged.put(level, Boolean.valueOf(b));
+	}
+
+	private Object currentLevel()
+	{
+		return builder==null || builder.browser==null ? null : builder.browser.getQuerySpecification();
+	}
+
+	/**
+	 * RamaSQL (2026-09-28, BUG-023): disposizione per collegamenti (DiagramArrange.layered): nessuna linea ne' nodo di
+	 * join sotto un'entita' che non e' un suo capo. Non tocca l'SQL: sposta e allarga soltanto le entita'.
+	 */
+	void doArrangeEntitiesLayered()
+	{
+		DiagramArrange.layered(getEntitiesInOrder(), getRelations());
+		doResize();
+		setUserArranged(false);
+	}
+
+	/**
+	 * RamaSQL (2026-09-28, BUG-023): una tabella e' appena entrata nel diagramma (con i suoi join proposti). Se l'utente
+	 * non ha sistemato il diagramma a mano, si ridispone tutto per collegamenti; altrimenti si cerca un posto per la
+	 * sola tabella nuova, senza spostare le altre.
+	 */
+	void onEntityAdded(DiagramAbstractEntity item)
+	{
+		if(!isUserArranged())
+		{
+			doArrangeEntitiesLayered();
+			return;
+		}
+		DiagramArrange.place(item, getEntities(), getRelations());
+		doResize();
+	}
+
 	void doArrangeEntitiesGrid()
 	{
+		setUserArranged(true); // RamaSQL (2026-09-28, BUG-023): scelta dell'utente, le aggiunte successive la rispettano
 		Dimension full = new Dimension(10,10);
 		Dimension view = scroll.getVisibleRect().getSize();
 			
@@ -507,6 +571,7 @@ public class ViewDiagram extends BorderLayoutPanel
 
 	void doArrangeEntitiesSpring()
 	{
+		setUserArranged(true); // RamaSQL (2026-09-28, BUG-023): scelta dell'utente, le aggiunte successive la rispettano
 
 		double SPRING_NATURAL_LENGTH = 150;	// original 30,150
 		double SPRING_STIFFNESS = 600;	// original was 150,3000
@@ -765,6 +830,7 @@ public class ViewDiagram extends BorderLayoutPanel
 		
 		nextGoodPoint = new Point(10,10);
 		maxCorner = new Point(0,0); 
+		userArranged.clear(); // RamaSQL (2026-09-28, BUG-023): modello nuovo
 
 		desktop.removeAll();
 	}
@@ -806,6 +872,7 @@ public class ViewDiagram extends BorderLayoutPanel
 		
 		public void endDraggingFrame(JComponent f)
 		{
+			ViewDiagram.this.setUserArranged(true); // RamaSQL (2026-09-28, BUG-023): l'utente ha spostato un'entita'
 			super.endDraggingFrame(f);
 			ViewDiagram.this.doResize();
 		}

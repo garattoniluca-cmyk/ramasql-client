@@ -27,6 +27,10 @@
  * Modificato per RamaSQL Client (2026-09-27): metadati chiesti alla facciata (metadata(), BUG-016); ascoltatori di
  * modifica della query (addQueryChangeListener/fireQueryChanged, BUG-006: il client aggiorna la sua vista SQL a ogni
  * gesto); scheda SQL interna nascondibile (hideSyntaxTab, BUG-006: la vista SQL e' quella del client).
+ * Modificato per RamaSQL Client (2026-09-28): metadata() li legge fuori dall'EDT (it.ramasql.qb.OffEdtQbMetadata,
+ * BUG-024), e caricando un modello le definizioni di tutte le sue tabelle si leggono in una volta, prima di disegnare;
+ * a caricamento finito, se per quel livello non ci sono posizioni salvate, le tabelle si dispongono per collegamenti
+ * (ViewDiagram.doArrangeEntitiesLayered, BUG-023: nessun join passa sotto un'altra tabella).
  */
 
 package com.sqleo.querybuilder;
@@ -119,9 +123,14 @@ public class QueryBuilder extends JTabbedPane implements ChangeListener
 	}
 
 	// RamaSQL: metadati dalla facciata (in origine: DatabaseMetaData della connessione); null = nessun metadato
+	// RamaSQL (2026-09-28, BUG-024): letti fuori dall'EDT, con un'attesa che non congela l'interfaccia; durante il
+	// caricamento di un modello si usa la stessa istanza (le definizioni lette in anticipo da onLoad)
+	private it.ramasql.qb.OffEdtQbMetadata loadingMetadata;
+
 	public it.ramasql.qb.QbMetadata metadata()
 	{
-		return host.metadata();
+		if(loadingMetadata!=null) return loadingMetadata;
+		return it.ramasql.qb.OffEdtQbMetadata.wrap(host.metadata(), this);
 	}
 
 	// RamaSQL (2026-09-27, BUG-006): chi vuole sapere che la query e' cambiata (la vista SQL del client). La notifica
@@ -340,15 +349,73 @@ public class QueryBuilder extends JTabbedPane implements ChangeListener
 	void onLoad()
 	{
 		loading = true;
-		
-		load(browser.getQuerySpecification().getFromClause());
-		load(browser.getQuerySpecification().getSelectList());
-		load(browser.getQuerySpecification().getWhereClause());
-		layout.resume();
-		loading = false;
-		
-		convertJoins(browser.getQuerySpecification().getWhereClause());
+		// RamaSQL (2026-09-28, BUG-023): posizioni salvate per questo livello della query (se ci sono, si rispettano)
+		boolean savedPositions = layout.getExtras(browser.getQuerySpecification())!=null;
+		// RamaSQL (2026-09-28, BUG-024): le definizioni di tutte le tabelle del FROM si leggono prima, fuori dall'EDT e con
+		// una sola attesa; i DiagramLoader del caricamento le trovano pronte
+		loadingMetadata = it.ramasql.qb.OffEdtQbMetadata.wrap(host.metadata(), this);
+		try
+		{
+			prefetch(loadingMetadata, browser.getQuerySpecification().getFromClause());
+
+			load(browser.getQuerySpecification().getFromClause());
+			load(browser.getQuerySpecification().getSelectList());
+			load(browser.getQuerySpecification().getWhereClause());
+			layout.resume();
+			loading = false;
+
+			convertJoins(browser.getQuerySpecification().getWhereClause());
+		}
+		finally
+		{
+			loadingMetadata = null;
+			loading = false;
+		}
+		// RamaSQL (2026-09-28, BUG-023): disposizione per collegamenti, se l'utente non ne ha una sua
+		if(!savedPositions) diagram.doArrangeEntitiesLayered();
+		else diagram.setUserArranged(true);
 		layout.freeze();
+	}
+
+	/* RamaSQL (2026-09-28, BUG-024): nomi e colonne delle tabelle del FROM (anche quelle dei join), in una sola lettura
+	   fuori dall'EDT; stesso catalogo che usera' DiagramLoader */
+	private void prefetch(final it.ramasql.qb.OffEdtQbMetadata md, QueryTokens._TableReference[] tokens)
+	{
+		if(md==null) return;
+		final java.util.LinkedHashMap<String,String> tables = new java.util.LinkedHashMap<String,String>();
+		for(int i=0; i<tokens.length; i++)
+		{
+			if(tokens[i] instanceof QueryTokens.Table)
+				putTable(tables,(QueryTokens.Table)tokens[i]);
+			else if(tokens[i] instanceof QueryTokens.Join)
+			{
+				putTable(tables,((QueryTokens.Join)tokens[i]).getPrimary().getTable());
+				putTable(tables,((QueryTokens.Join)tokens[i]).getForeign().getTable());
+			}
+		}
+		if(tables.isEmpty()) return;
+		try
+		{
+			md.offEdt(String.join(", ", tables.keySet()), () -> {
+				for(java.util.Map.Entry<String,String> t : tables.entrySet())
+				{
+					String found = md.find(t.getValue(), t.getKey());
+					md.columns(t.getValue(), found!=null ? found : t.getKey());
+				}
+				return null;
+			});
+		}
+		catch(SQLException e)
+		{
+			// non e' grave: DiagramLoader rilegge e, se fallisce ancora, avvisa
+		}
+	}
+
+	private void putTable(java.util.Map<String,String> tables, QueryTokens.Table t)
+	{
+		if(t==null || t.getName()==null) return;
+		String schema = getQueryModel().getSchema() == null ? t.getSchema() : getQueryModel().getSchema();
+		tables.put(t.getName(), schema != null ? schema : host.catalog());
 	}
 	
 	

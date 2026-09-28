@@ -1,0 +1,14 @@
+BUG-023 — disposizione del diagramma, join disegnati a archi
+0. T7.9 in fila (disposizione ereditata): [nodo del join libri–prestiti dentro soci, linea del join libri–prestiti sotto soci (299 px)]
+1. prestiti → autori: 6 entità, 5 join, pixel controllati 1273, difetti []
+   posizioni prestiti(610,12 116x144) soci(812,12 100x167) libri(428,12 96x167) editori(610,180 116x98) libri_autori(206,12 136x75) autori(12,12 108x121)
+2. libri → soci: 6 entità, 5 join, pixel controllati 2168, difetti []
+   posizioni libri(400,12 96x167) editori(582,12 136x98) libri_autori(582,134 136x75) autori(804,12 108x121) prestiti(198,12 116x144) soci(12,12 100x167)
+3. modello a 5 tabelle caricato dall'SQL: 5 entità, 4 join, pixel controllati 1434, difetti []
+   posizioni autori(656,12 122x121) libri_autori(418,12 152x75) libri(226,12 106x167) editori(12,12 128x98) prestiti(12,134 128x144)
+4. ciclo prestiti–soci–libri (+ editori): 4 entità, 4 join, pixel controllati 1852, difetti []
+   posizioni prestiti(414,12 128x144) soci(414,180 128x167) libri(222,12 106x167) editori(12,12 124x98)
+5. griglia dell'utente, poi libri ed editori al primo posto libero: prestiti(10,10 116x144) soci(176,10 100x167) libri(212,250 96x167) editori(358,250 112x98), difetti []
+5. (ridisposto per collegamenti): 4 entità, 3 join, pixel controllati 1443, difetti []
+   posizioni prestiti(198,12 116x144) soci(12,12 100x167) libri(400,12 96x167) editori(582,12 112x98)
+Esito: SUPERATO

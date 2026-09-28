@@ -25,6 +25,12 @@
  * Modificato per RamaSQL Client (2026-09-27): tabelle, colonne, chiavi primarie e chiavi esterne chieste alla facciata
  * (QbHost.metadata(), BUG-016) invece che a DatabaseMetaData; tolti i metodi JDBC rimasti senza uso; una tabella riceve un
  * alias automatico solo se e' gia' nel diagramma (in origine sempre: «`libri` libri»).
+ * Modificato per RamaSQL Client (2026-09-28): (1) BUG-024: i metadati dell'operazione (nome esatto, colonne e, se si
+ * propongono i join, chiavi esterne della tabella o delle tabelle collegate) si leggono prima, tutti insieme, fuori
+ * dall'EDT (it.ramasql.qb.OffEdtQbMetadata: se la lettura e' lenta compare un'attesa che non congela l'interfaccia),
+ * poi il diagramma si completa sull'EDT come prima, con le risposte gia' in memoria; (2) BUG-023: aggiunta una tabella
+ * (fuori dal caricamento di un modello), il diagramma la sistema in modo che nessun join passi sotto un'altra tabella
+ * (ViewDiagram.onEntityAdded).
  */
 
 package com.sqleo.querybuilder;
@@ -60,6 +66,8 @@ public class DiagramLoader extends JDialog implements Runnable
 	
 	private QueryBuilder builder;
 	private QueryTokens.Table table;
+	// RamaSQL (2026-09-28, BUG-024): i metadati di questa operazione (letti fuori dall'EDT da prefetch)
+	private QbMetadata md;
 	
 	private DiagramLoader(Frame owner)
 	{
@@ -97,6 +105,8 @@ public class DiagramLoader extends JDialog implements Runnable
 	{
 		try
 		{
+			md = builder.metadata(); // RamaSQL (2026-09-28, BUG-024)
+			prefetch();
 			switch(mode)
 			{
 				case ALL_FOREIGN_TABLES: addAllForeignTables();break;
@@ -169,6 +179,53 @@ public class DiagramLoader extends JDialog implements Runnable
 
 		if(autoJoinRequested && QueryBuilder.autoJoin)
 			doAutoJoin(item);
+
+		// RamaSQL (2026-09-28, BUG-023): posto per la tabella nuova senza join che passino sotto altre tabelle (durante il
+		// caricamento di un modello la disposizione si fa una volta sola, alla fine: QueryBuilder.onLoad)
+		if(!builder.isLoading())
+			builder.diagram.onEntityAdded(item);
+	}
+
+	/*
+	 * RamaSQL (2026-09-28, BUG-024): legge in una volta sola, fuori dall'EDT, tutto quello che l'operazione chiedera' ai
+	 * metadati (gli stessi argomenti che useranno checkTable, creatEntity, addAll*Tables e doAutoJoin); le chiamate
+	 * successive, sull'EDT, trovano le risposte in memoria. Una tabella che non esiste non e' un errore qui: la segnala
+	 * checkTable come prima.
+	 */
+	private void prefetch()
+		throws SQLException
+	{
+		if(!(md instanceof it.ramasql.qb.OffEdtQbMetadata)) return;
+		final it.ramasql.qb.OffEdtQbMetadata off = (it.ramasql.qb.OffEdtQbMetadata)md;
+		final String modelSchema = builder.getQueryModel().getSchema();
+		final String rootCatalog = catalogFor(modelSchema == null ? table.getSchema() : modelSchema);
+		final String otherCatalog = catalogFor(modelSchema);
+		final boolean keys = autoJoinRequested && QueryBuilder.autoJoin
+				&& (mode!=DEFAULT || builder.diagram.getEntities().length > 0);
+		final String rootName = table.getName();
+		final int readMode = mode;
+		off.offEdt(rootName, () -> {
+			ArrayList<String> names = new ArrayList<String>();
+			if(readMode==ALL_FOREIGN_TABLES)
+				for(QbMetadata.ForeignKey fk : off.exportedKeys(rootCatalog, rootName)) names.add(fk.foreignTable());
+			else if(readMode==ALL_PRIMARY_TABLES)
+				for(QbMetadata.ForeignKey fk : off.importedKeys(rootCatalog, rootName)) names.add(fk.primaryTable());
+			else
+				names.add(rootName);
+			String catalog = readMode==DEFAULT ? rootCatalog : otherCatalog;
+			for(String name : names)
+			{
+				String found = off.find(catalog, name);
+				String exact = found!=null ? found : name;
+				off.columns(catalog, exact);
+				if(keys)
+				{
+					off.importedKeys(catalog, exact);
+					off.exportedKeys(catalog, exact);
+				}
+			}
+			return null;
+		});
 	}
 
 	
@@ -177,8 +234,7 @@ public class DiagramLoader extends JDialog implements Runnable
 	private void addAllForeignTables()
 		throws SQLException
 	{
-		QbMetadata md = builder.metadata();
-		if(md==null) return;
+		if(md==null) return; // RamaSQL (2026-09-28): i metadati dell'operazione (in origine: builder.metadata() qui)
 		message.setText(I18n.getString("querybuilder.message.reading","reading...") );
 
 		String schema = builder.getQueryModel().getSchema() == null ? table.getSchema() : builder.getQueryModel().getSchema();
@@ -191,8 +247,7 @@ public class DiagramLoader extends JDialog implements Runnable
 	private void addAllPrimaryTables()
 		throws SQLException
 	{
-		QbMetadata md = builder.metadata();
-		if(md==null) return;
+		if(md==null) return; // RamaSQL (2026-09-28): i metadati dell'operazione
 		message.setText(I18n.getString("querybuilder.message.reading","reading..."));
 
 		String schema = builder.getQueryModel().getSchema() == null ? table.getSchema() : builder.getQueryModel().getSchema();
@@ -218,7 +273,7 @@ public class DiagramLoader extends JDialog implements Runnable
 	{
 		// RamaSQL (2026-09-27, BUG-016): esistenza e nome esatto dai metadati della facciata (in origine: DatabaseMetaData,
 		// con un secondo tentativo in maiuscolo o minuscolo che ora fa QbMetadata.find)
-		QbMetadata md = builder.metadata();
+		// RamaSQL (2026-09-28, BUG-024): md = i metadati dell'operazione, gia' letti fuori dall'EDT
 		if(md==null) return true; // RamaSQL: senza metadati non si puo verificare (in origine: NullPointerException)
 
 		String schema = builder.getQueryModel().getSchema() == null ? table.getSchema() : builder.getQueryModel().getSchema();
@@ -238,7 +293,7 @@ public class DiagramLoader extends JDialog implements Runnable
 			item.setFontColorAndToolTip(QueryBuilder.missingColor(), QueryBuilder.missingTableTip(table.getName())); // RamaSQL (2026-09-27): colore del token, testo italiano
 		}
 		// RamaSQL (2026-09-27, BUG-016): colonne e chiave primaria dai metadati della facciata (in origine: DatabaseMetaData)
-		QbMetadata md = builder.metadata();
+		// RamaSQL (2026-09-28, BUG-024): md = i metadati dell'operazione, gia' letti fuori dall'EDT
 		item.setEnabled(md!=null);
 
 		if(md!=null)
@@ -262,7 +317,7 @@ public class DiagramLoader extends JDialog implements Runnable
 	private void doAutoJoin(DiagramEntity source)
 		throws SQLException
 	{
-		QbMetadata md = builder.metadata();
+		// RamaSQL (2026-09-28, BUG-024): md = i metadati dell'operazione, gia' letti fuori dall'EDT
 		if(builder.diagram.getEntities().length > 1)
 		{
 			String name = source.getQueryToken().getName();

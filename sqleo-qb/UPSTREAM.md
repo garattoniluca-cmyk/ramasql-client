@@ -127,6 +127,23 @@ altezza della casella di spunta pari a quella della sua icona (a 150% le righe s
 con una facciata «del solo thread corrente» usata da `QbSql.check` per raccogliere gli avvisi (prima sostituiva per un
 attimo la facciata di tutto il processo), `QbSql.equivalent`.
 
+### Modifiche dello Step 12 (2026-09-28)
+
+Ogni file qui sotto porta nell'intestazione la nota «Modificato per RamaSQL Client (2026-09-28): …» e, nel codice, un
+commento `RamaSQL (2026-09-28…)` accanto a ogni punto toccato.
+
+| File | Cosa e perché |
+|---|---|
+| `querybuilder/DiagramLoader.java` | `BUG-024`: i metadati dell'operazione (nome esatto, colonne, chiavi esterne della tabella o delle tabelle collegate) si leggono prima, tutti insieme, **fuori dall'EDT** (`prefetch`, con `it.ramasql.qb.OffEdtQbMetadata`), poi il diagramma si completa sull'EDT come prima; `BUG-023`: aggiunta una tabella, il diagramma le trova posto senza join sotto altre tabelle (`ViewDiagram.onEntityAdded`) |
+| `querybuilder/QueryBuilder.java` | `metadata()` avvolge i metadati della facciata in `OffEdtQbMetadata` (`BUG-024`); `onLoad` legge in una volta, fuori dall'EDT, nomi e colonne di tutte le tabelle del FROM e, a caricamento finito, dispone le tabelle per collegamenti se per quel livello non ci sono posizioni salvate (`BUG-023`) |
+| `querybuilder/ViewDiagram.java` | `BUG-023`: `doArrangeEntitiesLayered` (disposizione per collegamenti, `DiagramArrange`), `onEntityAdded`, ordine di aggiunta delle entità, livelli «sistemati a mano» (trascinamento, «Disponi a griglia», «Disponi in automatico»: dopo, le tabelle nuove cercano un posto libero senza spostare le altre) |
+| `querybuilder/DiagramRelation.java` | `pathBoxes()` e `anchorBounds()`: i rettangoli che contengono i tratti della linea e il nodo, per cercare un posto libero a una tabella nuova (`BUG-023`) |
+
+Codice nostro aggiunto: `com/sqleo/querybuilder/DiagramArrange.java` (disposizione per collegamenti e ricerca di un posto
+libero, nel pacchetto per raggiungerne i membri di pacchetto) e `it/ramasql/qb/OffEdtQbMetadata.java` (metadati letti
+fuori dall'EDT con un'attesa che non congela l'interfaccia). Test: `T12DisposizioneDelDiagrammaTest`,
+`T12MetadatiFuoriDallEdtTest`.
+
 ## Rimosso rispetto all'originale
 
 - `Application.isFullVersion()` e il **limite di 3 tabelle per diagramma** con la relativa richiesta di denaro;
@@ -187,5 +204,9 @@ query builder, per raggiungerne i membri di pacchetto: `com/sqleo/querybuilder/Q
 diagramma per il programma e per i test: aggiungere tabelle, spuntare colonne, cambiare il tipo dei join, filtri,
 raggruppamenti, ordinamenti, sottoquery, lettura dello stato; `BUG-006`) e `com/sqleo/querybuilder/JdbcQbMetadata.java`
 (la vecchia lettura con `DatabaseMetaData` di `DiagramLoader`, raccolta qui come ripiego per chi passa solo una
-connessione JDBC: le prove del modulo; il programma non la usa). La classe di prova `QbAccessoDiProva`, che stava nel
+connessione JDBC: le prove del modulo; il programma non la usa).
+
+Aggiunte dello Step 12 (2026-09-28): `com/sqleo/querybuilder/DiagramArrange.java` (disposizione delle tabelle senza join
+sotto altre tabelle, `BUG-023`) e `it/ramasql/qb/OffEdtQbMetadata.java` (metadati del query builder mai letti sull'EDT,
+`BUG-024`). La classe di prova `QbAccessoDiProva`, che stava nel
 pacchetto `com.sqleo.querybuilder` dentro il modulo `it-tests` (pacchetto diviso su due moduli), è stata eliminata.
