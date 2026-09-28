@@ -1,5 +1,12 @@
 # JOURNAL.md — Diario cronologico (più recente in alto)
 
+## 2026-09-28 — Sessione con l'utente: modalità live/autonoma, report sul prodotto, piano 1.1
+
+- **`BUG-037` chiuso** (voce qui sotto): il clic sul titolo di una linguetta non la sceglieva. Versione portabile rifatta: `dist\RamaSQL-portabile-2026-09-28-2150\` (si avvia: «RamaSQL Client 0.1.0-SNAPSHOT»).
+- **Due modalità di lavoro** (`ADR-029`, regola 2-bis di `CLAUDE.md`): *live* (predefinita) con prove mirate e niente verifica completa, commit, MD o portabile a ogni ritocco; *autonoma* (notturna, su richiesta) con la verifica esaustiva a fine step. Le due verifiche complete lanciate e interrotte in questa sessione hanno riscritto le evidenze in `test-results/` (non committate: si rigenerano alla prossima verifica completa).
+- **Report dell'utente sul prodotto** (`ADR-030`): base solida, funzionale e stabile; difetti di layout (`BUG-038`), micro-comportamenti di clic (`BUG-039`), intestazioni della griglia (`BUG-040`); la query visiva è molto indietro (albero della query minimo; DISTINCT, aggregati, funzioni, GROUP BY assenti: si riscrive tutto a mano nel testo). Priorità: query visiva (con **progettazione molto attenta** prima del codice) → griglia (filtri, ordinamenti multipli) e inserimento (valori da FK, ENUM) → layout in parallelo → Excel → guida SQL. Fuori: stored procedure e funzioni, eventi, transazioni, esportazioni professionali. Piano come **Fase 2** in `ROADMAP.md` (step 15–20), estensione «v1.1» in `DESIGN.md` §1-bis.
+- **Prossimo passo** (da confermare con l'utente): Step 15, il documento di progetto della nuova query visiva; decidere l'ordine della Fase 2 rispetto agli step 13 (installer) e 14 (aula).
+
 ## 2026-09-28 — BUG-037: cambiare scheda richiedeva decine di secondi (bloccante, segnalato dall'utente) ✅
 
 **Sintomo** (utente, programma avviato con `avvia.cmd`, server «Ciro», catalogo `bibliotecasoft`, finestra massimizzata): con le schede «amministratori (struttura)», due query visive e «Query 1», il passaggio da una scheda all'altra richiedeva 15–40 secondi e il fuoco non si spostava.

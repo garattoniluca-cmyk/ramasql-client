@@ -339,3 +339,30 @@ Data: 2026-09-28 · Stato: accettata — decisa dall'agente, da rivedere (Step 1
 **Motivi.** In aula si proietta a 1024×768 con il carattere grande e non tutti usano il mouse; un suggerimento o un pulsante fuori dallo schermo non esiste. Un meccanismo unico, con i testi nei file di risorse e la copertura nei test, regge anche alle schermate future.
 
 **Conseguenze.** Chi aggiunge un componente deve dargli un nome e una chiave `.tooltip`, altrimenti T12.9 fallisce. Nella lista aperta le frecce non scelgono più la voce da sole: serve Invio (o il clic), come in Windows. Con lo schermo stretto la barra mostra le icone senza scritte (i nomi restano nei suggerimenti).
+
+
+## ADR-029 — Due modalità di lavoro: «live» e «autonoma»
+Data: 2026-09-28 · Stato: accettata — decisa dall'utente
+
+**Decisione.** **Live** (predefinita: l'utente è in chat, anche una ventina di ritocchi per sessione): ogni ritocco lo prova prima l'agente (test mirato del difetto o della parte toccata, e/o il programma vero con `avvia.cmd`); niente `scripts\verify.ps1` completo, niente commit a ogni ritocco (uno per gruppo, a fine argomento o su richiesta; mai push), niente aggiornamento degli MD a ogni ritocco (in blocco a fine sessione o su richiesta), niente versione portabile se non chiesta, niente revisori né evidenze rigenerate. **Autonoma** (notturna, solo su richiesta esplicita, `.claude/goal.md` e `.claude/loop.md`): grandi step con verifica completa `VERIFY: PASS`, revisione indipendente, evidenze, diario, commit e portabile a fine step. Le modifiche live passano dalla verifica completa al giro autonomo successivo o quando l'utente la chiede.
+
+**Motivi.** Per una correzione di tre righe (`BUG-037`) la verifica completa è stata lanciata due volte: ore di attesa e un enorme consumo, con l'utente fermo. Le verifiche esaustive sono utili a fine step ma bloccano lo sviluppo continuo.
+
+**Conseguenze.** Regola 2-bis di `CLAUDE.md`. In live una regressione lontana dalla parte toccata si scopre solo alla verifica completa successiva: è il prezzo accettato.
+
+## ADR-030 — Visione per la versione successiva (report dell'utente del 2026-09-28)
+Data: 2026-09-28 · Stato: accettata — decisa dall'utente (piano da dettagliare)
+
+**Giudizio dell'utente.** Base solida, già funzionale e stabile; restano difetti grossi di layout (sezioni con poco spazio), molte rifiniture dei micro-comportamenti (clic sinistro e destro), pulsanti e menu da migliorare; la query visiva è molto indietro.
+
+**Decisione: il perimetro si allarga** (estensione «v1.1» di `DESIGN.md` §1-bis), in quest'ordine di priorità:
+1. **Query visiva** (la più importante, e quella in cui fare meglio di Navicat per chi impara): albero della query completo — DISTINCT, funzioni di aggregazione (COUNT, SUM, AVG, MIN, MAX), funzioni matematiche e di testo, GROUP BY, HAVING, ORDER BY, LIMIT gestiti graficamente — e **parole chiave cliccabili nel testo SQL** per cambiarle (come Navicat). Oggi si trascinano tabelle e si creano i join, il resto va riscritto a mano nel testo e la query perde il suo essere visiva. **Richiede una progettazione molto attenta prima del codice** (indicazione dell'utente): un documento di progetto approvato dall'utente viene prima di qualunque step di realizzazione.
+2. **Griglia dei dati** (risultato di query, vista o tabella): filtri e ordinamenti multipli avanzati; intestazioni di colonna con nome, tipo e opzioni distinti tipograficamente (oggi sono nella stessa intestazione senza gerarchia).
+3. **Inserimento dati**: per le colonne con chiave esterna, scelta del valore dalla tabella riferita; per ENUM (e SET), i valori ammessi proposti direttamente.
+4. **Layout e micro-comportamenti** (in parallelo, in modalità live con l'utente): spazio alle aree di lavoro, clic sinistro e destro, pulsanti e menu.
+5. **Excel (.xlsx)** come formato di importazione ed esportazione, accanto a CSV, JSON e SQL (libreria con licenza compatibile, per esempio Apache POI, Apache-2.0).
+6. **Guida SQL integrata**, perché lo studente non debba cercare le istruzioni sul web.
+
+**Restano fuori** (confermato dall'utente): stored procedure e funzioni memorizzate (nessuna gestione), eventi, gestione delle transazioni (secondaria), strumenti di esportazione dati «professionali».
+
+**Conseguenze.** Nuova fase in `ROADMAP.md` (step 15–20, da dettagliare con i test quando si progetta ciascuno); l'ordine rispetto agli step 13 (installer) e 14 (aula) è da decidere con l'utente. Il riferimento funzionale resta `ADR-004` (SQLeo per la query visiva, Workbench per il resto), con **Navicat** come termine di paragone dichiarato per albero della query e griglia.

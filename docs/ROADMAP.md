@@ -24,6 +24,14 @@ Stato: ✅ completato · 🔄 in corso · ⏳ da fare
 | 12 | Rifiniture per l'aula e guida rapida | S | ✅ 2026-09-28 |
 | 13 | **Installer e distribuzione** | M | ⏳ |
 | 14 | Collaudo in aula e rilascio 1.0 | M | ⏳ |
+| — | **Fase 2 — versione 1.1** (report dell'utente, `ADR-030`); ordine rispetto a 13–14 da decidere | | |
+| 15 | Progetto della nuova query visiva (documento da approvare, niente codice) | M | ⏳ |
+| 16 | Query visiva: albero completo, DISTINCT, aggregati e funzioni, GROUP BY/HAVING/ORDER BY/LIMIT, SQL cliccabile | L | ⏳ |
+| 17 | Griglia dei dati: filtri e ordinamenti multipli, intestazioni di colonna | M | ⏳ |
+| 18 | Inserimento dati: valori da chiave esterna, ENUM/SET proposti | M | ⏳ |
+| 19 | Excel (.xlsx) in importazione ed esportazione | M | ⏳ |
+| 20 | Guida SQL integrata | M | ⏳ |
+| ∥ | Layout e micro-comportamenti (live, in parallelo) | — | 🔄 |
 
 S = una sessione · M = 2–3 sessioni · L = 4+ sessioni (stime da affinare dopo lo Step 1).
 
@@ -330,6 +338,18 @@ Tutti i test su **macchine virtuali Windows 10 e Windows 11 pulite, senza Java**
 | T14.4 | U+I | `mvnw verify` sulla build di rilascio | tutto verde sui due server |
 | T14.5 | M | **lista di regressione**: riesecuzione dei test M contrassegnati come critici (T3.5, T4.9–T4.11, T4.16–T4.17, T5.4, T6.6–T6.7, T7.4–T7.5, T8.4, T9.6, T10.7, T11.6, T13.2) sulla build installata | tutti superati |
 | T14.6 | M | difetti bloccanti aperti | zero |
+
+## Fase 2 — versione 1.1 (report dell'utente del 2026-09-28, `ADR-030`)
+
+Priorità decise dall'utente: **query visiva** → griglia dei dati e inserimento → layout (in parallelo, live) → Excel → guida SQL. Fuori: stored procedure e funzioni, eventi, transazioni, esportazioni «professionali». I test U/I/M/N di ogni step si scrivono quando lo step si progetta; si lavora nelle due modalità di `ADR-029` (grandi step in autonomia, rifiniture live).
+
+- **Step 15 — Progetto della nuova query visiva.** Solo documento (`docs/QUERY-VISIVA.md`), da far approvare all'utente prima di qualunque codice: cosa manca oggi rispetto a Navicat (albero della query, clausole, parole chiave cliccabili nel testo SQL); come si rappresentano graficamente DISTINCT, aggregati, funzioni, GROUP BY e HAVING perché uno studente capisca cosa sta facendo (qui si deve fare meglio di Navicat); cosa si fa nel modulo `sqleo-qb` e cosa nella facciata; come resta la sincronia Grafica | SQL; un campionario di query del corso come banco di prova.
+- **Step 16 — Realizzazione della query visiva** secondo il progetto approvato.
+- **Step 17 — Griglia dei dati**: filtri e ordinamenti multipli (anche per risultati di query e viste); intestazioni con il nome in evidenza e tipo e opzioni distinti (`BUG-040`).
+- **Step 18 — Inserimento dati**: per una colonna con chiave esterna si sceglie il valore dalla tabella riferita (con le colonne che lo rendono riconoscibile); ENUM e SET propongono i valori ammessi.
+- **Step 19 — Excel**: `.xlsx` in «Importa dati» e nell'esportazione dei dati.
+- **Step 20 — Guida SQL integrata**: le istruzioni del corso spiegate dentro il programma, raggiungibili dal punto in cui servono.
+- **In parallelo (live)**: layout (`BUG-038`), micro-comportamenti di clic sinistro e destro, pulsanti e menu (`BUG-039`); si correggono con l'utente.
 
 ## Cosa serve dall'utente e quando
 
