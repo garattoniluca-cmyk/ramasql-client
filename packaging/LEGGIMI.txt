@@ -1,0 +1,24 @@
+RamaSQL Client — versione portabile di prova
+==================================================
+
+Come si avvia
+  Aprire la cartella RamaSQL e fare doppio clic su RamaSQL.exe.
+  Non serve installare niente: Java è già incluso nella cartella.
+  La cartella si può copiare su una chiavetta o sul desktop di ogni PC.
+  Se Windows mostra «Windows ha protetto il PC» (programma non firmato):
+  «Ulteriori informazioni» → «Esegui comunque».
+
+Cosa si può fare in questa versione
+  - connettersi a MariaDB e MySQL (le password non vengono salvate);
+  - esplorare cataloghi, tabelle, colonne, indici, chiavi esterne e viste;
+  - editor SQL, griglia dei dati con Conferma/Scarta, editor di tabelle, indici e chiavi esterne;
+  - Nuova query visiva: costruire le query nel diagramma, con l'SQL sempre accanto;
+  - Nuova vista / Modifica vista: creare e modificare le viste graficamente.
+  Ogni operazione mostra prima l'SQL che verrà eseguito.
+  Non ci sono ancora: importazione CSV/JSON, dump, modello ER.
+
+Dove finiscono i dati del programma
+  Profili di connessione, impostazioni e archivio delle viste stanno in %APPDATA%\RamaSQL
+  (uno per ogni utente di Windows), non nella cartella del programma.
+
+Licenza: GPL-3.0-or-later. Contiene codice derivato da SQLeo (GPL).

@@ -35,6 +35,12 @@ I test d'integrazione (`@Tag("it")`, modulo `it-tests`) girano contro **entrambi
 I test d'integrazione leggono le connessioni da variabili d'ambiente (mai da file in git):
 `RAMASQL_IT_MARIADB_URL`, `RAMASQL_IT_MARIADB_USER`, `RAMASQL_IT_MARIADB_PASSWORD` e le tre equivalenti `RAMASQL_IT_MYSQL_*`. Usano e distruggono solo cataloghi con prefisso `ramasql_test_`.
 
+## Versione portabile da provare in aula (prima dell'installer)
+```
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\crea-portabile.ps1
+```
+Compila, raccoglie le librerie e con jpackage crea `dist\RamaSQL-portabile-<data>\RamaSQL\RamaSQL.exe` con Java incluso (circa 120 MB), più `LEGGIMI.txt`, `LICENZA.txt` e lo ZIP della cartella. Icona e `LEGGIMI.txt` stanno in `packaging\`. Non è firmata: al primo avvio Windows può chiedere *Ulteriori informazioni* → *Esegui comunque*.
+
 ## Installer (solo Step 13, a fine progetto)
 ```
 powershell -File packaging\build-installer.ps1    # jlink → jpackage → Inno Setup → ZIP

@@ -1,5 +1,11 @@
 # JOURNAL.md — Diario cronologico (più recente in alto)
 
+## 2026-09-28 — Versione portabile e preparazione dell'esecuzione autonoma degli step 9–12 (`ADR-024`)
+
+**Versione portabile per l'aula.** Su richiesta dell'utente, cartella autonoma `dist\RamaSQL-portabile-2026-09-28\` (fuori da git): `RamaSQL\RamaSQL.exe` con runtime Java ridotto incluso (jpackage, circa 117 MB), `LEGGIMI.txt`, `LICENZA.txt`, più lo ZIP. Costruita dal codice del commit `Step 8` (quello di `VERIFY: PASS`); avviata una volta, la finestra si apre. Difetto notato: il titolo dice «RamaSQL Client dev» (`BUG-026`, Step 12). Lo script è ora in `scripts\crea-portabile.ps1` (compila, raccoglie le librerie, jpackage, cartella con la data), icona e `LEGGIMI.txt` in `packaging\`; comando in `docs/CONSOLE.md`.
+
+**Esecuzione autonoma degli step 9–12.** L'utente ha chiesto di preparare goal e loop per «un rush» sugli step 9–12, esclusi installer e distribuzione. Preparati: `.claude/goal.md` (contratto, adattamenti, lezioni degli step 1–8, soglie), `.claude/loop.md` (giro di lavoro), `scripts/verify.ps1` esteso agli step 9–12 (soglie nuove congelate, quelle degli step 1–8 invariate), `ADR-024`, regola 2 e «Stato attuale» di `CLAUDE.md`. Da avviare con `/goal` (testo in `.claude/goal.md`) e `/loop 30m Esegui un giro di lavoro seguendo .claude/loop.md`.
+
 ## 2026-09-27 — RESOCONTO dell'esecuzione autonoma degli step 7–8 (`ADR-021`)
 
 **Esito: step 7 e 8 completati.** La **Tappa M2** della roadmap («Visivo») è raggiunta: le query si costruiscono nel diagramma ereditato da SQLeo, con il testo SQL sempre accanto, e le viste si creano, si riaprono e si modificano graficamente. Un commit per step: `Step 7: …`, `Step 8: …` (più un commit per le evidenze rigenerate dalla verifica finale). **Nessun push**: lo farà l'utente dopo la revisione. Gli step 1–6 non sono regrediti (stessa verifica, tutti PASS). Gli step 9–13 non sono stati toccati.

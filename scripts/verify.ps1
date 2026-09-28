@@ -8,12 +8,12 @@
   3. Legge i report JUnit (target/test-report/open-test-report.xml di ogni modulo) e conta,
      per ogni step, i test SUPERATI con @Tag("stepN"); quelli con anche @Tag("it") sono i test
      d'integrazione contro MariaDB E MySQL. I test saltati non contano.
-  4. Controlla in docs/JOURNAL.md che ogni test U/I/M degli step 1-8 elencato in docs/ROADMAP.md
+  4. Controlla in docs/JOURNAL.md che ogni test U/I/M degli step 1-12 elencato in docs/ROADMAP.md
      compaia in una riga di tabella con l'esito "OK" (segno di spunta verde).
   Ultima riga: "VERIFY: PASS" oppure "VERIFY: FAIL".
 
-  SOGLIE CONGELATE il 2026-09-21 per gli step 1-6 (ADR-014) e il 2026-09-27 per gli step 7-8 (ADR-021):
-  e' vietato abbassarle o cambiare la logica di conteggio.
+  SOGLIE CONGELATE il 2026-09-21 per gli step 1-6 (ADR-014), il 2026-09-27 per gli step 7-8 (ADR-021)
+  e il 2026-09-28 per gli step 9-12 (ADR-024): e' vietato abbassarle o cambiare la logica di conteggio.
 #>
 param([switch]$SkipBuild)
 
@@ -33,6 +33,11 @@ $soglie = [ordered]@{
     # --- aggiunte il 2026-09-27 su richiesta dell'utente (ADR-021), congelate come le precedenti ---
     step7 = @{ Tot = 60; It = 10 }   # query builder: campionario >= 40 query (T7.2) + esecuzione sui due server (T7.3)
     step8 = @{ Tot = 30; It = 10 }   # viste: generatore, normalizzatore, 10 viste sui due server (T8.3)
+    # --- aggiunte il 2026-09-28 su richiesta dell'utente (ADR-024), congelate come le precedenti ---
+    step9  = @{ Tot = 50; It = 10 }  # import: lettori CSV/JSON, codifiche, deduzione tipi + import sui due server
+    step10 = @{ Tot = 40; It = 12 }  # dump: letterali, ordinamento, round-trip e dump selettivo sui due server
+    step11 = @{ Tot = 50; It = 8  }  # modello ER: .rsqlmodel, suggeritore, cardinalita' + retroingegneria sui due server
+    step12 = @{ Tot = 40; It = 6  }  # rifiniture: errori spiegati, copertura e qualita' dei suggerimenti
 }
 
 # --- 1. JDK 25 e credenziali di test -------------------------------------------------------------
@@ -113,7 +118,7 @@ $journal = Get-Content -LiteralPath (Join-Path $root 'docs\JOURNAL.md') -Encodin
 $step = 0; $idPerStep = @{}
 foreach ($riga in $roadmap) {
     if ($riga -match '^## Step (\d+)\b') { $step = [int]$Matches[1]; continue }
-    if ($step -ge 1 -and $step -le 8 -and $riga -match '^\|\s*((T\d+\.\d+b?)|(S\d[a-d]?))\s*\|\s*(U|I|M|M\+U|U\+I)\s*\|') {
+    if ($step -ge 1 -and $step -le 12 -and $riga -match '^\|\s*((T\d+\.\d+b?)|(S\d[a-d]?))\s*\|\s*(U|I|M|M\+U|U\+I)\s*\|') {
         if (-not $idPerStep[$step]) { $idPerStep[$step] = @() }
         $idPerStep[$step] += $Matches[1]
     }

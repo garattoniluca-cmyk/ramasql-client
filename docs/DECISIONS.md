@@ -266,3 +266,15 @@ Data: 2026-09-27 · Stato: accettata — decisa dall'agente, da rivedere (Step 8
 5. Una vista che il server non riesce a leggere (1356: usa tabelle o colonne sparite) si segnala con l'errore del server spiegato in italiano, invece di un generico «non trovata».
 
 **Motivi.** Il server non conserva il testo scritto: senza archivio la vista di uno studente tornerebbe riscritta e irriconoscibile. Confrontare la definizione evita di riaprire un testo vecchio dopo una modifica fatta altrove.
+
+## ADR-024 — Esecuzione autonoma degli step 9–12 con /goal e /loop
+Data: 2026-09-28 · Stato: **accettata — decisa dall'utente**
+
+**Decisione dell'utente:** «un rush» che porta a programmare gli step **9 (importazione CSV e JSON), 10 (dump e ripristino), 11 (modello ER e retroingegneria) e 12 (rifiniture per l'aula)**, **esclusi installer e distribuzione** (Step 13) e quindi anche la sperimentazione in aula (Step 14). Stesso schema di `ADR-014` e `ADR-021`: contratto in `.claude/goal.md`, giro di lavoro in `.claude/loop.md`, giudice unico `scripts/verify.ps1`.
+
+**Cosa cambia rispetto agli step 7–8:**
+1. **`scripts/verify.ps1` esteso agli step 9–12**, con soglie nuove congelate il 2026-09-28 (step 9: ≥ 50 test di cui ≥ 10 di integrazione; step 10: ≥ 40 / ≥ 12; step 11: ≥ 50 / ≥ 8; step 12: ≥ 40 / ≥ 6) e il controllo del diario fino allo step 12. Le soglie degli step 1–8 **non cambiano**.
+2. **Versione portabile** (`scripts/crea-portabile.ps1`, jpackage con runtime incluso, in `dist\`): chiesta dall'utente il 2026-09-28 per provare il programma in aula prima dell'installer; a fine rush l'agente la rigenera e controlla che si avvii. Non sostituisce lo Step 13 (installer, firma, Windows pulito).
+3. **Adattamenti decisi prima di partire** (dettaglio in `.claude/goal.md`): dati di prova dello Step 9 costruiti dall'agente (CSV «come lo salva Excel italiano», JSON, 1 M di righe generato nel test); dump totale di T10.7 provato su copie `ramasql_test_*` dei cataloghi dell'utente, mai sui cataloghi stessi; metà Navicat di T10.8 all'utente se manca il file; T11.11, T12.5, T12.6, T12.13 automatizzati con misure invece di stampa, Resource Monitor e proiettore; revisione «alla Apple» di T12.7 fatta da un sotto-agente con le skill di design, con le rimozioni registrate come decisioni da rivedere.
+4. **Prove che richiedono una persona:** T2.9, T7.11, **T12.14** (ed eventualmente la metà Navicat di T10.8) — righe «predisposto» nel diario, elencate nel resoconto. Test N: T9.9, T10.10, T11.12, all'utente.
+5. **Limite di tempo:** 24 ore di lavoro (12 per gli step 7–8), dato che gli step sono quattro.
