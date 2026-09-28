@@ -121,9 +121,9 @@ public final class VisualQueryTab extends JPanel {
     }
 
     /**
-     * Legge in sottofondo, all'apertura della scheda, le definizioni di tutte le tabelle del catalogo: il query builder
-     * ereditato le chiede in modo sincrono sull'EDT quando si aggiunge una tabella (colonne, chiavi esterne), e così le
-     * trova già nella cache del lettore invece di interrogare il server mentre l'interfaccia aspetta.
+     * Legge in sottofondo, all'apertura della scheda, le definizioni di tutte le tabelle del catalogo: quando si aggiunge
+     * una tabella il query builder le legge fuori dall'EDT ({@code it.ramasql.qb.OffEdtQbMetadata}, {@code BUG-024}) e,
+     * trovandole già nella cache del lettore, finisce subito, senza mostrare l'attesa «Lettura dal server».
      */
     private static void preload(MetadataReader reader, String catalog) {
         if (reader == null) {

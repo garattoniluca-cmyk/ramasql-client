@@ -24,6 +24,8 @@
  * Modificato per RamaSQL Client (2026-09-21): rimossa l'azione save to definition file (definizione manuale dei metadati); l'opzione archi/linee si chiede alla facciata (QbOption.RELATION_ARCS); linee dei join in grigio medio (in origine grigio chiaro, poco leggibile su bianco) e ancore scalate; la posizione dei campi si calcola con SwingUtilities.convertPoint invece di getLocationOnScreen, che falliva (eccezione ignorata, join non disegnato) quando il diagramma non era ancora a schermo.
  * Modificato per RamaSQL Client (2026-09-27): il cambio del tipo di join avvisa il QueryBuilder (fireQueryChanged,
  * BUG-006); colori e spessore delle linee dalla facciata (QbHost.color, scala) invece che fissi (BUG-004).
+ * Modificato per RamaSQL Client (2026-09-28): pathBoxes(), i rettangoli che contengono i tratti della linea, per
+ * cercare un posto a una tabella nuova senza join che passino sotto altre tabelle (BUG-023).
  */
 
 package com.sqleo.querybuilder;
@@ -382,6 +384,35 @@ public class DiagramRelation extends JPanel
 
 	}
 	
+	/**
+	 * RamaSQL (2026-09-28, BUG-023): rettangoli, nelle coordinate del diagramma, che contengono i tratti della linea
+	 * disegnata da paintArc o paintLinear (un quarto d'ellisse sta nel rettangolo dei suoi due estremi, un segmento
+	 * anche), allargati di mezzo tratto. Approssimazione per eccesso: se un'entita' non tocca nessun rettangolo, la
+	 * linea non le passa sotto.
+	 */
+	java.util.List<Rectangle> pathBoxes()
+	{
+		java.util.List<Rectangle> boxes = new java.util.ArrayList<Rectangle>();
+		int pad = Math.max(1, QbRuntime.scale(2));
+		for(int i=0; i+1<serie.length; i++)
+		{
+			Point a = serie[i];
+			Point b = serie[i+1];
+			if(a==null || b==null) continue;
+			Rectangle r = new Rectangle(Math.min(a.x,b.x) + getX(), Math.min(a.y,b.y) + getY(),
+					Math.abs(a.x-b.x), Math.abs(a.y-b.y));
+			r.grow(pad, pad);
+			boxes.add(r);
+		}
+		return boxes;
+	}
+
+	/** RamaSQL (2026-09-28, BUG-023): il riquadro del nodo del join, nelle coordinate del diagramma. */
+	Rectangle anchorBounds()
+	{
+		return anchor.getBounds();
+	}
+
 	protected void paintChildren(Graphics g)
 	{
 		if(isArcRendering()){
