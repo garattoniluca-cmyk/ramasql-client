@@ -97,6 +97,8 @@ public final class ErCanvas extends JComponent {
         setOpaque(true);
         setBackground(Tokens.BG_SURFACE);
         setFocusable(true);
+        setAutoscrolls(true);   // trascinando verso il bordo la vista scorre (tabelle lontane)
+        putClientProperty(it.ramasql.app.settings.SettingsController.OWN_CTRL_WHEEL, Boolean.TRUE);
         ToolTipManager.sharedInstance().registerComponent(this);
         MouseAdapter mouse = new MouseAdapter() {
             @Override
@@ -138,12 +140,137 @@ public final class ErCanvas extends JComponent {
         addMouseListener(mouse);
         addMouseMotionListener(mouse);
         addMouseWheelListener(mouse);
+        installKeys();
+    }
+
+    // ================================================================ tastiera
+
+    /** L'entità scelta con la tastiera ({@code null} se nessuna). */
+    private String selectedEntity;
+    private transient Consumer<Relationship> onDeleteRelationship = r -> { };
+
+    public void setOnDeleteRelationship(Consumer<Relationship> c) {
+        this.onDeleteRelationship = c;
+    }
+
+    public String selectedEntity() {
+        return selectedEntity;
+    }
+
+    /**
+     * Il diagramma da tastiera: Tab e Maiusc+Tab scelgono la tabella, le frecce la spostano (Maiusc: di più), Invio ne
+     * apre la struttura; F6 sceglie la relazione, Canc elimina quella logica scelta, Maiusc+F10 ne apre il menu.
+     */
+    private void installKeys() {
+        setFocusTraversalKeysEnabled(false);
+        bind("TAB", "er.nextEntity", () -> cycleEntity(1));
+        bind("shift TAB", "er.previousEntity", () -> cycleEntity(-1));
+        for (String dir : new String[] {"LEFT", "RIGHT", "UP", "DOWN"}) {
+            bind(dir, "er.move." + dir, () -> nudge(dir, 10));
+            bind("shift " + dir, "er.moveMore." + dir, () -> nudge(dir, 40));
+        }
+        bind("ENTER", "er.open", () -> {
+            if (selectedEntity != null) {
+                onOpenTable.accept(selectedEntity);
+            }
+        });
+        bind("F6", "er.nextRelationship", this::cycleRelationship);
+        bind("DELETE", "er.deleteRelationship", () -> selected().ifPresent(onDeleteRelationship));
+        bind("shift F10", "er.relationshipMenu", () -> selected().ifPresent(onRelationshipMenu));
+        bind("CONTEXT_MENU", "er.relationshipMenu2", () -> selected().ifPresent(onRelationshipMenu));
+    }
+
+    private void bind(String key, String name, Runnable action) {
+        getInputMap(WHEN_FOCUSED).put(javax.swing.KeyStroke.getKeyStroke(key), name);
+        getActionMap().put(name, new javax.swing.AbstractAction() {
+            private static final long serialVersionUID = 1L;
+
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                action.run();
+            }
+        });
+    }
+
+    private java.util.Optional<Relationship> selected() {
+        return model == null || selectedRelationship == null ? java.util.Optional.empty()
+                : model.relationships().stream().filter(r -> r.id().equals(selectedRelationship)).findFirst();
+    }
+
+    /** Tab: la tabella successiva (in ordine di nome), e la vista la segue. */
+    public void cycleEntity(int step) {
+        if (model == null || model.entities().isEmpty()) {
+            return;
+        }
+        List<String> names = model.entities().stream().map(ErModel.Entity::table)
+                .sorted(String.CASE_INSENSITIVE_ORDER).toList();
+        int i = selectedEntity == null ? (step > 0 ? -1 : 0) : names.indexOf(selectedEntity);
+        selectedEntity = names.get(Math.floorMod(i + step, names.size()));
+        selectedRelationship = null;
+        reveal(bounds(model.entity(selectedEntity).orElseThrow()));
+        repaint();
+    }
+
+    /** F6: la relazione successiva. */
+    public void cycleRelationship() {
+        if (model == null || model.relationships().isEmpty()) {
+            return;
+        }
+        List<Relationship> list = model.relationships();
+        int i = -1;
+        for (int k = 0; k < list.size(); k++) {
+            if (list.get(k).id().equals(selectedRelationship)) {
+                i = k;
+            }
+        }
+        selectedRelationship = list.get((i + 1) % list.size()).id();
+        List<Point2D> pts = routes().get(selectedRelationship);
+        if (pts != null && !pts.isEmpty()) {
+            reveal(new Rectangle2D.Double(pts.get(0).getX() - 20, pts.get(0).getY() - 20, 40, 40));
+        }
+        repaint();
+    }
+
+    private void nudge(String dir, double step) {
+        if (selectedEntity == null) {
+            return;
+        }
+        ErModel.Entity e = model.entity(selectedEntity).orElseThrow();
+        double dx = dir.equals("LEFT") ? -step : dir.equals("RIGHT") ? step : 0;
+        double dy = dir.equals("UP") ? -step : dir.equals("DOWN") ? step : 0;
+        moveEntity(selectedEntity, e.x() + dx, e.y() + dy);
+        reveal(bounds(model.entity(selectedEntity).orElseThrow()));
+    }
+
+    private void reveal(Rectangle2D r) {
+        scrollRectToVisible(new java.awt.Rectangle((int) (r.getX() * zoom) - 20, (int) (r.getY() * zoom) - 20,
+                (int) (r.getWidth() * zoom) + 40, (int) (r.getHeight() * zoom) + 40));
     }
 
     // ================================================================ modello
 
     public ErModel model() {
         return model;
+    }
+
+    /** Le misure delle entità si rifanno (colonne cambiate): anche i percorsi. */
+    public void invalidateMeasures() {
+        sizes.clear();
+        routedFor = null;
+        revalidate();
+        repaint();
+    }
+
+    /** Cambia il carattere del programma: misure e percorsi si rifanno col carattere nuovo. */
+    @Override
+    public void updateUI() {
+        super.updateUI();
+        if (sizes != null) {
+            sizes.clear();
+            routedFor = null;
+            revalidate();
+            repaint();
+        }
     }
 
     /** Il modello da disegnare (misure ricalcolate). */
@@ -215,7 +342,13 @@ public final class ErCanvas extends JComponent {
             try {
                 FontMetrics name = g.getFontMetrics(nameFont());
                 FontMetrics row = g.getFontMetrics(rowFont());
-                double w = name.stringWidth(e.table()) + 2 * PAD + 44;
+                // spazio per la pillola dell'intestazione («N:M», «MyISAM», «mancante»), la più larga
+                FontMetrics pill = g.getFontMetrics(rowFont().deriveFont(Font.BOLD, rowFont().getSize2D() - 1));
+                int pillWidth = 0;
+                for (String key : new String[] {"er.entity.bridge", "er.entity.myisam", "er.entity.missing"}) {
+                    pillWidth = Math.max(pillWidth, pill.stringWidth(Texts.get(key)));
+                }
+                double w = name.stringWidth(e.table()) + 2 * PAD + pillWidth + 22;
                 for (ErModel.Attribute a : e.columns()) {
                     w = Math.max(w, 22 + row.stringWidth(a.name()) + 16 + row.stringWidth(a.type()) + 2 * PAD);
                 }
@@ -303,9 +436,10 @@ public final class ErCanvas extends JComponent {
         g.setColor(e.missing() ? Tokens.DANGER_TINT : "MyISAM".equalsIgnoreCase(e.engine())
                 ? Tokens.ENGINE_MYISAM_TINT
                 : Tokens.ACCENT_TINT);
-        g.setClip(new Rectangle2D.Double(b.getX(), b.getY(), b.getWidth(), HEADER));
+        java.awt.Shape clip = g.getClip();   // il ritaglio di Swing si rimette com'era
+        g.clip(new Rectangle2D.Double(b.getX(), b.getY(), b.getWidth(), HEADER));
         g.fill(header);
-        g.setClip(null);
+        g.setClip(clip);
         g.setColor(Tokens.BORDER_SUBTLE);
         g.draw(new Line2D.Double(b.getX(), b.getY() + HEADER, b.getMaxX(), b.getY() + HEADER));
         Font nameFont = nameFont();
@@ -314,14 +448,17 @@ public final class ErCanvas extends JComponent {
         g.setColor(e.missing() ? Tokens.DANGER : Tokens.TEXT_PRIMARY);
         double baseline = b.getY() + (HEADER + fm.getAscent() - fm.getDescent()) / 2;
         g.drawString(e.table(), (float) (b.getX() + PAD), (float) baseline);
-        if (bridges.contains(e.table().toLowerCase(Locale.ROOT)) || e.missing()) {
-            String pill = e.missing() ? Texts.get("er.entity.missing") : Texts.get("er.entity.bridge");
+        boolean myisam = "MyISAM".equalsIgnoreCase(e.engine());
+        if (bridges.contains(e.table().toLowerCase(Locale.ROOT)) || e.missing() || myisam) {
+            String pill = e.missing() ? Texts.get("er.entity.missing") : bridges.contains(e.table().toLowerCase(Locale.ROOT))
+                    ? Texts.get("er.entity.bridge") : Texts.get("er.entity.myisam");
             g.setFont(rowFont().deriveFont(Font.BOLD, rowFont().getSize2D() - 1));
             FontMetrics pm = g.getFontMetrics();
             double pw = pm.stringWidth(pill) + 10;
             double px = b.getMaxX() - PAD - pw;
             double py = b.getY() + (HEADER - 16) / 2;
-            g.setColor(e.missing() ? Tokens.DANGER : Tokens.ACCENT);
+            g.setColor(e.missing() ? Tokens.DANGER : myisam && !bridges.contains(e.table().toLowerCase(Locale.ROOT))
+                    ? Tokens.ENGINE_MYISAM : Tokens.ACCENT);
             g.fill(new RoundRectangle2D.Double(px, py, pw, 16, 16, 16));
             g.setColor(Tokens.BG_SURFACE);
             g.drawString(pill, (float) (px + 5), (float) (py + 12));
@@ -339,18 +476,19 @@ public final class ErCanvas extends JComponent {
                 g.setColor(Tokens.TEXT_TERTIARY);
                 g.fill(new java.awt.geom.Ellipse2D.Double(b.getX() + PAD + 3, y + ROW / 2 - 3, 6, 6));
             }
-            g.setColor(a.primaryKey() ? Tokens.TEXT_PRIMARY : Tokens.TEXT_PRIMARY);
+            g.setColor(Tokens.TEXT_PRIMARY);
             g.setFont(a.primaryKey() ? rowFont.deriveFont(Font.BOLD) : rowFont);
             g.drawString(a.name(), (float) (b.getX() + PAD + 18), (float) base);
             g.setFont(rowFont);
             g.setColor(Tokens.TEXT_SECONDARY);
-            String type = a.type() + (a.nullable() ? "" : "");
+            String type = a.type();
             g.drawString(type, (float) (b.getMaxX() - PAD - rm.stringWidth(type)), (float) base);
             y += ROW;
         }
-        // bordo
-        g.setColor(e.missing() ? Tokens.DANGER : Tokens.BORDER_DEFAULT);
-        g.setStroke(e.missing() ? dashed(1.5f) : new BasicStroke(1.2f));
+        // bordo (la tabella scelta con la tastiera ha il bordo d'accento)
+        boolean chosen = e.table().equals(selectedEntity);
+        g.setColor(e.missing() ? Tokens.DANGER : chosen ? Tokens.ACCENT : Tokens.BORDER_DEFAULT);
+        g.setStroke(e.missing() ? dashed(1.5f) : new BasicStroke(chosen ? 2.4f : 1.2f));
         g.draw(box);
         g.setStroke(new BasicStroke(1f));
     }
@@ -380,7 +518,7 @@ public final class ErCanvas extends JComponent {
 
     private Map<String, List<Point2D>> routes() {
         if (model != routedFor) {
-            routes = computeRoutes(null, Map.of());
+            routes = computeRoutes(null, null, Map.of());
             routedFor = model;
         }
         return routes;
@@ -391,7 +529,8 @@ public final class ErCanvas extends JComponent {
      * (durante il trascinamento) si ricalcolano solo le relazioni dell'entità trascinata e le altre restano come
      * erano; al rilascio si ricalcola tutto.
      */
-    private Map<String, List<Point2D>> computeRoutes(String onlyTable, Map<String, List<Point2D>> previous) {
+    private Map<String, List<Point2D>> computeRoutes(String onlyTable, Rectangle2D area,
+            Map<String, List<Point2D>> previous) {
         Map<String, List<Point2D>> out = new HashMap<>();
         if (model == null) {
             return out;
@@ -412,7 +551,7 @@ public final class ErCanvas extends JComponent {
         for (Relationship r : todo) {
             List<Point2D> old = previous.get(r.id());
             if (onlyTable != null && old != null && !r.fromTable().equalsIgnoreCase(onlyTable)
-                    && !r.toTable().equalsIgnoreCase(onlyTable)) {
+                    && !r.toTable().equalsIgnoreCase(onlyTable) && (area == null || !crosses(old, area))) {
                 out.put(r.id(), old);
                 router.occupy(old);
             } else {
@@ -426,6 +565,17 @@ public final class ErCanvas extends JComponent {
             }
         }
         return out;
+    }
+
+    /** Un percorso passa per il rettangolo. */
+    private static boolean crosses(List<Point2D> pts, Rectangle2D area) {
+        for (int i = 1; i < pts.size(); i++) {
+            if (area.intersectsLine(pts.get(i - 1).getX(), pts.get(i - 1).getY(), pts.get(i).getX(),
+                    pts.get(i).getY())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /** Il percorso di una relazione: dalla riga della colonna della figlia alla riga della colonna del padre. */
@@ -515,7 +665,10 @@ public final class ErCanvas extends JComponent {
         }
         boolean logical = r.kind() == Relationship.Kind.LOGICAL;
         boolean selected = r.id().equals(selectedRelationship);
-        Color color = selected ? Tokens.WARNING : logical ? Tokens.ACCENT : Tokens.TEXT_SECONDARY;
+        // logica rotta: una sua colonna non c'è più (Aggiorna dal database) → in rosso
+        boolean broken = logical && !it.ramasql.model.ModelRefresh.brokenColumns(model, r).isEmpty();
+        Color color = broken ? Tokens.DANGER : selected ? Tokens.ACCENT_PRESSED : logical ? Tokens.ACCENT
+                : Tokens.TEXT_SECONDARY;
         g.setColor(color);
         g.setStroke(logical ? dashed(selected ? 2.4f : 1.6f) : new BasicStroke(selected ? 2.4f : 1.4f));
         g.draw(path);
@@ -524,7 +677,8 @@ public final class ErCanvas extends JComponent {
         if (pts.size() < 2) {
             return;
         }
-        // estremo della figlia (primo punto): molti (zampa di gallina) o uno (barretta)
+        // estremo della figlia (primo punto): «zero o più» (cerchio e zampa di gallina), per 1:1 «zero o uno»
+        // (cerchio e barretta): a una riga del padre possono non corrispondere righe della figlia
         Point2D c0 = pts.get(0);
         Point2D c1 = pts.get(1);
         double dirC = Math.signum(c1.getX() - c0.getX());
@@ -532,31 +686,28 @@ public final class ErCanvas extends JComponent {
             dirC = 1;
         }
         if (r.cardinality() == Relationship.Cardinality.ONE_TO_ONE) {
-            bar(g, c0.getX() + dirC * 9, c0.getY());
+            bar(g, c0.getX() + dirC * 7, c0.getY());
         } else {
-            double tip = c0.getX() + dirC * 12;
-            g.draw(new Line2D.Double(tip, c0.getY(), c0.getX(), c0.getY() - 6));
-            g.draw(new Line2D.Double(tip, c0.getY(), c0.getX(), c0.getY() + 6));
-            g.draw(new Line2D.Double(tip, c0.getY(), c0.getX(), c0.getY()));
-            bar(g, c0.getX() + dirC * 16, c0.getY());
+            crowFoot(g, c0, dirC);
         }
-        // estremo del padre (ultimo punto): uno; obbligatoria = due barrette, facoltativa = barretta e cerchio
+        circle(g, c0.getX() + dirC * 18, c0.getY(), color);
+        // estremo del padre (ultimo punto): uno — obbligatoria due barrette, facoltativa barretta e cerchio; per N:M
+        // (indicativa) la zampa di gallina anche qui
         Point2D p0 = pts.get(pts.size() - 1);
         Point2D p1 = pts.get(pts.size() - 2);
         double dirP = Math.signum(p1.getX() - p0.getX());
         if (dirP == 0) {
             dirP = 1;
         }
-        bar(g, p0.getX() + dirP * 7, p0.getY());
-        if (r.mandatory()) {
-            bar(g, p0.getX() + dirP * 12, p0.getY());
+        if (r.cardinality() == Relationship.Cardinality.MANY_TO_MANY) {
+            crowFoot(g, p0, dirP);
         } else {
-            g.setColor(Tokens.BG_SURFACE);
-            java.awt.geom.Ellipse2D circle = new java.awt.geom.Ellipse2D.Double(p0.getX() + dirP * 16 - 4,
-                    p0.getY() - 4, 8, 8);
-            g.fill(circle);
-            g.setColor(color);
-            g.draw(circle);
+            bar(g, p0.getX() + dirP * 7, p0.getY());
+        }
+        if (r.mandatory()) {
+            bar(g, p0.getX() + dirP * 13, p0.getY());
+        } else {
+            circle(g, p0.getX() + dirP * 18, p0.getY(), color);
         }
         if (!r.label().isEmpty() && logical) {
             Point2D mid = pts.get(pts.size() / 2);
@@ -568,6 +719,23 @@ public final class ErCanvas extends JComponent {
             g.setColor(color);
             g.drawString(r.label(), (float) (mid.getX() - w / 2 + 4), (float) (mid.getY() - 5));
         }
+    }
+
+    /** Zampa di gallina: tre linee che si aprono verso l'entità, dalla punta a 12 unità. */
+    private static void crowFoot(Graphics2D g, Point2D at, double dir) {
+        double tip = at.getX() + dir * 12;
+        g.draw(new Line2D.Double(tip, at.getY(), at.getX(), at.getY() - 6));
+        g.draw(new Line2D.Double(tip, at.getY(), at.getX(), at.getY() + 6));
+        g.draw(new Line2D.Double(tip, at.getY(), at.getX(), at.getY()));
+    }
+
+    /** Cerchio vuoto («zero»), centrato in (x, y). */
+    private static void circle(Graphics2D g, double x, double y, Color color) {
+        java.awt.geom.Ellipse2D c = new java.awt.geom.Ellipse2D.Double(x - 4, y - 4, 8, 8);
+        g.setColor(Tokens.BG_SURFACE);
+        g.fill(c);
+        g.setColor(color);
+        g.draw(c);
     }
 
     private static void bar(Graphics2D g, double x, double y) {
@@ -663,13 +831,14 @@ public final class ErCanvas extends JComponent {
     }
 
     private void dragged(MouseEvent e) {
+        scrollRectToVisible(new java.awt.Rectangle(e.getX(), e.getY(), 1, 1));   // verso il bordo: la vista scorre
         Point2D p = toModel(e.getPoint());
         if (dragged != null) {
             moved = true;
             double nx = Math.max(0, Math.round(p.getX() - dragDx));
             double ny = Math.max(0, Math.round(p.getY() - dragDy));
             model = model.changeEntity(dragged, en -> en.at(nx, ny));
-            routes = computeRoutes(dragged, routes);
+            routes = computeRoutes(dragged, null, routes);
             routedFor = model;
             revalidate();
             repaint();
@@ -682,8 +851,20 @@ public final class ErCanvas extends JComponent {
     private void released(MouseEvent e) {
         Point2D p = toModel(e.getPoint());
         if (dragged != null) {
+            String released = dragged;
             dragged = null;
-            routedFor = null;   // al rilascio si ridisegnano tutti i percorsi, attorno alla nuova posizione
+            // al rilascio si rifanno le relazioni dell'entità e quelle che ora le passerebbero sotto (non tutte:
+            // con cento entità ricalcolarle tutte fermerebbe l'interfaccia)
+            ErModel.Entity movedEntity = model.entity(released).orElse(null);
+            if (movedEntity != null) {
+                Rectangle2D b = bounds(movedEntity);
+                Rectangle2D area = new Rectangle2D.Double(b.getX() - ErRouter.CLEAR, b.getY() - ErRouter.CLEAR,
+                        b.getWidth() + 2 * ErRouter.CLEAR, b.getHeight() + 2 * ErRouter.CLEAR);
+                routes = computeRoutes(released, area, routes);
+                routedFor = model;
+            } else {
+                routedFor = null;
+            }
             repaint();
             if (moved) {
                 onChange.accept(model);
@@ -759,6 +940,28 @@ public final class ErCanvas extends JComponent {
                     Texts.get(r.mandatory() ? "er.mandatory.yes" : "er.mandatory.no"));
         }
         return Texts.get("er.canvas.tooltip");
+    }
+
+    /** Lato massimo dell'immagine esportata, in pixel: oltre, la scala si riduce (memoria e programmi di stampa). */
+    public static final int MAX_EXPORT_SIDE = 8000;
+
+    /** La scala per l'esportazione: quella chiesta, ridotta se l'immagine supererebbe {@link #MAX_EXPORT_SIDE}. */
+    public double exportScale(double wanted) {
+        Rectangle2D r = extent();
+        double side = Math.max(r.getWidth(), r.getHeight()) + 2 * MARGIN;
+        return Math.min(wanted, MAX_EXPORT_SIDE / side);
+    }
+
+    /**
+     * Una copia del canvas con lo stesso modello, misure e percorsi già calcolati: si disegna in sottofondo (PNG) senza
+     * toccare il canvas che l'utente sta usando.
+     */
+    public ErCanvas snapshot() {
+        ErCanvas copy = new ErCanvas();
+        copy.setModel(model);
+        copy.extent();
+        copy.routes();
+        return copy;
     }
 
     /** L'immagine del diagramma a una scala data (1 = 100%), con un margine bianco. */

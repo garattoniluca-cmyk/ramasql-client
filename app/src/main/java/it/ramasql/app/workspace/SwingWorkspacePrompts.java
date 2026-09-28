@@ -129,6 +129,18 @@ public final class SwingWorkspacePrompts implements WorkspacePrompts {
     }
 
     @Override
+    public List<String> chooseModelTables(String catalog, List<String> tables) {
+        return new it.ramasql.app.er.ModelTablesDialog(owner.get(), catalog, tables).showModal();
+    }
+
+    @Override
+    public String askRelationshipLabel(String relationship, String current) {
+        Object answer = JOptionPane.showInputDialog(owner.get(), Texts.get("er.relationship.label.message",
+                relationship), Texts.get("er.relationship.label"), JOptionPane.PLAIN_MESSAGE, null, null, current);
+        return answer == null ? null : answer.toString();
+    }
+
+    @Override
     public void copyToClipboard(String text) {
         StringSelection selection = new StringSelection(text);
         Toolkit.getDefaultToolkit().getSystemClipboard().setContents(selection, selection);

@@ -22,6 +22,15 @@ public interface ErContext {
     /** Il lettore dei metadati della connessione aperta, se ce n'è una; {@code null} senza connessione. */
     MetadataReader reader();
 
+    /**
+     * Il server collegato ({@code host:porta} del profilo), o {@code null} senza connessione: un modello si aggiorna e
+     * apre le tabelle solo sul server da cui viene.
+     */
+    String serverAddress();
+
+    /** Chiede l'etichetta di una relazione logica; {@code null} = annullato. */
+    String askLabel(String relationship, String current);
+
     /** Apre l'editor della tabella nella finestra principale (se connessi). */
     void openTableEditor(String catalog, String table);
 

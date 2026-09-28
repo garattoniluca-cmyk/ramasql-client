@@ -168,10 +168,36 @@ public final class ErModelPanel extends JPanel {
 
         canvas.setModel(model);
         canvas.setOnChange(m -> changed());
-        canvas.setOnOpenTable(t -> context.openTableEditor(canvas.model().catalog(), t));
+        canvas.setOnOpenTable(this::openTable);
         canvas.setOnDraw(this::drawRelationship);
         canvas.setOnRelationshipMenu(this::relationshipMenu);
+        canvas.setOnDeleteRelationship(r -> {
+            if (r.kind() == Relationship.Kind.LOGICAL) {
+                setModel(model().removeRelationship(r.id()));
+            } else {
+                banner.set(Banner.Tone.INFO, Texts.get("er.relationship.physical.tooltip"));
+            }
+        });
+        // scorciatoie della finestra del modello
+        key("ctrl S", "er.save", this::save);
+        key("ctrl PLUS", "er.zoomIn", () -> zoom(1.2));
+        key("ctrl ADD", "er.zoomIn2", () -> zoom(1.2));
+        key("ctrl EQUALS", "er.zoomIn3", () -> zoom(1.2));
+        key("ctrl MINUS", "er.zoomOut", () -> zoom(1 / 1.2));
+        key("ctrl SUBTRACT", "er.zoomOut2", () -> zoom(1 / 1.2));
         refreshButtons();
+    }
+
+    private void key(String stroke, String name, Runnable action) {
+        getInputMap(WHEN_IN_FOCUSED_WINDOW).put(javax.swing.KeyStroke.getKeyStroke(stroke), name);
+        getActionMap().put(name, new javax.swing.AbstractAction() {
+            private static final long serialVersionUID = 1L;
+
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                action.run();
+            }
+        });
     }
 
     // ================================================================ stato
@@ -234,6 +260,26 @@ public final class ErModelPanel extends JPanel {
 
     // ================================================================ azioni
 
+    /** Il modello viene dal server collegato (o non si sa da quale: modelli vecchi). */
+    boolean sameServer() {
+        String here = context.serverAddress();
+        return here != null && (model().server().isEmpty() || model().server().equalsIgnoreCase(here));
+    }
+
+    /** Doppio clic su un'entità: la sua struttura nell'editor di tabelle, se si può. */
+    public void openTable(String table) {
+        if (context.serverAddress() == null) {
+            banner.set(Banner.Tone.INFO, Texts.get("er.open.disconnected", table));
+        } else if (!sameServer()) {
+            banner.set(Banner.Tone.WARNING, Texts.get("er.open.otherServer", table, model().server(),
+                    context.serverAddress()));
+        } else if (model().entity(table).map(ErModel.Entity::missing).orElse(true)) {
+            banner.set(Banner.Tone.WARNING, Texts.get("er.open.missing", table));
+        } else {
+            context.openTableEditor(model().catalog(), table);
+        }
+    }
+
     /** «Disponi»: disposizione automatica (le tabelle più collegate al centro). */
     public void autoLayout() {
         setModel(AutoLayout.layout(model(), canvas.measure()));
@@ -250,8 +296,8 @@ public final class ErModelPanel extends JPanel {
         List<RelationshipSuggester.Suggestion> list = RelationshipSuggester.suggest(model());
         suggestions.set(list);
         showSuggestions(true);
-        banner.set(list.isEmpty() ? Banner.Tone.INFO : Banner.Tone.INFO, Texts.get(list.isEmpty()
-                ? "er.suggestions.none" : "er.suggestions.found", list.size()));
+        banner.set(Banner.Tone.INFO, Texts.get(list.isEmpty() ? "er.suggestions.none" : "er.suggestions.found",
+                list.size()));
     }
 
     private void showSuggestions(boolean show) {
@@ -290,16 +336,23 @@ public final class ErModelPanel extends JPanel {
         if (n > 0) {
             setModel(m);
         }
+        // le accettate spariscono dall'elenco; il messaggio resta quello dell'accettazione
+        List<RelationshipSuggester.Suggestion> left = RelationshipSuggester.suggest(model());
+        suggestions.set(left);
+        showSuggestions(!left.isEmpty());
         banner.set(Banner.Tone.SUCCESS, Texts.get("er.suggestions.accepted", n));
-        suggest();   // quelle accettate spariscono dall'elenco
-        if (suggestions.rows.isEmpty()) {
-            showSuggestions(false);
-        }
     }
 
     /** Una relazione logica disegnata a mano, dalla colonna della figlia alla colonna del padre. */
     public void drawRelationship(String fromTable, String fromColumn, String toTable, String toColumn) {
         ErModel m = model();
+        ErModel.Entity fromEntity = m.entity(fromTable).orElseThrow();
+        ErModel.Entity toEntity = m.entity(toTable).orElseThrow();
+        if (isKey(fromEntity, fromColumn) && !isKey(toEntity, toColumn)) {
+            // trascinata dalla chiave verso il riferimento: il verso giusto è dal riferimento (molti) alla chiave (uno)
+            drawRelationship(toTable, toColumn, fromTable, fromColumn);
+            return;
+        }
         if (m.hasRelationship(fromTable, List.of(fromColumn), toTable)) {
             banner.set(Banner.Tone.WARNING, Texts.get("er.draw.exists", fromTable + "." + fromColumn, toTable));
             return;
@@ -322,6 +375,12 @@ public final class ErModelPanel extends JPanel {
         banner.set(lines);
     }
 
+    /** La colonna è la chiave primaria (da sola) o ha un indice UNIQUE: il lato «uno» di una relazione. */
+    private static boolean isKey(ErModel.Entity e, String column) {
+        return e.primaryKey().size() == 1 && e.primaryKey().get(0).equalsIgnoreCase(column)
+                || e.isUnique(List.of(column));
+    }
+
     private static boolean sameFamily(String a, String b) {
         String x = a.replaceAll("[^A-Za-z].*", "").toUpperCase(Locale.ROOT);
         String y = b.replaceAll("[^A-Za-z].*", "").toUpperCase(Locale.ROOT);
@@ -333,9 +392,11 @@ public final class ErModelPanel extends JPanel {
     private void relationshipMenu(Relationship r) {
         JPopupMenu menu = relationshipMenuFor(r);
         java.awt.Point p = getMousePosition(true);
-        if (p != null) {
-            menu.show(this, p.x, p.y);
+        if (p == null) {   // dalla tastiera: al centro della parte visibile del diagramma
+            java.awt.Rectangle v = scroll.getViewport().getBounds();
+            p = javax.swing.SwingUtilities.convertPoint(scroll, v.x + v.width / 2, v.y + v.height / 2, this);
         }
+        menu.show(this, p.x, p.y);
     }
 
     /** Il menu di una relazione: per le logiche cardinalità, etichetta, eliminazione; per le fisiche solo che cos'è. */
@@ -359,6 +420,16 @@ public final class ErModelPanel extends JPanel {
             menu.add(item);
         }
         menu.addSeparator();
+        JMenuItem label = new JMenuItem(Texts.get("er.relationship.label"));
+        label.setName("er.relationship.label");
+        label.setToolTipText(Texts.get("er.relationship.label.tooltip"));
+        label.addActionListener(e -> {
+            String text = context.askLabel(r.describe(), r.label());
+            if (text != null) {
+                setLabel(r.id(), text);
+            }
+        });
+        menu.add(label);
         JMenuItem delete = new JMenuItem(Texts.get("er.relationship.delete"));
         delete.setName("er.relationship.delete");
         delete.setToolTipText(Texts.get("er.relationship.delete.tooltip"));
@@ -387,6 +458,13 @@ public final class ErModelPanel extends JPanel {
         if (reader == null || busy) {
             return;
         }
+        if (!sameServer()) {
+            // un catalogo con lo stesso nome su un altro server avrebbe altre tabelle: nessuna modifica al modello
+            banner.set(Banner.Tone.DANGER, Texts.get("er.refresh.otherServer", model().server(),
+                    context.serverAddress()));
+            return;
+        }
+        String server = context.serverAddress();
         ErModel current = model();
         List<String> tables = current.wholeCatalog() ? List.of()
                 : current.entities().stream().map(ErModel.Entity::table).toList();
@@ -409,8 +487,9 @@ public final class ErModelPanel extends JPanel {
                 busy = false;
                 try {
                     ErModel fresh = get();
+                    canvas.invalidateMeasures();   // colonne cambiate: misure nuove anche per piazzare le tabelle nuove
                     ModelRefresh.Result r = ModelRefresh.refresh(model(), fresh, canvas.measure());
-                    setModel(r.model());
+                    setModel(r.model().server().isEmpty() ? r.model().withServer(server) : r.model());
                     List<Banner.Line> lines = new ArrayList<>();
                     lines.add(new Banner.Line(Banner.Tone.SUCCESS, Texts.get("er.refresh.done")));
                     if (!r.added().isEmpty()) {
@@ -425,6 +504,17 @@ public final class ErModelPanel extends JPanel {
                         lines.add(new Banner.Line(Banner.Tone.WARNING, Texts.get("er.refresh.missing", String.join(", ",
                                 r.missing()))));
                     }
+                    if (!r.broken().isEmpty()) {
+                        lines.add(new Banner.Line(Banner.Tone.WARNING, Texts.get("er.refresh.broken", String.join(", ",
+                                r.broken()))));
+                    }
+                    if (!r.promoted().isEmpty()) {
+                        lines.add(new Banner.Line(Banner.Tone.INFO, Texts.get("er.refresh.promoted", String.join(", ",
+                                r.promoted()))));
+                    }
+                    if (AutoLayout.overlaps(model(), canvas.measure())) {
+                        lines.add(new Banner.Line(Banner.Tone.INFO, Texts.get("er.refresh.overlaps")));
+                    }
                     banner.set(lines);
                 } catch (Exception e) {
                     Throwable t = e.getCause() != null ? e.getCause() : e;
@@ -437,6 +527,15 @@ public final class ErModelPanel extends JPanel {
 
     /** «Salva»: il file {@code .rsqlmodel} (la prima volta si sceglie dove). */
     public void save() {
+        save(null);
+    }
+
+    /** Come {@link #save()}; {@code afterSaved} si esegue a salvataggio riuscito (per chiudere dopo aver salvato). */
+    public void save(Runnable afterSaved) {
+        if (busy) {
+            banner.set(Banner.Tone.INFO, Texts.get("er.busy"));
+            return;
+        }
         Path target = file;
         if (target == null) {
             target = context.files().chooseToSave(FilePrompts.Purpose.MODEL, model().name() + ".rsqlmodel");
@@ -466,6 +565,9 @@ public final class ErModelPanel extends JPanel {
                     }
                     banner.set(Banner.Tone.SUCCESS, Texts.get("er.save.done", where.getFileName()));
                     onTitleChange.run();
+                    if (afterSaved != null && !modified) {
+                        afterSaved.run();
+                    }
                 } catch (Exception e) {
                     Throwable t = e.getCause() != null ? e.getCause() : e;
                     context.files().showError(Texts.get("er.save"), Texts.get("er.save.failed", where.getFileName(),
@@ -485,23 +587,31 @@ public final class ErModelPanel extends JPanel {
         if (target == null) {
             return;
         }
-        BufferedImage image = canvas.render(EXPORT_SCALE);
+        // una copia con misure e percorsi pronti si disegna in sottofondo; scala ridotta per i diagrammi enormi
+        ErCanvas copy = canvas.snapshot();
+        double scale = copy.exportScale(EXPORT_SCALE);
         busy = true;
         refreshButtons();
-        new SwingWorker<Void, Void>() {
+        new SwingWorker<int[], Void>() {
             @Override
-            protected Void doInBackground() throws Exception {
+            protected int[] doInBackground() throws Exception {
+                BufferedImage image;
+                try {
+                    image = copy.render(scale);
+                } catch (OutOfMemoryError e) {
+                    throw new IllegalStateException(Texts.get("er.export.tooBig"), e);
+                }
                 ImageIO.write(image, "png", target.toFile());
-                return null;
+                return new int[] {image.getWidth(), image.getHeight()};
             }
 
             @Override
             protected void done() {
                 busy = false;
                 try {
-                    get();
-                    banner.set(Banner.Tone.SUCCESS, Texts.get("er.export.done", target.getFileName(), image.getWidth(),
-                            image.getHeight()));
+                    int[] size = get();
+                    banner.set(Banner.Tone.SUCCESS, Texts.get("er.export.done", target.getFileName(), size[0],
+                            size[1]));
                 } catch (Exception e) {
                     Throwable t = e.getCause() != null ? e.getCause() : e;
                     context.files().showError(Texts.get("er.export"), Texts.get("er.export.failed", t.getMessage()));
@@ -511,15 +621,28 @@ public final class ErModelPanel extends JPanel {
         }.execute();
     }
 
-    /** Si può chiudere: chiede se salvare le modifiche. */
+    /** Si può chiudere subito: chiede se salvare le modifiche. */
     public boolean canClose() {
+        return canClose(null);
+    }
+
+    /**
+     * Si può chiudere subito? Con modifiche chiede se salvarle: <em>Salva</em> salva in sottofondo e poi esegue
+     * {@code whenSaved} (che chiude); intanto la risposta è {@code false}. Con un'operazione in corso (salvataggio,
+     * aggiornamento) non si chiude.
+     */
+    public boolean canClose(Runnable whenSaved) {
+        if (busy) {
+            banner.set(Banner.Tone.INFO, Texts.get("er.busy"));
+            return false;
+        }
         if (!modified) {
             return true;
         }
         return switch (context.askSaveOnClose(title())) {
             case SAVE -> {
-                save();
-                yield false;   // si chiude dopo, a salvataggio finito
+                save(whenSaved);
+                yield false;   // si chiude dopo, a salvataggio riuscito
             }
             case DISCARD -> true;
             case STAY -> false;

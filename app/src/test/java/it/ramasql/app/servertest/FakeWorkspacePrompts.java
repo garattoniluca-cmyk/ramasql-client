@@ -35,6 +35,27 @@ import it.ramasql.core.metadata.CollationInfo;
  */
 public final class FakeWorkspacePrompts implements WorkspacePrompts {
 
+    // ---------------------------------------------------------------- modello ER
+
+    /** Scelta delle tabelle del modello: riceve l'elenco proposto, restituisce le scelte ({@code null} = annulla). */
+    public java.util.function.UnaryOperator<List<String>> modelTables = tables -> tables;
+    /** Gli elenchi proposti. */
+    public final List<List<String>> modelTablesShown = new java.util.ArrayList<>();
+
+    /** Etichetta scritta per una relazione logica ({@code null} = annullato). */
+    public String relationshipLabel;
+
+    @Override
+    public String askRelationshipLabel(String relationship, String current) {
+        return relationshipLabel;
+    }
+
+    @Override
+    public List<String> chooseModelTables(String catalog, List<String> tables) {
+        modelTablesShown.add(List.copyOf(tables));
+        return modelTables.apply(tables);
+    }
+
     // ---------------------------------------------------------------- finestre modali delle schede
 
     /** Risposta alle conferme locali della griglia («Scartare le modifiche?»); predefinito: no. */

@@ -152,15 +152,12 @@ public final class MainFrame extends JFrame implements ShellView {
             }
         });
         setIconImages(AppIcon.images());
-        setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+        // la finestra si chiude solo da requestExit: con DISPOSE_ON_CLOSE si chiuderebbe anche scegliendo «Resta»
+        setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
         addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
-                if (!tabs.confirmCloseAll()) {
-                    return;   // c'è lavoro in sospeso e l'utente ha scelto di restare
-                }
-                closeWorkspace();
-                connections.shutdown();
+                requestExit();
             }
         });
 
@@ -270,7 +267,9 @@ public final class MainFrame extends JFrame implements ShellView {
         file.add(item("menu.file.importProfiles", AppIcons.MENU_IMPORT_PROFILES, null, connections::importProfiles));
         file.add(item("menu.file.exportProfiles", AppIcons.MENU_EXPORT_PROFILES, null, connections::exportProfiles));
         file.addSeparator();
-        file.add(item("menu.file.openModel", AppIcons.ER_MODEL, null, this::openErModelFile));
+        JMenuItem openModel = item("menu.file.openModel", AppIcons.ER_MODEL, null, this::openErModelFile);
+        openModel.setToolTipText(Texts.get("menu.file.openModel.tooltip"));
+        file.add(openModel);
         file.addSeparator();
         file.add(item("menu.file.settings", AppIcons.MENU_SETTINGS,
                 KeyStroke.getKeyStroke(KeyEvent.VK_COMMA, InputEvent.CTRL_DOWN_MASK), settings::edit));
@@ -770,6 +769,16 @@ public final class MainFrame extends JFrame implements ShellView {
         }
 
         @Override
+        public String serverAddress() {
+            return workspace == null ? null : workspace.session().profile().address();
+        }
+
+        @Override
+        public String askLabel(String relationship, String current) {
+            return workspacePrompts.askRelationshipLabel(relationship, current);
+        }
+
+        @Override
         public void openTableEditor(String catalog, String table) {
             if (workspace == null) {
                 return;
@@ -792,6 +801,25 @@ public final class MainFrame extends JFrame implements ShellView {
             };
         }
     };
+
+    /**
+     * Uscita dal programma (X della finestra, Alt+F4, File → Esci): prima i modelli ER aperti (ciascuno chiede se
+     * salvare; se si salva, l'uscita riprende a salvataggio finito), poi il lavoro in sospeso delle schede. Con
+     * «Resta» non si esce.
+     */
+    public void requestExit() {
+        for (it.ramasql.app.er.ErModelWindow w : erWindows()) {
+            if (!w.closeIfAllowed(() -> javax.swing.SwingUtilities.invokeLater(this::requestExit))) {
+                return;
+            }
+        }
+        if (!tabs.confirmCloseAll()) {
+            return;   // c'è lavoro in sospeso e l'utente ha scelto di restare
+        }
+        closeWorkspace();
+        connections.shutdown();
+        dispose();
+    }
 
     /** Le finestre dei modelli aperte. */
     public List<it.ramasql.app.er.ErModelWindow> erWindows() {
@@ -818,18 +846,54 @@ public final class MainFrame extends JFrame implements ShellView {
         return erLoading;
     }
 
-    /** «Nuovo modello dal catalogo»: retroingegneria in sottofondo, poi la disposizione automatica. */
+    /**
+     * «Nuovo modello dal catalogo»: l'elenco delle tabelle in sottofondo, la scelta di quali mettere nel modello
+     * ({@code DESIGN.md} §3.11), la retroingegneria in sottofondo, poi la disposizione automatica.
+     */
     public void newErModel(String catalog) {
         if (workspace == null || catalog == null) {
             return;
         }
         it.ramasql.core.metadata.MetadataReader reader = workspace.reader();
+        String server = workspace.session().profile().address();
         erLoading = true;
+        new javax.swing.SwingWorker<List<String>, Void>() {
+            @Override
+            protected List<String> doInBackground() throws Exception {
+                return reader.tables(catalog).stream().filter(t -> !t.isView())
+                        .map(it.ramasql.core.metadata.TableSummary::name).toList();
+            }
+
+            @Override
+            protected void done() {
+                List<String> all;
+                try {
+                    all = get();
+                } catch (Exception e) {
+                    erLoading = false;
+                    Throwable t = e.getCause() != null ? e.getCause() : e;
+                    sqlPanel.message(PipelineView.MessageKind.ERROR, Texts.get("er.new.failed", catalog, t.getMessage()));
+                    return;
+                }
+                List<String> chosen = all.isEmpty() ? all : workspacePrompts.chooseModelTables(catalog, all);
+                if (chosen == null) {
+                    erLoading = false;
+                    sqlPanel.message(PipelineView.MessageKind.INFO, Texts.get("er.new.cancelled", catalog));
+                    return;
+                }
+                // tutte le tabelle = il catalogo intero (Aggiorna dal database aggiungerà anche quelle nuove)
+                reverseEngineer(reader, server, catalog, chosen.size() == all.size() ? List.of() : chosen);
+            }
+        }.execute();
+    }
+
+    private void reverseEngineer(it.ramasql.core.metadata.MetadataReader reader, String server, String catalog,
+            List<String> tables) {
         sqlPanel.message(PipelineView.MessageKind.INFO, Texts.get("er.new.running", catalog));
         new javax.swing.SwingWorker<it.ramasql.model.ErModel, Void>() {
             @Override
             protected it.ramasql.model.ErModel doInBackground() throws Exception {
-                return it.ramasql.model.ReverseEngineer.fromCatalog(reader, catalog, List.of());
+                return it.ramasql.model.ReverseEngineer.fromCatalog(reader, catalog, tables).withServer(server);
             }
 
             @Override
@@ -857,8 +921,15 @@ public final class MainFrame extends JFrame implements ShellView {
         }
     }
 
-    /** Apre un modello salvato (lettura del file in sottofondo). */
+    /** Apre un modello salvato (lettura del file in sottofondo); se è già aperto, porta avanti la sua finestra. */
     public void openErModel(java.nio.file.Path file) {
+        for (it.ramasql.app.er.ErModelWindow w : erWindows()) {
+            java.nio.file.Path open = w.panel().file();
+            if (open != null && open.toAbsolutePath().normalize().equals(file.toAbsolutePath().normalize())) {
+                w.toFront();   // due finestre sullo stesso file: un salvataggio cancellerebbe l'altro
+                return;
+            }
+        }
         erLoading = true;
         new javax.swing.SwingWorker<it.ramasql.model.ErModel, Void>() {
             @Override

@@ -129,8 +129,9 @@ Niente rifattorizzazioni «estetiche»: il modulo resta il più vicino possibile
 - Entità identificate da `catalogo.tabella`; contengono un'**istantanea** delle colonne presa alla retroingegneria/aggiornamento → il modello si apre anche senza connessione.
 - `Relationship { kind: PHYSICAL | LOGICAL, from, to, colonne, cardinalità, etichetta }`. Le `PHYSICAL` si rigenerano dal catalogo; le `LOGICAL` appartengono solo al file.
 - `RelationshipSuggester`: regole per nome (`<tabella>_id`, `id_<tabella>`, `<tabella>Id`, omonimia con PK altrui, singolare/plurale italiano e inglese semplice) + compatibilità di tipo; produce proposte con punteggio, mai applicate da sole.
-- `AutoLayout`: disposizione a livelli (tabelle più riferite al centro) — algoritmo semplice proprio; niente librerie di grafi.
-- Il canvas (`app.er`) è Java2D: entità come nodi trascinabili, connettori ortogonali, zampa di gallina, zoom/pan, esportazione PNG/SVG (JFreeSVG o scrittura diretta)/PDF via stampa.
+- `AutoLayout`: disposizione a spirale sulla griglia (tabelle più collegate al centro), senza sovrapposizioni — algoritmo semplice proprio; niente librerie di grafi.
+- `ReverseEngineer` (tabelle scelte → entità con istantanea di colonne, chiavi, engine; cardinalità e obbligatorietà dalle FK; tabelle ponte), `ModelFile` (lettura/scrittura), `ModelRefresh` (*Aggiorna dal database*: posizioni e relazioni logiche conservate, entità sparite segnate come mancanti).
+- **(Step 11, `ADR-027`)** Il canvas (`app.er.ErCanvas`) è Java2D: entità trascinabili, zampa di gallina, zoom, disegno a mano delle relazioni logiche, doppio clic → editor della tabella, esportazione PNG. `ErRouter` instrada le relazioni ortogonalmente attorno alle entità (A* su griglia sparsa). `ErModelPanel` (barra: suggerisci, disponi, aggiorna, esporta, salva, zoom; elenco dei suggerimenti) sta in una finestra propria `ErModelWindow`, che funziona anche senza connessione; `ModelTablesDialog` sceglie le tabelle del modello nuovo. SVG e PDF sono [dopo].
 
 ## 7. Dipendenze e licenze
 

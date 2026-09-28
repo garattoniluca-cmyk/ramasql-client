@@ -28,14 +28,28 @@ import java.util.function.UnaryOperator;
  *                      tabelle nuove
  * @param entities      entità
  * @param relationships relazioni
+ * @param server        il server da cui viene ({@code host:porta} del profilo; {@code ""} se non si sa): *Aggiorna dal
+ *                      database* e l'apertura delle tabelle si rifiutano su un altro server, che può avere un catalogo
+ *                      con lo stesso nome ma tabelle diverse
  */
 public record ErModel(String name, String catalog, boolean wholeCatalog, List<Entity> entities,
-        List<Relationship> relationships) {
+        List<Relationship> relationships, String server) {
 
     public ErModel {
         name = name == null ? "" : name;
         entities = List.copyOf(entities);
         relationships = List.copyOf(relationships);
+        server = server == null ? "" : server;
+    }
+
+    /** Un modello di cui non si sa il server. */
+    public ErModel(String name, String catalog, boolean wholeCatalog, List<Entity> entities,
+            List<Relationship> relationships) {
+        this(name, catalog, wholeCatalog, entities, relationships, "");
+    }
+
+    public ErModel withServer(String v) {
+        return new ErModel(name, catalog, wholeCatalog, entities, relationships, v);
     }
 
     /**
@@ -111,11 +125,11 @@ public record ErModel(String name, String catalog, boolean wholeCatalog, List<En
     }
 
     public ErModel withEntities(List<Entity> v) {
-        return new ErModel(name, catalog, wholeCatalog, v, relationships);
+        return new ErModel(name, catalog, wholeCatalog, v, relationships, server);
     }
 
     public ErModel withRelationships(List<Relationship> v) {
-        return new ErModel(name, catalog, wholeCatalog, entities, v);
+        return new ErModel(name, catalog, wholeCatalog, entities, v, server);
     }
 
     /** L'entità cambiata (per nome della tabella). */

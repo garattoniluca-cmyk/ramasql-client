@@ -56,7 +56,9 @@ public final class SwingFilePrompts implements FilePrompts {
             return null;
         }
         Path chosen = chooser.getSelectedFile().toPath();
-        if (!chosen.getFileName().toString().contains(".")) {
+        String lower = chosen.getFileName().toString().toLowerCase(java.util.Locale.ROOT);
+        if (java.util.Arrays.stream(purpose.extensions()).noneMatch(x -> lower.endsWith("." + x))) {
+            // «modello_v1.2» diventa «modello_v1.2.rsqlmodel»: senza l'estensione giusta «Apri» non lo mostrerebbe
             chosen = chosen.resolveSibling(chosen.getFileName() + "." + purpose.extensions()[0]);
         }
         if (Files.exists(chosen) && !confirm(Texts.get(purpose.key() + ".title"),

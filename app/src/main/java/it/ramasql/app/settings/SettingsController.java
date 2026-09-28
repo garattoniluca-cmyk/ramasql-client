@@ -101,13 +101,30 @@ public final class SettingsController {
         FlatLaf.updateUI();
     }
 
-    /** Attiva Ctrl+rotella in tutto il programma. */
+    /**
+     * I componenti con questa proprietà a {@code true} usano Ctrl+rotella per sé (lo zoom del diagramma ER): lì non
+     * cambia il carattere del programma.
+     */
+    public static final String OWN_CTRL_WHEEL = "ramasql.ownCtrlWheel";
+
+    /** Attiva Ctrl+rotella in tutto il programma (tranne sui componenti che lo usano per sé). */
     public void installCtrlWheelZoom() {
         Toolkit.getDefaultToolkit().addAWTEventListener(event -> {
-            if (event instanceof MouseWheelEvent wheel && wheel.isControlDown() && wheel.getID() == MouseWheelEvent.MOUSE_WHEEL) {
+            if (event instanceof MouseWheelEvent wheel && wheel.isControlDown() && wheel.getID() == MouseWheelEvent.MOUSE_WHEEL
+                    && !ownsCtrlWheel(wheel.getComponent())) {
                 changeFontSize(wheel.getWheelRotation() < 0 ? 1 : -1);
                 wheel.consume();
             }
         }, AWTEvent.MOUSE_WHEEL_EVENT_MASK);
+    }
+
+    /** Il componente, o uno che lo contiene, usa Ctrl+rotella per sé. */
+    static boolean ownsCtrlWheel(java.awt.Component c) {
+        for (java.awt.Component x = c; x != null; x = x.getParent()) {
+            if (x instanceof javax.swing.JComponent j && Boolean.TRUE.equals(j.getClientProperty(OWN_CTRL_WHEEL))) {
+                return true;
+            }
+        }
+        return false;
     }
 }

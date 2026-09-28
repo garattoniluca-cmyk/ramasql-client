@@ -85,4 +85,13 @@ public interface WorkspacePrompts {
 
     /** Mette il testo negli appunti di sistema. */
     void copyToClipboard(String text);
+
+    /**
+     * «Nuovo modello dal catalogo…»: le tabelle da mettere nel modello ER (in partenza tutte);
+     * {@code null} = annullato.
+     */
+    List<String> chooseModelTables(String catalog, List<String> tables);
+
+    /** L'etichetta di una relazione logica del modello ER; {@code null} = annullato. */
+    String askRelationshipLabel(String relationship, String current);
 }

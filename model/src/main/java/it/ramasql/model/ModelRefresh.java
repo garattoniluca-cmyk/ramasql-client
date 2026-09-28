@@ -32,13 +32,18 @@ public final class ModelRefresh {
      * @param model   il modello aggiornato
      * @param added   tabelle aggiunte
      * @param missing tabelle non più nel database
-     * @param changed tabelle con colonne cambiate
+ * @param changed  tabelle con colonne cambiate
+     * @param broken   relazioni logiche che nominano colonne che non ci sono più ({@code descrizione})
+     * @param promoted relazioni logiche diventate chiavi esterne vere sul server (tolte: ora sono fisiche)
      */
-    public record Result(ErModel model, List<String> added, List<String> missing, List<String> changed) {
+    public record Result(ErModel model, List<String> added, List<String> missing, List<String> changed,
+            List<String> broken, List<String> promoted) {
         public Result {
             added = List.copyOf(added);
             missing = List.copyOf(missing);
             changed = List.copyOf(changed);
+            broken = List.copyOf(broken);
+            promoted = List.copyOf(promoted);
         }
     }
 
@@ -96,9 +101,39 @@ public final class ModelRefresh {
                 relationships.add(r);
             }
         }
-        relationships.addAll(current.logical());
-        ErModel model = new ErModel(current.name(), current.catalog(), current.wholeCatalog(), out, relationships);
-        return new Result(model, added, missing, changed);
+        List<String> promoted = new ArrayList<>();
+        List<Relationship> logical = new ArrayList<>();
+        for (Relationship l : current.logical()) {
+            boolean nowPhysical = relationships.stream().anyMatch(p -> p.fromTable().equalsIgnoreCase(l.fromTable())
+                    && p.toTable().equalsIgnoreCase(l.toTable()) && sameColumns(p.fromColumns(), l.fromColumns()));
+            if (nowPhysical) {
+                promoted.add(l.describe());   // due linee sovrapposte non servono: vale quella del server
+            } else {
+                logical.add(l);
+            }
+        }
+        relationships.addAll(logical);
+        ErModel model = new ErModel(current.name(), current.catalog(), current.wholeCatalog(), out, relationships,
+                current.server());
+        List<String> broken = new ArrayList<>();
+        for (Relationship l : logical) {
+            if (!brokenColumns(model, l).isEmpty()) {
+                broken.add(l.describe());
+            }
+        }
+        return new Result(model, added, missing, changed, broken, promoted);
+    }
+
+    private static boolean sameColumns(List<String> a, List<String> b) {
+        if (a.size() != b.size()) {
+            return false;
+        }
+        for (int i = 0; i < a.size(); i++) {
+            if (!a.get(i).equalsIgnoreCase(b.get(i))) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /** Colonne di una relazione logica che non ci sono più (per segnalarla), in minuscolo. */

@@ -20,7 +20,7 @@ Stato: ✅ completato · 🔄 in corso · ⏳ da fare
 | 8 | Viste grafiche | M | ✅ 2026-09-27 (Tappa M2) |
 | 9 | Importazione CSV e JSON | M | ✅ 2026-09-28 |
 | 10 | Dump selettivo/totale e ripristino | M | ✅ 2026-09-28 |
-| 11 | Modello ER e retroingegneria | L | 🔄 |
+| 11 | Modello ER e retroingegneria | L | ✅ 2026-09-28 |
 | 12 | Rifiniture per l'aula e guida rapida | S | ⏳ |
 | 13 | **Installer e distribuzione** | M | ⏳ |
 | 14 | Collaudo in aula e rilascio 1.0 | M | ⏳ |

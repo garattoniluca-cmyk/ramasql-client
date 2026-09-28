@@ -55,15 +55,6 @@ public final class AutoLayout {
         if (all.isEmpty()) {
             return model;
         }
-        double cellW = 0;
-        double cellH = 0;
-        for (ErModel.Entity e : all) {
-            Size s = measure.of(e);
-            cellW = Math.max(cellW, s.width());
-            cellH = Math.max(cellH, s.height());
-        }
-        cellW += GAP;
-        cellH += GAP;
         Map<String, Integer> degree = new HashMap<>();
         for (Relationship r : model.relationships()) {
             degree.merge(key(r.fromTable()), 1, Integer::sum);
@@ -109,10 +100,28 @@ public final class AutoLayout {
             minX = Math.min(minX, c[0]);
             minY = Math.min(minY, c[1]);
         }
+        // ogni colonna della griglia larga quanto la sua tabella più larga, ogni riga alta quanto la sua più alta:
+        // una tabella da 40 colonne non rende enormi tutte le celle
+        Map<Integer, Double> colWidth = new HashMap<>();
+        Map<Integer, Double> rowHeight = new HashMap<>();
+        for (ErModel.Entity e : all) {
+            int[] c = placed.get(key(e.table()));
+            Size s = measure.of(e);
+            colWidth.merge(c[0] - minX, s.width() + GAP, Math::max);
+            rowHeight.merge(c[1] - minY, s.height() + GAP, Math::max);
+        }
         List<ErModel.Entity> out = new ArrayList<>();
         for (ErModel.Entity e : all) {
             int[] c = placed.get(key(e.table()));
-            out.add(e.at(40 + (c[0] - minX) * cellW, 40 + (c[1] - minY) * cellH));
+            double x = 40;
+            for (int i = 0; i < c[0] - minX; i++) {
+                x += colWidth.getOrDefault(i, GAP);
+            }
+            double y = 40;
+            for (int i = 0; i < c[1] - minY; i++) {
+                y += rowHeight.getOrDefault(i, GAP);
+            }
+            out.add(e.at(x, y));
         }
         return model.withEntities(out);
     }

@@ -134,6 +134,7 @@ class T116T1111ModelloErSulServerTest {
             try (ClientApp a = ClientApp.connect(server, dataDir)) {
                 a.expand(NavNode.Kind.CATALOG, catalog, catalog);
                 int logBefore = a.log().size();
+                java.util.Map<String, String> ddlBefore = showCreates(server, catalog);
                 ErModelWindow w = newModel(a, catalog);
                 ErModelPanel p = w.panel();
                 ErCanvas c = p.canvas();
@@ -172,11 +173,14 @@ class T116T1111ModelloErSulServerTest {
                 assertEquals(logBefore, a.log().size(), "registro SQL: zero istruzioni, il database non è stato toccato");
                 assertEquals("0", server.scalar("SELECT COUNT(*) FROM information_schema.REFERENTIAL_CONSTRAINTS"
                         + " WHERE CONSTRAINT_SCHEMA = '" + catalog + "'"), "sul server nessuna chiave esterna");
+                assertEquals(ddlBefore, showCreates(server, catalog), "SHOW CREATE TABLE di ogni tabella invariato");
                 PaintSupport.paint(p, "step11", "T11.6-logiche-" + server.id() + ".png");
                 ev.append("  ").append(underEntities(c, fromEdt(p::model))).append('\n');
                 ev.append("  salvato in ").append(file.getFileName()).append(": 7 entità, 6 relazioni logiche,"
                         + " 0 fisiche; registro SQL: ").append(a.log().size() - logBefore).append(" istruzioni;"
-                        + " REFERENTIAL_CONSTRAINTS sul server: 0\n");
+                        + " REFERENTIAL_CONSTRAINTS sul server: 0; SHOW CREATE TABLE delle ").append(ddlBefore.size())
+                        .append(" tabelle uguale a prima; nessun riferimento a esecutore, pipeline o JDBC nel codice ER"
+                                + " (ErCanvasNotationTest)\n");
 
                 // T11.10: doppio clic su un'entità → editor della tabella
                 Point soci = fromEdt(() -> c.pointOf("soci", null));
@@ -199,6 +203,8 @@ class T116T1111ModelloErSulServerTest {
                 ev.append(ErLegibility.measure(c, drawn.id(), server.id()));
 
                 // T11.7: chiusa la finestra e la connessione, si riapre senza connessione
+                ErModel onScreen = fromEdt(p::model);
+                assertFalse(fromEdt(p::isModified), "tutto salvato");
                 onEdt(w::closeIfAllowed);
                 assertFalse(fromEdt(w::isDisplayable));
                 onEdt(() -> a.app.connections().disconnect());
@@ -209,7 +215,7 @@ class T116T1111ModelloErSulServerTest {
                         && !a.frame().erWindows().isEmpty());
                 ErModelWindow reopened = fromEdt(() -> a.frame().erWindows().get(0));
                 ErModel back = fromEdt(() -> reopened.panel().model());
-                assertEquals(saved, back, "diagramma identico, posizioni comprese");
+                assertEquals(onScreen, back, "diagramma identico a com'era a schermo, posizioni comprese");
                 assertFalse(fromEdt(() -> reopened.panel().isModified()));
                 PaintSupport.paint(reopened.panel(), "step11", "T11.7-riaperto-senza-connessione-" + server.id() + ".png");
                 ev.append("T11.7 — riaperto dal menu File senza connessione: modello identico (").append(back.entities()
@@ -221,6 +227,7 @@ class T116T1111ModelloErSulServerTest {
             // T11.8: sul server una colonna in più e una tabella in meno → «Aggiorna dal database»
             server.run("ALTER TABLE `" + catalog + "`.soci ADD COLUMN telefono VARCHAR(20) NULL");
             server.run("DROP TABLE `" + catalog + "`.prestiti");
+            server.run("ALTER TABLE `" + catalog + "`.recensioni DROP COLUMN libro");   // rompe la relazione a mano
             try (ClientApp a = ClientApp.connect(server, dataDir)) {
                 a.ws.filesToOpen.put(FilePrompts.Purpose.MODEL, file);
                 onEdt(() -> fileMenuItem(a, "menu.file.openModel").doClick());
@@ -239,11 +246,14 @@ class T116T1111ModelloErSulServerTest {
                     assertEquals(e.y(), now.y(), "posizione di " + e.table());
                 }
                 assertEquals(saved.logical(), after.logical(), "relazioni logiche conservate");
+                String broken = fromEdt(() -> p.banner().text());
+                assertTrue(broken.contains("non ci sono più") && broken.contains("recensioni.libro → libri.id"),
+                        "la relazione disegnata a mano ora è rotta, e lo dice: " + broken);
                 assertEquals(logBefore, a.log().size(), "aggiornare legge soltanto");
                 String banner = fromEdt(() -> p.banner().text());
                 assertTrue(banner.contains("prestiti") && banner.contains("soci"), banner);
                 PaintSupport.paint(p, "step11", "T11.8-aggiornato-" + server.id() + ".png");
-                ev.append("T11.8 — dopo ALTER TABLE soci ADD telefono e DROP TABLE prestiti: ").append(banner
+                ev.append("T11.8 — dopo ALTER TABLE soci ADD telefono, DROP TABLE prestiti e DROP COLUMN recensioni.libro: ").append(banner
                         .replace('\n', ' ')).append("; posizioni e 6 relazioni logiche conservate\n");
             }
             ev.append("Esito: OK\n");
@@ -282,6 +292,22 @@ class T116T1111ModelloErSulServerTest {
             }
             try (ClientApp a = ClientApp.connect(server, dataDir)) {
                 a.expand(NavNode.Kind.CATALOG, catalog, catalog);
+                // «Nuovo modello dal catalogo…» chiede quali tabelle: prima solo le prime dieci
+                List<String> ten = new ArrayList<>();
+                for (int i = 0; i < 10; i++) {
+                    ten.add(String.format("t%02d", i));
+                }
+                a.ws.modelTables = tables -> ten;
+                ErModelWindow small = newModel(a, catalog);
+                assertEquals(30, a.ws.modelTablesShown.get(a.ws.modelTablesShown.size() - 1).size(),
+                        "proposte tutte e 30 le tabelle");
+                ErModel sm = fromEdt(() -> small.panel().model());
+                assertEquals(ten, sm.entities().stream().map(ErModel.Entity::table).sorted().toList());
+                assertEquals(17, sm.physical().size(), "solo le relazioni fra le tabelle scelte (9 verso t00, 8 verso la"
+                        + " precedente)");
+                ev.append("Scelta delle tabelle: proposte 30, scelte 10 → 10 entità e 17 relazioni fisiche fra loro\n");
+                onEdt(small::closeIfAllowed);
+                a.ws.modelTables = tables -> tables;
                 ErModelWindow w = newModel(a, catalog);
                 ErModelPanel p = w.panel();
                 ErCanvas c = p.canvas();
@@ -299,6 +325,19 @@ class T116T1111ModelloErSulServerTest {
                 ev.append("30 tabelle, 57 relazioni fisiche; nessuna sovrapposizione; t00 (riferita da 29) fra le più"
                         + " centrali (più vicine al centro: ").append(closer).append(")\n");
                 PaintSupport.paint(p, "step11", "T11.9-trenta-" + server.id() + ".png");
+                // T11.11 su un diagramma grande: 30 tabelle stampate su un A4 orizzontale a 150 dpi (solo misurato)
+                Rectangle2D ext30 = fromEdt(c::extent);
+                double a4 = Math.min(1754 / (ext30.getWidth() + 2 * ErCanvas.margin()),
+                        1240 / (ext30.getHeight() + 2 * ErCanvas.margin()));
+                BufferedImage print30 = fromEdt(() -> c.render(a4));
+                ImageIO.write(print30, "png", Probe.resultsDir("step11").resolve("T11.11-trenta-A4-" + server.id()
+                        + ".png").toFile());
+                double text30 = ErLegibility.textHeight(print30, c, "t00", a4);
+                ev.append("T11.11 — le 30 tabelle su un A4 orizzontale a 150 dpi: scala ").append(String.format("%.2f", a4))
+                        .append(", nome di tabella alto ").append(String.format("%.0f", text30)).append(" px (")
+                        .append(String.format("%.1f", text30 / 150 * 25.4)).append(" mm): ")
+                        .append(text30 >= 14 ? "leggibile" : "piccolo: per la stampa conviene un modello con meno tabelle"
+                                + " o un A3").append('\n');
                 // zoom
                 double before = fromEdt(c::zoom);
                 int widthBefore = fromEdt(() -> c.getPreferredSize().width);
@@ -333,26 +372,38 @@ class T116T1111ModelloErSulServerTest {
                 onEdt(() -> big.panel().autoLayout());
                 ErCanvas bc = big.panel().canvas();
                 assertFalse(AutoLayout.overlaps(fromEdt(() -> big.panel().model()), fromEdt(bc::measure)));
+                int relations = fromEdt(() -> big.panel().model().relationships().size());
                 BufferedImage img = new BufferedImage(1600, 1000, BufferedImage.TYPE_INT_RGB);
-                long best = Long.MAX_VALUE;
-                for (int k = 0; k < 5; k++) {
-                    long t0 = System.nanoTime();
-                    onEdt(() -> {
-                        java.awt.Graphics2D g = img.createGraphics();
-                        bc.setSize(bc.getPreferredSize());
-                        bc.paint(g);
-                        g.dispose();
-                    });
-                    best = Math.min(best, (System.nanoTime() - t0) / 1_000_000);
-                }
-                Point e050 = fromEdt(() -> bc.pointOf("e050", null));
+                Runnable paint = () -> {
+                    java.awt.Graphics2D g = img.createGraphics();
+                    bc.setSize(bc.getPreferredSize());
+                    bc.paint(g);
+                    g.dispose();
+                };
+                // primo disegno dopo la disposizione: comprende il calcolo di tutti i percorsi (A*)
                 long t0 = System.nanoTime();
+                onEdt(paint);
+                long cold = (System.nanoTime() - t0) / 1_000_000;
+                long warm = Long.MAX_VALUE;
+                for (int k = 0; k < 3; k++) {
+                    long t1 = System.nanoTime();
+                    onEdt(paint);
+                    warm = Math.min(warm, (System.nanoTime() - t1) / 1_000_000);
+                }
+                // trascinamento: gli eventi e poi il disegno dopo il rilascio (i percorsi toccati si rifanno lì)
+                Point e050 = fromEdt(() -> bc.pointOf("e050", null));
+                long t2 = System.nanoTime();
                 drag(bc, e050, new Point(e050.x + 30, e050.y + 30));
-                long dragMs = (System.nanoTime() - t0) / 1_000_000;
-                assertTrue(best < 250, "disegno di 100 entità in " + best + " ms");
-                assertTrue(dragMs < 500, "trascinamento con 100 entità in " + dragMs + " ms");
-                ev.append("100 entità generate: nessuna sovrapposizione, disegno completo in ").append(best)
-                        .append(" ms, trascinamento (4 eventi) in ").append(dragMs).append(" ms\n");
+                onEdt(paint);
+                long dragMs = (System.nanoTime() - t2) / 1_000_000;
+                assertTrue(cold < 1500, "primo disegno di 100 entità con " + relations + " percorsi in " + cold + " ms");
+                assertTrue(warm < 150, "disegno di 100 entità in " + warm + " ms");
+                assertTrue(dragMs < 300, "trascinamento e disegno dopo il rilascio in " + dragMs + " ms");
+                ev.append("100 entità generate con ").append(relations).append(" relazioni: nessuna sovrapposizione;"
+                        + " primo disegno (con il calcolo di tutti i percorsi) ").append(cold).append(" ms, disegni"
+                        + " successivi ").append(warm).append(" ms, trascinamento (4 eventi) più il disegno dopo il"
+                        + " rilascio ").append(dragMs).append(" ms; ").append(underEntities(bc, fromEdt(bc::model)))
+                        .append('\n');
                 onEdt(big::dispose);
                 ev.append("Esito: OK\n");
             }
@@ -399,8 +450,10 @@ class T116T1111ModelloErSulServerTest {
                 BufferedImage img = fromEdt(() -> c.render(scale));
                 ImageIO.write(img, "png", Probe.resultsDir("step11").resolve("T11.11-" + t.name() + "-" + serverId
                         + ".png").toFile());
-                java.awt.Font label = javax.swing.UIManager.getFont("Label.font");
-                double fontPx = (label == null ? 12 : label.getSize2D() - 1) * scale;   // carattere delle righe
+                // altezza misurata, in pixel dell'immagine, del nome di una tabella (dalle ascendenti alle discendenti)
+                double fontPx = textHeight(img, c, "libri_autori", scale);
+                int foot = footDark(img, c, logicalId, scale);
+                assertTrue(foot >= 6, t.name() + ": zampa di gallina riconoscibile (" + foot + ")");
                 double stroke = 1.4 * scale;
                 double dashPx = 6 * scale;
                 assertTrue(fontPx >= t.minFontPx(), t.name() + ": carattere di " + fontPx + " px");
@@ -436,7 +489,9 @@ class T116T1111ModelloErSulServerTest {
                 int x1 = (int) Math.round(len);
                 int x0 = 0;
                 ev.append("  ").append(t.name()).append(": scala ").append(String.format("%.2f", scale))
-                        .append(", carattere ≈ ").append(String.format("%.1f", fontPx)).append(" px, linee ")
+                        .append(", nome di tabella alto ").append(String.format("%.0f", fontPx))
+                        .append(" px nell'immagine, zampa di gallina: ").append(foot).append(" pixel scuri sul bordo,"
+                                + " linee ")
                         .append(String.format("%.1f", stroke)).append(" px, trattini ").append(String.format("%.1f",
                                 dashPx)).append(" px, alternanze del tratteggio misurate: ").append(transitions)
                         .append('\n');
@@ -454,6 +509,49 @@ class T116T1111ModelloErSulServerTest {
             return ev.toString();
         }
 
+        /** Righe di pixel scuri del nome dell'entità nell'intestazione: l'altezza del testo stampato. */
+        static double textHeight(BufferedImage img, ErCanvas c, String table, double scale) {
+            Rectangle2D ext = fromEdt(c::extent);
+            ErModel.Entity e = fromEdt(() -> c.model().entity(table).orElseThrow());
+            int x0 = (int) Math.round((e.x() + 10 - ext.getX() + ErCanvas.margin()) * scale);
+            int x1 = (int) Math.round((e.x() + 60 - ext.getX() + ErCanvas.margin()) * scale);
+            int y0 = (int) Math.round((e.y() + 2 - ext.getY() + ErCanvas.margin()) * scale);
+            int y1 = (int) Math.round((e.y() + 28 - ext.getY() + ErCanvas.margin()) * scale);
+            int top = -1;
+            int bottom = -1;
+            for (int y = y0; y <= y1 && y < img.getHeight(); y++) {
+                for (int x = x0; x <= x1 && x < img.getWidth(); x++) {
+                    Color col = new Color(img.getRGB(x, y));
+                    if ((col.getRed() + col.getGreen() + col.getBlue()) / 3 < 110) {
+                        if (top < 0) {
+                            top = y;
+                        }
+                        bottom = y;
+                        break;
+                    }
+                }
+            }
+            return top < 0 ? 0 : bottom - top + 1;
+        }
+
+        /** Pixel scuri lungo il bordo della figlia, dove si apre la zampa di gallina (≥ 6 se c'è). */
+        static int footDark(BufferedImage img, ErCanvas c, String relationshipId, double scale) {
+            Rectangle2D ext = fromEdt(c::extent);
+            List<Point2D> pts = fromEdt(() -> c.routePoints(relationshipId));
+            Point2D c0 = pts.get(0);
+            double dir = Math.signum(pts.get(1).getX() - c0.getX());
+            int px = (int) Math.round((c0.getX() + dir * 2 - ext.getX() + ErCanvas.margin()) * scale);
+            int count = 0;
+            for (double dy = -5; dy <= 5; dy += 0.5) {
+                int py = (int) Math.round((c0.getY() + dy - ext.getY() + ErCanvas.margin()) * scale);
+                Color col = new Color(img.getRGB(px, py));
+                if ((col.getRed() + col.getGreen() + col.getBlue()) / 3 < 200) {
+                    count++;
+                }
+            }
+            return count;
+        }
+
         private static int darkest(BufferedImage img, int x, int y) {
             int min = 255;
             for (int dy = -1; dy <= 1; dy++) {
@@ -469,6 +567,16 @@ class T116T1111ModelloErSulServerTest {
             }
             return min;
         }
+    }
+
+    /** {@code SHOW CREATE TABLE} di ogni tabella del catalogo, con la connessione del test. */
+    static java.util.Map<String, String> showCreates(DbServer server, String catalog) throws Exception {
+        java.util.Map<String, String> out = new java.util.TreeMap<>();
+        for (List<String> r : server.rows("SELECT TABLE_NAME FROM information_schema.TABLES WHERE TABLE_SCHEMA = '"
+                + catalog + "'")) {
+            out.put(r.get(0), server.rows("SHOW CREATE TABLE `" + catalog + "`.`" + r.get(0) + "`").get(0).get(1));
+        }
+        return out;
     }
 
     /** Nessuna relazione passa sotto un'entità: ogni tratto resta fuori dall'interno di tutte le tabelle. */

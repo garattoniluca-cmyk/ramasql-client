@@ -39,8 +39,8 @@ public final class ModelFile {
     }
 
     /** Forma su disco: la versione del formato e il modello. */
-    record Document(int formatVersion, String name, String catalog, boolean wholeCatalog, List<ErModel.Entity> entities,
-            List<Relationship> relationships) {
+    record Document(int formatVersion, String name, String catalog, String server, boolean wholeCatalog,
+            List<ErModel.Entity> entities, List<Relationship> relationships) {
     }
 
     static final ObjectMapper MAPPER = new ObjectMapper()
@@ -53,7 +53,7 @@ public final class ModelFile {
     public static String toJson(ErModel m) {
         try {
             return MAPPER.writeValueAsString(new Document(ModelFormat.FORMAT_VERSION, m.name(), m.catalog(),
-                    m.wholeCatalog(), m.entities(), m.relationships()));
+                    m.server(), m.wholeCatalog(), m.entities(), m.relationships()));
         } catch (JsonProcessingException e) {
             throw new IllegalStateException(e);
         }
@@ -81,7 +81,7 @@ public final class ModelFile {
             Document d = MAPPER.treeToValue(root, Document.class);
             return new ErModel(d.name(), d.catalog(), d.wholeCatalog(),
                     d.entities() == null ? List.of() : d.entities(),
-                    d.relationships() == null ? List.of() : d.relationships());
+                    d.relationships() == null ? List.of() : d.relationships(), d.server());
         } catch (JsonProcessingException | IllegalArgumentException | NullPointerException e) {
             throw new ModelFileException(ModelMessages.get("model.file.invalid", fileName), e);
         }
@@ -89,8 +89,12 @@ public final class ModelFile {
 
     public static void write(Path file, ErModel model) throws IOException {
         Path tmp = file.resolveSibling(file.getFileName() + ".tmp");
-        Files.writeString(tmp, toJson(model), StandardCharsets.UTF_8);
-        Files.move(tmp, file, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
+        try {
+            Files.writeString(tmp, toJson(model), StandardCharsets.UTF_8);
+            Files.move(tmp, file, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
+        } finally {
+            Files.deleteIfExists(tmp);   // se lo spostamento non riesce, niente .tmp abbandonato
+        }
     }
 
     public static ErModel read(Path file) throws IOException, ModelFileException {

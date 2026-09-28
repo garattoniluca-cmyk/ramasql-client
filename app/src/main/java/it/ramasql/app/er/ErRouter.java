@@ -24,9 +24,11 @@ import java.util.TreeSet;
  * <p>
  * Si costruisce una griglia sparsa con le coordinate utili (i bordi delle entità allargati di {@link #CLEAR}, le
  * uscite dalle righe delle colonne e alcune corsie nei corridoi fra le entità) e si cerca il percorso più corto con
- * A*, pagando ogni curva ({@link #BEND}) e i tratti già percorsi da un'altra relazione ({@link #SHARED}): così le
- * linee restano poche curve e, dove possono, scelgono corsie diverse invece di sovrapporsi. Ogni relazione esce
- * dalla riga della sua colonna con un tratto orizzontale ({@link #STUB}) che lascia spazio alla zampa di gallina.
+ * A*, pagando ogni curva ({@link #BEND}), i tratti già percorsi da un'altra relazione ({@link #SHARED}) e quelli che
+ * le corrono accanto a meno di {@link #SEPARATION} ({@link #NEAR}): così le linee restano poche curve e scelgono
+ * corsie ben distinte invece di sovrapporsi o sfiorarsi. Ogni relazione esce dalla riga della sua colonna con un tratto
+ * orizzontale ({@link #STUB}) che lascia spazio alla zampa di gallina; i tratti d'uscita già disegnati (dove stanno i
+ * simboli) sono ostacoli per le altre relazioni, tranne per quelle che escono dallo stesso punto.
  * Si cerca prima in una regione attorno alle due entità, poi, se serve, in tutto il diagramma.
  */
 final class ErRouter {
@@ -40,7 +42,13 @@ final class ErRouter {
     /** Sovrapprezzo per unità di lunghezza sui tratti già usati da un'altra relazione. */
     static final double SHARED = 4;
     /** Distanza fra corsie parallele in un corridoio. */
-    static final double LANE = 8;
+    static final double LANE = 12;
+    /** Sotto questa distanza due tratti paralleli di relazioni diverse sembrano una linea sola. */
+    static final double SEPARATION = 10;
+    /** Sovrapprezzo per unità di lunghezza accanto a un tratto di un'altra relazione. */
+    static final double NEAR = 1.5;
+    /** Mezza altezza della zona dei simboli d'estremità (zampa di gallina, barrette, cerchio). */
+    static final double MARKER = 8;
     /** Margine della prima regione di ricerca attorno alle due entità. */
     static final double REGION = 160;
 
@@ -52,6 +60,11 @@ final class ErRouter {
     private final List<Rectangle2D> entities;
     private final Map<Long, List<double[]>> horizontal = new HashMap<>();
     private final Map<Long, List<double[]>> vertical = new HashMap<>();
+    /** Zone dei simboli delle relazioni già instradate, con il punto sul bordo da cui escono. */
+    private final List<Marker> markers = new ArrayList<>();
+
+    private record Marker(Rectangle2D area, Point2D edge) {
+    }
 
     ErRouter(List<Rectangle2D> entities) {
         this.entities = List.copyOf(entities);
@@ -59,6 +72,10 @@ final class ErRouter {
 
     /** Segna come occupato un percorso già deciso (per le relazioni che non si ricalcolano). */
     void occupy(List<Point2D> pts) {
+        if (pts.size() >= 2) {
+            marker(pts.get(0), pts.get(1));
+            marker(pts.get(pts.size() - 1), pts.get(pts.size() - 2));
+        }
         for (int i = 1; i < pts.size(); i++) {
             Point2D a = pts.get(i - 1);
             Point2D b = pts.get(i);
@@ -70,6 +87,16 @@ final class ErRouter {
                         .add(new double[] {Math.min(a.getY(), b.getY()), Math.max(a.getY(), b.getY())});
             }
         }
+    }
+
+    private void marker(Point2D edge, Point2D next) {
+        if (Math.abs(edge.getY() - next.getY()) > 0.5) {
+            return;
+        }
+        // il simbolo (fino a STUB) più lo spazio per non sembrare la continuazione di un'altra linea
+        double len = STUB + SEPARATION;
+        double x = next.getX() > edge.getX() ? edge.getX() : edge.getX() - len;
+        markers.add(new Marker(new Rectangle2D.Double(x, edge.getY() - MARKER, len, 2 * MARKER), edge));
     }
 
     private static long key(double v) {
@@ -85,7 +112,7 @@ final class ErRouter {
         Rectangle2D region = child.createUnion(parent);
         region = new Rectangle2D.Double(region.getX() - REGION, region.getY() - REGION,
                 region.getWidth() + 2 * REGION, region.getHeight() + 2 * REGION);
-        List<Point2D> found = search(child, cy, parent, py, region);
+        List<Point2D> found = search(child, cy, parent, py, region, true);
         if (found == null) {
             Rectangle2D all = region;
             for (Rectangle2D r : entities) {
@@ -93,8 +120,9 @@ final class ErRouter {
             }
             all = new Rectangle2D.Double(all.getX() - 3 * STUB, all.getY() - 3 * STUB, all.getWidth() + 6 * STUB,
                     all.getHeight() + 6 * STUB);
-            if (!all.equals(region)) {
-                found = search(child, cy, parent, py, all);
+            found = search(child, cy, parent, py, all, true);
+            if (found == null) {
+                found = search(child, cy, parent, py, all, false);   // senza evitare i simboli, piuttosto che niente
             }
         }
         if (found != null) {
@@ -106,12 +134,22 @@ final class ErRouter {
     private record Port(double x, double y, double edgeX, int outward) {
     }
 
-    private List<Point2D> search(Rectangle2D child, double cy, Rectangle2D parent, double py, Rectangle2D region) {
+    private List<Point2D> search(Rectangle2D child, double cy, Rectangle2D parent, double py, Rectangle2D region,
+            boolean avoidMarkers) {
         List<Rectangle2D> obstacles = new ArrayList<>();
         for (Rectangle2D r : entities) {
             Rectangle2D o = inflate(r);
             if (o.intersects(region)) {
                 obstacles.add(o);
+            }
+        }
+        if (avoidMarkers) {
+            for (Marker m : markers) {
+                // i simboli di chi esce dallo stesso punto non sono un ostacolo: le relazioni lì si uniscono
+                boolean samePort = near(m.edge(), child, cy) || near(m.edge(), parent, py);
+                if (!samePort && m.area().intersects(region)) {
+                    obstacles.add(m.area());
+                }
             }
         }
         List<Port> starts = ports(child, cy, obstacles);
@@ -213,7 +251,8 @@ final class ErRouter {
                     continue;
                 }
                 double len = Math.abs(x2 - x1) + Math.abs(y2 - y1);
-                double step = len + SHARED * shared(x1, y1, x2, y2) + (d == dir ? 0 : BEND);
+                double step = len + SHARED * shared(x1, y1, x2, y2) + NEAR * alongside(x1, y1, x2, y2)
+                        + (d == dir ? 0 : BEND);
                 int next = (ni * ny + nj) * 4 + d;
                 double c = cost + step;
                 if (c < best[next]) {
@@ -241,6 +280,12 @@ final class ErRouter {
         pts.add(0, new Point2D.Double(start.edgeX(), start.y()));
         pts.add(new Point2D.Double(end.edgeX(), end.y()));
         return simplify(pts);
+    }
+
+    /** Il punto è sul bordo sinistro o destro dell'entità, alla riga data. */
+    private static boolean near(Point2D edge, Rectangle2D entity, double y) {
+        return Math.abs(edge.getY() - y) < 0.5 && (Math.abs(edge.getX() - entity.getMinX()) < 0.5
+                || Math.abs(edge.getX() - entity.getMaxX()) < 0.5);
     }
 
     /** Le uscite possibili da una riga: a destra e a sinistra, se il tratto orizzontale è libero. */
@@ -373,6 +418,28 @@ final class ErRouter {
         double total = 0;
         for (double[] u : used) {
             total += Math.max(0, Math.min(b, u[1]) - Math.max(a, u[0]));
+        }
+        return Math.min(total, b - a);
+    }
+
+    /** Quanta parte del tratto corre accanto (a meno di {@link #SEPARATION}, non sopra) a un'altra relazione. */
+    private double alongside(double x1, double y1, double x2, double y2) {
+        boolean horizontalSegment = y1 == y2;
+        double at = horizontalSegment ? y1 : x1;
+        double a = horizontalSegment ? Math.min(x1, x2) : Math.min(y1, y2);
+        double b = horizontalSegment ? Math.max(x1, x2) : Math.max(y1, y2);
+        Map<Long, List<double[]>> lines = horizontalSegment ? horizontal : vertical;
+        double total = 0;
+        for (long k = key(at - SEPARATION) + 1; k < key(at + SEPARATION); k++) {
+            if (k == key(at)) {
+                continue;
+            }
+            List<double[]> used = lines.get(k);
+            if (used != null) {
+                for (double[] u : used) {
+                    total += Math.max(0, Math.min(b, u[1]) - Math.max(a, u[0]));
+                }
+            }
         }
         return Math.min(total, b - a);
     }

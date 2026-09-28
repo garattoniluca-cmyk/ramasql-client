@@ -124,6 +124,80 @@ class ErRouterTest {
     }
 
     @Test
+    void relazioniParalleleBenSeparateENonSuiSimboliAltrui() {
+        // quattro relazioni dalla colonna di sinistra a quella di destra, che passano tutte per lo stesso corridoio
+        List<Rectangle2D> all = new ArrayList<>();
+        for (int i = 0; i < 4; i++) {
+            all.add(box(0, i * 150.0));
+            all.add(box(400, 600 + i * 150.0));
+        }
+        ErRouter router = new ErRouter(all);
+        List<List<Point2D>> routes = new ArrayList<>();
+        for (int i = 0; i < 4; i++) {
+            Rectangle2D a = all.get(2 * i);
+            Rectangle2D b = all.get(2 * i + 1);
+            List<Point2D> pts = router.route(a, a.getY() + 40, b, b.getY() + 40);
+            check(pts, a, a.getY() + 40, b, b.getY() + 40, all);
+            routes.add(pts);
+        }
+        for (int i = 0; i < routes.size(); i++) {
+            for (int k = i + 1; k < routes.size(); k++) {
+                double d = minParallelDistance(routes.get(i), routes.get(k));
+                assertTrue(d >= ErRouter.SEPARATION, "relazioni " + i + " e " + k + " parallele a " + d
+                        + " unità: sembrerebbero una linea sola");
+                assertFalse(throughStub(routes.get(i), routes.get(k)), "la " + i + " passa sui simboli della " + k);
+                assertFalse(throughStub(routes.get(k), routes.get(i)), "la " + k + " passa sui simboli della " + i);
+            }
+        }
+    }
+
+    /** Distanza minima fra tratti paralleli che si affiancano (0 se si sovrappongono); infinita se nessuno. */
+    static double minParallelDistance(List<Point2D> p, List<Point2D> q) {
+        double min = Double.POSITIVE_INFINITY;
+        for (int i = 1; i < p.size(); i++) {
+            for (int k = 1; k < q.size(); k++) {
+                Point2D a = p.get(i - 1);
+                Point2D b = p.get(i);
+                Point2D c = q.get(k - 1);
+                Point2D d = q.get(k);
+                if (a.getY() == b.getY() && c.getY() == d.getY()) {
+                    double lo = Math.max(Math.min(a.getX(), b.getX()), Math.min(c.getX(), d.getX()));
+                    double hi = Math.min(Math.max(a.getX(), b.getX()), Math.max(c.getX(), d.getX()));
+                    if (hi - lo > 1) {
+                        min = Math.min(min, Math.abs(a.getY() - c.getY()));
+                    }
+                } else if (a.getX() == b.getX() && c.getX() == d.getX()) {
+                    double lo = Math.max(Math.min(a.getY(), b.getY()), Math.min(c.getY(), d.getY()));
+                    double hi = Math.min(Math.max(a.getY(), b.getY()), Math.max(c.getY(), d.getY()));
+                    if (hi - lo > 1) {
+                        min = Math.min(min, Math.abs(a.getX() - c.getX()));
+                    }
+                }
+            }
+        }
+        return min;
+    }
+
+    /** Un tratto di {@code p} attraversa la zona dei simboli d'estremità di {@code q}. */
+    static boolean throughStub(List<Point2D> p, List<Point2D> q) {
+        List<Rectangle2D> zones = new ArrayList<>();
+        for (Point2D[] end : new Point2D[][] {{q.get(0), q.get(1)}, {q.get(q.size() - 1), q.get(q.size() - 2)}}) {
+            double len = Math.min(ErRouter.STUB - 2, Math.abs(end[1].getX() - end[0].getX()));
+            double x = end[1].getX() > end[0].getX() ? end[0].getX() : end[0].getX() - len;
+            zones.add(new Rectangle2D.Double(x + 1, end[0].getY() - ErRouter.MARKER + 1, len - 2,
+                    2 * ErRouter.MARKER - 2));
+        }
+        for (int i = 1; i < p.size(); i++) {
+            for (Rectangle2D z : zones) {
+                if (z.intersectsLine(p.get(i - 1).getX(), p.get(i - 1).getY(), p.get(i).getX(), p.get(i).getY())) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    @Test
     void entitaSovrappostePercorsoAssente() {
         Rectangle2D a = box(0, 0);
         Rectangle2D b = box(100, 20);   // si sovrappongono: nessun passaggio libero dal lato vicino

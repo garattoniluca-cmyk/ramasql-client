@@ -136,11 +136,11 @@ Procedura guidata «Esporta / Dump»:
 4. Esecuzione con avanzamento; lettura in streaming (tabelle grandi senza esaurire la memoria). **[forse dopo]** istantanea coerente in transazione (in aula nessuno scrive durante il dump).
 
 ### 3.11 Modello ER (req. 8)
-- Documento `.rsqlmodel` aperto in una scheda.
+- Documento `.rsqlmodel` aperto in una **finestra propria** (`ADR-027`: le schede esistono solo con una connessione, il modello si apre anche senza), da **Modello ER** della barra o da **File → Apri modello ER…**; uscendo dal programma chiede se salvare.
 - **Retroingegneria**: «Nuovo modello dal catalogo…» → scelta tabelle → entità con colonne (PK, FK, tipi) e relazioni dalle FK reali. **[dopo]** livelli di dettaglio.
 - **Relazioni logiche**: disegnate a mano trascinando da colonna a colonna, o accettate dai **suggerimenti** (convenzioni di nome + compatibilità di tipo); tratteggiate, con cardinalità (1:1, 1:N, N:M indicativa) e etichetta. Non toccano il database.
-- Notazione a **zampa di gallina**; opzionale notazione semplificata «1 — N».
-- Disposizione automatica, zoom, trascinamento. **[dopo]** panoramica, note testuali, colori per gruppi di tabelle.
+- Notazione a **zampa di gallina** (lato figlia «zero o più», lato padre «uno» con due barrette se obbligatoria, barretta e cerchio se facoltativa; N:M con la zampa ai due capi). **[dopo]** notazione semplificata «1 — N».
+- Disposizione automatica, zoom, trascinamento (anche da tastiera), linee instradate attorno alle tabelle. **[dopo]** panoramica, note testuali, colori per gruppi di tabelle.
 - *Aggiorna dal database*: aggiunge/aggiorna/segna come mancanti le entità senza perdere le posizioni.
 - Ponte verso il resto: doppio clic su entità → editor tabella. **[dopo]** relazione logica → «Crea chiave esterna…» · «Nuova query visiva con queste tabelle» con join proposti anche dalle relazioni logiche.
 - Esporta PNG. **[dopo]** SVG, PDF, stampa.

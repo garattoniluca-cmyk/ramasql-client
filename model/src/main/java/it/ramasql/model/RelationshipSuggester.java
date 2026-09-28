@@ -68,13 +68,13 @@ public final class RelationshipSuggester {
             }
             List<String> ownPk = child.primaryKey();
             for (ErModel.Attribute col : child.columns()) {
-                if (ownPk.size() == 1 && ownPk.get(0).equalsIgnoreCase(col.name())) {
-                    continue;   // la propria chiave primaria di una colonna non riferisce altro
-                }
                 if (inRelationship(model, child.table(), col.name())) {
                     continue;
                 }
-                bestFor(model, child, col).ifPresent(out::add);
+                // la propria chiave primaria riferisce un'altra tabella solo se il nome lo dice (chiave condivisa,
+                // 1:1: dettagli_libro.id_libro → libri.id); «id» da sola non riferisce nulla
+                boolean ownKey = ownPk.size() == 1 && ownPk.get(0).equalsIgnoreCase(col.name());
+                bestFor(model, child, col, ownKey).ifPresent(out::add);
             }
         }
         out.sort(Comparator.comparingInt(Suggestion::score).reversed()
@@ -87,8 +87,24 @@ public final class RelationshipSuggester {
                 && r.fromColumns().stream().anyMatch(column::equalsIgnoreCase));
     }
 
-    private static Optional<Suggestion> bestFor(ErModel model, ErModel.Entity child, ErModel.Attribute col) {
+    /** Nomi che indicano la stessa tabella: {@code id_padre} → la riga «padre» della stessa tabella. */
+    private static final Set<String> SELF = Set.of("padre", "madre", "genitore", "parent", "responsabile", "capo",
+            "superiore", "manager", "boss");
+
+    private static Optional<Suggestion> bestFor(ErModel model, ErModel.Entity child, ErModel.Attribute col,
+            boolean ownKey) {
         List<Suggestion> candidates = new ArrayList<>();
+        // 0: autoriferimento (id_padre, parent_id…) verso la chiave della stessa tabella
+        for (String stem : stems(col.name())) {
+            List<String> pk = child.primaryKey();
+            if (!ownKey && SELF.contains(stem.toLowerCase(Locale.ROOT)) && pk.size() == 1) {
+                ErModel.Attribute target = child.column(pk.get(0)).orElseThrow();
+                if (typeMatch(col.type(), target.type()) >= 0) {
+                    candidates.add(new Suggestion(relationship(model, child, col, child, target), 75,
+                            ModelMessages.get("suggest.reason.self", col.name(), child.table(), pk.get(0))));
+                }
+            }
+        }
         // 1-3: il nome indica una tabella
         for (String stem : stems(col.name())) {
             for (ErModel.Entity parent : model.entities()) {
@@ -108,7 +124,8 @@ public final class RelationshipSuggester {
                 if (typeScore < 0) {
                     continue;   // tipi incompatibili: nessuna proposta
                 }
-                if (parent.table().equalsIgnoreCase(child.table()) && pk.get(0).equalsIgnoreCase(col.name())) {
+                if (parent.table().equalsIgnoreCase(child.table())
+                        && (ownKey || pk.get(0).equalsIgnoreCase(col.name()))) {
                     continue;
                 }
                 int score = Math.min(100, nameScore + typeScore);
@@ -117,8 +134,10 @@ public final class RelationshipSuggester {
                 candidates.add(new Suggestion(relationship(model, child, col, parent, target), score, reason));
             }
         }
-        // 4: stesso nome della chiave primaria di un'altra tabella (non «id»)
-        for (ErModel.Entity parent : model.entities()) {
+        // 4: stesso nome della chiave primaria di un'altra tabella (non «id»); se le tabelle così sono più d'una
+        // (chiavi generiche come «codice») il nome non basta a dire quale: nessuna proposta
+        List<Suggestion> samePk = new ArrayList<>();
+        for (ErModel.Entity parent : ownKey ? List.<ErModel.Entity>of() : model.entities()) {
             List<String> pk = parent.primaryKey();
             if (parent.missing() || parent.table().equalsIgnoreCase(child.table()) || pk.size() != 1
                     || pk.get(0).equalsIgnoreCase("id") || !pk.get(0).equalsIgnoreCase(col.name())) {
@@ -127,9 +146,12 @@ public final class RelationshipSuggester {
             ErModel.Attribute target = parent.column(pk.get(0)).orElseThrow();
             int typeScore = typeMatch(col.type(), target.type());
             if (typeScore >= 0) {
-                candidates.add(new Suggestion(relationship(model, child, col, parent, target), 60 + typeScore,
+                samePk.add(new Suggestion(relationship(model, child, col, parent, target), 60 + typeScore,
                         ModelMessages.get("suggest.reason.samePk", col.name(), parent.table())));
             }
+        }
+        if (samePk.size() == 1) {
+            candidates.addAll(samePk);
         }
         return candidates.stream().max(Comparator.comparingInt(Suggestion::score));
     }

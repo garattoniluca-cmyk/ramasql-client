@@ -56,7 +56,20 @@ public final class ErModelWindow extends JFrame {
 
     /** Chiude la finestra, dopo aver chiesto delle modifiche non salvate; {@code false} se è rimasta aperta. */
     public boolean closeIfAllowed() {
-        if (panel.canClose()) {
+        return closeIfAllowed(null);
+    }
+
+    /**
+     * Come {@link #closeIfAllowed()}; se l'utente sceglie di salvare, la finestra si chiude a salvataggio riuscito e
+     * poi si esegue {@code afterLaterClose} (l'uscita dal programma riprende da lì).
+     */
+    public boolean closeIfAllowed(Runnable afterLaterClose) {
+        if (panel.canClose(() -> {
+            dispose();
+            if (afterLaterClose != null) {
+                afterLaterClose.run();
+            }
+        })) {
             dispose();
             return true;
         }
