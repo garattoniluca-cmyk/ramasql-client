@@ -1,1 +1,1 @@
-Statement.cancel() -> SLEEP(30) terminato in 1 ms; esito: valore 1
+Statement.cancel() -> SLEEP(30) terminato in 4 ms; esito: valore 1

@@ -1,5 +1,5 @@
 scalaFlatLaf=1.0
 server=MariaDB
 tabelle=[prestiti, soci, libri]
-testi controllati=55
+testi controllati=57
 problemi=0

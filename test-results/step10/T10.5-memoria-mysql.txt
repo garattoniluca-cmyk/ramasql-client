@@ -1,6 +1,6 @@
 T10.5 — memoria di picco misurata in un processo con l'heap limitato (MySQL)
 1 000 000 di righe, file di 38 MB, -Xmx64m:
-  dump:       OK rows=1000000 statements=10011 log=1 peakMb=42
+  dump:       OK rows=1000000 statements=10011 log=1 peakMb=43
   ripristino: OK executed=10011 completed=true failures=0 log=13 peakMb=46
 3 BLOB da 5 MB (un INSERT per riga), file di 30 MB, -Xmx96m:
   dump:       OK rows=3 statements=14 log=1 peakMb=105

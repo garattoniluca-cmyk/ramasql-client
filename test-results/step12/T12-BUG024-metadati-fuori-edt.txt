@@ -1,9 +1,9 @@
 BUG-024 — metadati del query builder fuori dall'EDT
-1. aggiunta di prestiti: 607 ms, 2 letture da 300 ms, 18 battiti dell'EDT, il più lento 138 ms
-2. aggiunta di soci (join proposto): 1209 ms, 4 letture da 300 ms, 42 battiti dell'EDT, il più lento 127 ms
-3. tabelle referenziate da prestiti: 2718 ms, 9 letture da 300 ms, 100 battiti dell'EDT, il più lento 128 ms
-4. modello a 4 tabelle dall'SQL: 2417 ms, 8 letture da 300 ms, 88 battiti dell'EDT, il più lento 132 ms
-5. elenco degli oggetti: 606 ms, 2 letture da 300 ms, 14 battiti dell'EDT, il più lento 130 ms
+1. aggiunta di prestiti: 617 ms, 2 letture da 300 ms, 18 battiti dell'EDT, il più lento 138 ms
+2. aggiunta di soci (join proposto): 1220 ms, 4 letture da 300 ms, 42 battiti dell'EDT, il più lento 131 ms
+3. tabelle referenziate da prestiti: 2725 ms, 9 letture da 300 ms, 100 battiti dell'EDT, il più lento 130 ms
+4. modello a 4 tabelle dall'SQL: 2428 ms, 8 letture da 300 ms, 89 battiti dell'EDT, il più lento 131 ms
+5. elenco degli oggetti: 614 ms, 2 letture da 300 ms, 14 battiti dell'EDT, il più lento 133 ms
 letture dei metadati in tutto: 33, di cui sull'EDT: 0 (thread: [RamaSQL - metadati del query builder])
 finestre d'attesa mostrate: [Lettura dal server: prestiti…, Lettura dal server: soci…, Lettura dal server: prestiti…, Lettura dal server: autori, libri_autori, libri, editori…, Lettura dell'elenco delle tabelle dal server…, Lettura dell'elenco delle tabelle dal server…]
 Esito: SUPERATO

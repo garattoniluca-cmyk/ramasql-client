@@ -2,5 +2,5 @@ T10.9 — file che bloccano tabelle, aprono transazioni, sbagliano il catalogo, 
 LOCK TABLES + errore: proposto [UNLOCK TABLES]; prima «altra» non si leggeva, dopo sì
 BEGIN + errore: transactionOpen = true; la riga inserita dopo BEGIN non si vede da un'altra connessione (non confermata); il client lo dice e non genera COMMIT/ROLLBACK
 USE fallito con «continua»: fermato (Stop.CATALOG), «finita_qui» non creata da nessuna parte
-connessione chiusa dal server durante SLEEP con «continua»: fermato (Stop.CONNECTION) dopo 1 istruzioni: (conn=19344) Socket error
+connessione chiusa dal server durante SLEEP con «continua»: fermato (Stop.CONNECTION) dopo 1 istruzioni: (conn=24914) Socket error
 Esito: OK

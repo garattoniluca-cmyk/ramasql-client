@@ -1,7 +1,7 @@
 T10.5 — dump con «Righe per INSERT = 1» (20 000 righe) ripristinato (MySQL)
-Istruzioni eseguite: 20011 in 17.965 s
+Istruzioni eseguite: 20011 in 19.231 s
 Righe aggiunte al registro: 13 (le strutturali e il riassunto):
-  USE `ramasql_test_t105_uno_dst_muleufcwcm44`
+  USE `ramasql_test_t105_uno_dst_mulkzjqthuqw`
   SET NAMES utf8mb4
   SET @OLD_FOREIGN_KEY_CHECKS = @@FOREIGN_KEY_CHECKS
   SET FOREIGN_KEY_CHECKS = 0

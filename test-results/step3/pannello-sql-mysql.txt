@@ -2,7 +2,7 @@ Pannello SQL su MySQL
 Script: SELECT 1; SELECT da catalogo inesistente; SELECT 2 → Registro: 2 righe (OK, Errore 1049 evidenziata), terza non tentata
 Messaggi:
 Prova del registro: non riuscito.
-Errore 1049 (SQLSTATE 42000) dal server: (conn=22900) Unknown database 'ramasql_test_s3_inesistente'
+Errore 1049 (SQLSTATE 42000) dal server: (conn=24004) Unknown database 'ramasql_test_s3_inesistente'
 Cosa significa: Il catalogo (database) indicato non esiste.
 Istruzioni applicate: 1 su 3 (senza transazioni: quelle applicate restano).
 applicata: SELECT 1

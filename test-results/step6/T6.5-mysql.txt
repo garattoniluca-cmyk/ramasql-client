@@ -22,11 +22,11 @@ dati:
     INSERT INTO `editori` (`id`, `nome`) VALUES (1, 'Zanichelli'), (2, 'Hoepli');
     INSERT INTO `libri` (`id`, `titolo`, `id_editore`) VALUES (10, 'Basi di dati', 1), (11, 'SQL per tutti', 1), (12, 'Reti', 2);
 > DELETE FROM `editori` WHERE `id` = 1;
-  → ERRORE 1451 (23000): (conn=19881) Cannot delete or update a parent row: a foreign key constraint fails (`ramasql_test_t65_mulew4mh1i37`.`libri`, CONSTRAINT `fk_libri_editori` FOREIGN KEY (`id_editore`) REFERENCES `editori` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT)
+  → ERRORE 1451 (23000): (conn=25451) Cannot delete or update a parent row: a foreign key constraint fails (`ramasql_test_t65_mull1cpv22g5`.`libri`, CONSTRAINT `fk_libri_editori` FOREIGN KEY (`id_editore`) REFERENCES `editori` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT)
 > SELECT `id`, `nome` FROM `editori` ORDER BY `id`;
   → 1|Zanichelli; 2|Hoepli
 > UPDATE `editori` SET `id` = 5 WHERE `id` = 2;
-  → ERRORE 1451 (23000): (conn=19881) Cannot delete or update a parent row: a foreign key constraint fails (`ramasql_test_t65_mulew4mh1i37`.`libri`, CONSTRAINT `fk_libri_editori` FOREIGN KEY (`id_editore`) REFERENCES `editori` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT)
+  → ERRORE 1451 (23000): (conn=25451) Cannot delete or update a parent row: a foreign key constraint fails (`ramasql_test_t65_mull1cpv22g5`.`libri`, CONSTRAINT `fk_libri_editori` FOREIGN KEY (`id_editore`) REFERENCES `editori` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT)
 ESITO: comportamento del server = dichiarato dalla FK
 
 ## 2 INSERT di un figlio orfano → 1452
@@ -49,9 +49,9 @@ dati:
     INSERT INTO `editori` (`id`, `nome`) VALUES (1, 'Zanichelli'), (2, 'Hoepli');
     INSERT INTO `libri` (`id`, `titolo`, `id_editore`) VALUES (10, 'Basi di dati', 1), (11, 'SQL per tutti', 1), (12, 'Reti', 2);
 > INSERT INTO `libri` (`id`, `titolo`, `id_editore`) VALUES (20, 'Orfano', 99);
-  → ERRORE 1452 (23000): (conn=19893) Cannot add or update a child row: a foreign key constraint fails (`ramasql_test_t65_mulew4y6cj9s`.`libri`, CONSTRAINT `fk_libri_editori` FOREIGN KEY (`id_editore`) REFERENCES `editori` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT)
+  → ERRORE 1452 (23000): (conn=25463) Cannot add or update a child row: a foreign key constraint fails (`ramasql_test_t65_mull1d3c26p1`.`libri`, CONSTRAINT `fk_libri_editori` FOREIGN KEY (`id_editore`) REFERENCES `editori` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT)
 > UPDATE `libri` SET `id_editore` = 98 WHERE `id` = 12;
-  → ERRORE 1452 (23000): (conn=19893) Cannot add or update a child row: a foreign key constraint fails (`ramasql_test_t65_mulew4y6cj9s`.`libri`, CONSTRAINT `fk_libri_editori` FOREIGN KEY (`id_editore`) REFERENCES `editori` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT)
+  → ERRORE 1452 (23000): (conn=25463) Cannot add or update a child row: a foreign key constraint fails (`ramasql_test_t65_mull1d3c26p1`.`libri`, CONSTRAINT `fk_libri_editori` FOREIGN KEY (`id_editore`) REFERENCES `editori` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT)
 > SELECT `id`, `id_editore` FROM `libri` ORDER BY `id`;
   → 10|1; 11|1; 12|2
 > INSERT INTO `libri` (`id`, `titolo`, `id_editore`) VALUES (21, 'Senza editore', NULL);

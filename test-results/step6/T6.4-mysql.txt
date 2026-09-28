@@ -473,16 +473,16 @@ ESITO: conforme
 
 ## F29 — FK verso un altro catalogo: tabella riferita qualificata
 tabella di partenza:
-    CREATE TABLE `ramasql_test_t64_mulew43tdpyt`.`libri` (
+    CREATE TABLE `ramasql_test_t64_mull1c48zr1m`.`libri` (
       `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
       `titolo` VARCHAR(100) NOT NULL,
       `id_editore` INT UNSIGNED NULL,
       PRIMARY KEY (`id`)
     ) ENGINE=InnoDB;
 SQL applicato (= test U):
-    ALTER TABLE `ramasql_test_t64_mulew43tdpyt`.`libri` ADD CONSTRAINT `fk_libri_editori` FOREIGN KEY (`id_editore`) REFERENCES `ramasql_test_t64b_mulew43q1qn6`.`editori` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+    ALTER TABLE `ramasql_test_t64_mull1c48zr1m`.`libri` ADD CONSTRAINT `fk_libri_editori` FOREIGN KEY (`id_editore`) REFERENCES `ramasql_test_t64b_mull1c40dt7y`.`editori` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
 esecuzione: 1 istruzioni OK, nell'ordine
-riletti dal server: indici [PRIMARY `PRIMARY` [id], INDEX `fk_libri_editori` [id_editore]]; FK [`fk_libri_editori` [id_editore] → ramasql_test_t64b_mulew43q1qn6.editori[id] ON DELETE RESTRICT ON UPDATE RESTRICT]
+riletti dal server: indici [PRIMARY `PRIMARY` [id], INDEX `fk_libri_editori` [id_editore]]; FK [`fk_libri_editori` [id_editore] → ramasql_test_t64b_mull1c40dt7y.editori[id] ON DELETE RESTRICT ON UPDATE RESTRICT]
 verifica: ✔ verificato sul server: indici e chiavi esterne di «libri» sono quelli chiesti
     ℹ Il server ha creato da sé l'indice «fk_libri_editori» (id_editore) per la chiave esterna «fk_libri_editori»: una chiave esterna ha sempre bisogno di un indice sulle sue colonne.
 ESITO: conforme

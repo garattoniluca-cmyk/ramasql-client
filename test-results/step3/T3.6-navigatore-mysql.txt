@@ -1,7 +1,7 @@
 Operazioni del navigatore su MySQL
-1. [Navigatore] OK 1 ms — CREATE DATABASE `<nuovo>` CHARACTER SET latin1 COLLATE latin1_swedish_ci
-2. [Navigatore] OK 6 ms — RENAME TABLE `<catalogo>`.`vecchia` TO `<catalogo>`.`nuova`
-3. [Navigatore] OK 8 ms — TRUNCATE TABLE `<catalogo>`.`nuova`
-4. [Navigatore] OK 4 ms — DROP VIEW `<catalogo>`.`v_vecchia`
-5. [Navigatore] OK 4 ms — DROP TABLE `<catalogo>`.`eliminami`
-6. [Navigatore] OK 1 ms — DROP DATABASE `<nuovo>`
+1. [Navigatore] OK 4 ms — CREATE DATABASE `<nuovo>` CHARACTER SET latin1 COLLATE latin1_swedish_ci
+2. [Navigatore] OK 11 ms — RENAME TABLE `<catalogo>`.`vecchia` TO `<catalogo>`.`nuova`
+3. [Navigatore] OK 23 ms — TRUNCATE TABLE `<catalogo>`.`nuova`
+4. [Navigatore] OK 3 ms — DROP VIEW `<catalogo>`.`v_vecchia`
+5. [Navigatore] OK 9 ms — DROP TABLE `<catalogo>`.`eliminami`
+6. [Navigatore] OK 6 ms — DROP DATABASE `<nuovo>`

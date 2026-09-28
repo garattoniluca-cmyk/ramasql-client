@@ -1,5 +1,5 @@
 BUG-025 — archivio delle viste ripulito dopo DROP VIEW, su MariaDB
 1. Anteprima annullata: v_uno ancora sul server e nell'archivio
-2. DROP VIEW rifiutato dal server (ServerError[code=4092, sqlState=42S02, message=(conn=24526) Unknown VIEW: 'ramasql_test_ui_b25_f9bdv8.v_due']): v_due resta nell'archivio
+2. DROP VIEW rifiutato dal server (ServerError[code=4092, sqlState=42S02, message=(conn=24631) Unknown VIEW: 'ramasql_test_ui_b25_e2jueo.v_due']): v_due resta nell'archivio
 3. DROP VIEW riuscito: v_uno tolta da viste.json; restano v_due e la voce dell'altro server
 Esito: SUPERATO

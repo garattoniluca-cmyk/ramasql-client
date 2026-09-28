@@ -1,5 +1,5 @@
 T7.4b — menu del join e verso dell'SQL su MySQL
-Catalogo di test: ramasql_test_ui_visual74b_olkqcz
+Catalogo di test: ramasql_test_ui_visual74b_k5zbnn
 SQL prima della scelta:
 SELECT
 	`autori`.`cognome`,

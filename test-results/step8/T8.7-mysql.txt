@@ -1,7 +1,7 @@
 T8.7 — tabella eliminata sotto una vista, MySQL
-Catalogo di test: ramasql_test_ui_vista87_2heily
+Catalogo di test: ramasql_test_ui_vista87_6b23ze
 Eliminata la tabella collane, usata dalla vista v_collane_editori; aprendo la vista, nel pannello Messaggi:
   Non riesco a leggere la vista «v_collane_editori»: La vista non è più valida: usa tabelle, colonne o viste che non esistono più (forse sono state eliminate o rinominate). Si corregge ricreando ciò che manca, oppure con «Modifica vista».
-[1356] (conn=23361) View 'ramasql_test_ui_vista87_2heily.v_collane_editori' references invalid table(s) or column(s) or function(s) or definer/invoker of view lack rights to use them
+[1356] (conn=24483) View 'ramasql_test_ui_vista87_6b23ze.v_collane_editori' references invalid table(s) or column(s) or function(s) or definer/invoker of view lack rights to use them
 La scheda Messaggi è davanti; la lettura che ha dato l'errore è nel registro (esito: errore)
 Esito: SUPERATO

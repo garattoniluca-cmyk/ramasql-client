@@ -1,4 +1,4 @@
 T10.5 — dump interrotto durante la lettura di 400 000 righe (MariaDB)
-Righe scritte prima dell'interruzione: 12604
+Righe scritte prima dell'interruzione: 16400
 Esito del client: interrotto (non «errore»); il file finisce con «DUMP INTERROTTO» e la lettura di prova di «Esegui script SQL» lo segnala come dump incompleto
 Esito: OK

@@ -1,9 +1,9 @@
 T8.4 e T8.6 su MariaDB
-Catalogo di test: ramasql_test_ui_vista84_3om4s5
+Catalogo di test: ramasql_test_ui_vista84_u4hdqy
 Creata dal diagramma con «Salva vista»:
-USE `ramasql_test_ui_vista84_3om4s5`;
+USE `ramasql_test_ui_vista84_u4hdqy`;
 
-CREATE VIEW `ramasql_test_ui_vista84_3om4s5`.`v_prestiti_aperti` AS
+CREATE VIEW `ramasql_test_ui_vista84_u4hdqy`.`v_prestiti_aperti` AS
 SELECT
 	`prestiti`.`id`,
 	`libri`.`titolo`,
@@ -21,9 +21,9 @@ Righe della vista sul server: 71
 Dopo il salvataggio la scheda risulta senza modifiche; sorgente nell'archivio
 Riaperta con «Modifica vista» dal menu del navigatore: livello 1 (sorgente archiviato valido per la definizione sul server), stesso diagramma (prestiti, libri, soci) e stesso SQL, nessuna modifica da salvare
 Aggiunta la colonna soci.nome; una seconda «Modifica vista» riporta la stessa scheda senza perdere la modifica:
-USE `ramasql_test_ui_vista84_3om4s5`;
+USE `ramasql_test_ui_vista84_u4hdqy`;
 
-CREATE OR REPLACE VIEW `ramasql_test_ui_vista84_3om4s5`.`v_prestiti_aperti` AS
+CREATE OR REPLACE VIEW `ramasql_test_ui_vista84_u4hdqy`.`v_prestiti_aperti` AS
 SELECT
 	`prestiti`.`id`,
 	`libri`.`titolo`,
@@ -38,12 +38,12 @@ FROM
 	 ON `prestiti`.`id_socio` = `soci`.`id`
 WHERE
 	`prestiti`.`data_reso` IS NULL;
-Nome già usato: «Crea la vista «v_prestiti_aperti»: non riuscito. Errore 1050 (SQLSTATE 42S01) dal server: (conn=24031) Table 'v_prestiti_aperti' already exists Cosa significa: Esiste già una tabella o una vista con questo nome. Istruzioni applicate: 1 su 2 (senza transazioni: quelle applicate restano). applicata: USE `ramasql_test_ui_vista84_3om4s5` non riuscita: CREATE VIEW `ramasql_test_ui_vista84_3om4s5`.`v_prestiti_aperti` AS SELECT `libri`.`titolo` FROM `libri`»; la vista esistente è intatta
+Nome già usato: «Crea la vista «v_prestiti_aperti»: non riuscito. Errore 1050 (SQLSTATE 42S01) dal server: (conn=25196) Table 'v_prestiti_aperti' already exists Cosa significa: Esiste già una tabella o una vista con questo nome. Istruzioni applicate: 1 su 2 (senza transazioni: quelle applicate restano). applicata: USE `ramasql_test_ui_vista84_u4hdqy` non riuscita: CREATE VIEW `ramasql_test_ui_vista84_u4hdqy`.`v_prestiti_aperti` AS SELECT `libri`.`titolo` FROM `libri`»; la vista esistente è intatta
 Colonne con lo stesso nome: avviso «Nella vista due colonne avrebbero lo stesso nome: «id» (libri.id, editori.id). Togli la spunta a una delle due, oppure dai un alias a una (nell'albero della query, «Modifica…»). Il server rifiuterebbe la vista (errore 1060).», nessun CREATE mandato al server
 «Salva come vista…» da una query visiva normale:
-USE `ramasql_test_ui_vista84_3om4s5`;
+USE `ramasql_test_ui_vista84_u4hdqy`;
 
-CREATE VIEW `ramasql_test_ui_vista84_3om4s5`.`v_titoli_anni` AS
+CREATE VIEW `ramasql_test_ui_vista84_u4hdqy`.`v_titoli_anni` AS
 SELECT
 	`libri`.`titolo`,
 	`libri`.`anno`
