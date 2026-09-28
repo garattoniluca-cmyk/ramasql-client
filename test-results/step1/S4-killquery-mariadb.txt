@@ -1,1 +1,1 @@
-KILL QUERY <id> -> SLEEP(30) terminato in 0 ms; esito: errore 1317 [70100]: (conn=12719) Query execution was interrupted
+KILL QUERY <id> -> SLEEP(30) terminato in 3 ms; esito: errore 1317 [70100]: (conn=15724) Query execution was interrupted

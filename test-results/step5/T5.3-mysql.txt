@@ -38,7 +38,7 @@ advancedElements prima:
 PARTITIONS 4 */
 
 SQL generato e applicato:
-    ALTER TABLE `ramasql_test_t53_mukdn8y5su5y`.`misure` MODIFY COLUMN `nota` VARCHAR(120) NULL DEFAULT NULL COMMENT 'nota libera';
+    ALTER TABLE `ramasql_test_t53_mula4dmmgml3`.`misure` MODIFY COLUMN `nota` VARCHAR(120) NULL DEFAULT NULL COMMENT 'nota libera';
 
 esecuzione: OK
 

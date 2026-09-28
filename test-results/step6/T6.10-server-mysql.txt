@@ -1,5 +1,5 @@
 T6.10 — integrità dal data-entry su MySQL
-Catalogo di test: ramasql_test_ui_integr10_ta8bo9 (fixture biblioteca.sql)
-RESTRICT — eliminare l'editore 1 (che ha 9 libri): «[1451] (conn=12468) Cannot delete or update a parent row: a foreign key constraint fails (`ramasql_test_ui_integr10_ta8bo9`.`libri`, CONSTRAINT `fk_libri_editori` FOREIGN KEY (`id_editore`) REFERENCES `editori` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT) — Non si può eliminare o modificare questa riga: altre righe la usano attraverso una chiave esterna.»; sul server l'editore è ancora lì
+Catalogo di test: ramasql_test_ui_integr10_92wqm1 (fixture biblioteca.sql)
+RESTRICT — eliminare l'editore 1 (che ha 9 libri): «[1451] (conn=15449) Cannot delete or update a parent row: a foreign key constraint fails (`ramasql_test_ui_integr10_92wqm1`.`libri`, CONSTRAINT `fk_libri_editori` FOREIGN KEY (`id_editore`) REFERENCES `editori` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT) — Non si può eliminare o modificare questa riga: altre righe la usano attraverso una chiave esterna.»; sul server l'editore è ancora lì
 CASCADE — eliminato il libro 5: le 2 righe di libri_autori sono sparite sul server e non compaiono più riaprendo la tabella nel client
 Esito: SUPERATO

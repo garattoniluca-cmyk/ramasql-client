@@ -1,4 +1,4 @@
-T3.9 — ricerca nei sorgenti (237 file .java di [core, app, model, sqleo-qb], commenti e stringhe esclusi)
+T3.9 — ricerca nei sorgenti (281 file .java di [core, app, model, sqleo-qb], commenti e stringhe esclusi)
 core/src/main/java/it/ramasql/core/connection/InternalQueries.java → [66: execute, 71: executeQuery]
-core/src/main/java/it/ramasql/core/exec/SqlExecutor.java → [152: execute, 319: execute]
+core/src/main/java/it/ramasql/core/exec/SqlExecutor.java → [153: execute, 198: execute, 466: executeLargeUpdate, 490: addBatch, 492: executeBatch, 539: executeLargeUpdate, 635: execute]
 core/src/main/java/it/ramasql/core/metadata/MetadataQueries.java → [90: executeQuery, 113: executeQuery]

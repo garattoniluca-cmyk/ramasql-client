@@ -1,15 +1,17 @@
-T3.9 — controllo del bytecode (481 classi di [core, app, model, sqleo-qb]; 145 riferimenti a java.sql.* / org.mariadb.*: chiamate invoke*, riferimenti a metodo dei bootstrap di invokedynamic, costanti MethodHandle)
+T3.9 — controllo del bytecode (581 classi di [core, app, model, sqleo-qb]; 174 riferimenti a java.sql.* / org.mariadb.*: chiamate invoke*, riferimenti a metodo dei bootstrap di invokedynamic, costanti MethodHandle)
 Classi ammesse (possono eseguire SQL): [it/ramasql/core/connection/InternalQueries, it/ramasql/core/exec/SqlExecutor, it/ramasql/core/metadata/MetadataQueries]
 Chiamate che creano o eseguono istruzioni SQL:
   it/ramasql/core/connection/InternalQueries → [Connection.createStatement, Statement.execute, Statement.executeQuery]
-  it/ramasql/core/exec/SqlExecutor → [Connection.createStatement, Statement.execute]
+  it/ramasql/core/exec/SqlExecutor → [Connection.createStatement, Connection.prepareStatement, PreparedStatement.addBatch, PreparedStatement.executeBatch, PreparedStatement.executeLargeUpdate, Statement.execute]
   it/ramasql/core/metadata/MetadataQueries → [Connection.createStatement, Connection.prepareStatement, PreparedStatement.executeQuery, Statement.executeQuery]
 Fuori dalle classi ammesse, riferimenti JDBC consentiti (solo letture, chiusure, valori, e l'apertura delle connessioni in Session):
   app: it/ramasql/app/MainFrame → [SQLException.getMessage]
   app: it/ramasql/app/grid/ResultCells → [Date.toLocalDate, Time.toLocalTime, Timestamp.toLocalDateTime]
+  app: it/ramasql/app/importer/ImportWizard → [SQLException.getMessage]
   app: it/ramasql/app/navigator/NavigatorPanel → [SQLException.getErrorCode, SQLException.getMessage]
   core: it/ramasql/core/connection/ConnectionErrorClassifier → [SQLException.getErrorCode, SQLException.getSQLState]
   core: it/ramasql/core/connection/Session → [Connection.close, Driver.connect, SQLException.<init>]
+  core: it/ramasql/core/dump/Dumper → [SQLException.<init>]
   core: it/ramasql/core/metadata/MetadataReader → [SQLException.getErrorCode]
   sqleo-qb: com/sqleo/querybuilder/DiagramLoader → [SQLException.getMessage]
   sqleo-qb: com/sqleo/querybuilder/JdbcQbMetadata → [Connection.getCatalog, Connection.getMetaData, DatabaseMetaData.getColumns, DatabaseMetaData.getExportedKeys, DatabaseMetaData.getImportedKeys, DatabaseMetaData.getPrimaryKeys, DatabaseMetaData.getTables, ResultSet.close, ResultSet.getInt, ResultSet.getString, ResultSet.next]

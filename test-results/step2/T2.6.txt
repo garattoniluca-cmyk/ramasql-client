@@ -2,5 +2,5 @@ T2.6 — esporta → importa con un altro utente → connetti
 file esportato: connessioni-3A.json (479 byte)
 tessere dopo l'importazione: [Aula 3A - MariaDB, Aula 3A - MySQL]
 messaggio dell'importazione: Importa profili | Profili aggiunti: 2. Profili aggiornati (stesso nome): 0.
-connessione da «Aula 3A - MariaDB» in 13 ms → Connesso a «Aula 3A - MariaDB» · ramasql_test@127.0.0.1:3306 · MariaDB 11.5.2
-connessione da «Aula 3A - MySQL» in 14 ms → Connesso a «Aula 3A - MySQL» · ramasql_test@127.0.0.1:3307 · MySQL 8.0.40
+connessione da «Aula 3A - MariaDB» in 10 ms → Connesso a «Aula 3A - MariaDB» · ramasql_test@127.0.0.1:3306 · MariaDB 11.5.2
+connessione da «Aula 3A - MySQL» in 12 ms → Connesso a «Aula 3A - MySQL» · ramasql_test@127.0.0.1:3307 · MySQL 8.0.40

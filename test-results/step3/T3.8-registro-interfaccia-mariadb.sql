@@ -1,13 +1,13 @@
--- RamaSQL Client - registro SQL esportato il 2026-09-28 00:07:30
+-- RamaSQL Client - registro SQL esportato il 2026-09-28 15:21:01
 -- Connessione: MariaDB locale (MariaDB 11.5.2)
 -- Istruzioni: 18 riuscite; 1 non riuscite o interrotte (commentate, non vengono rieseguite: possono essere state applicate in parte, verifica)
--- Riferimenti al catalogo «ramasql_test_ui_reg_a_8q0tul» tolti: lo script si riesegue sul catalogo corrente
+-- Riferimenti al catalogo «ramasql_test_ui_reg_a_4ihwbs» tolti: lo script si riesegue sul catalogo corrente
 
--- #1 00:07:24 · Test (fixture) · OK · 0 righe · 0 ms
--- USE `ramasql_test_ui_reg_a_8q0tul`;
+-- #1 15:21:00 · Test (fixture) · OK · 0 righe · 0 ms
+-- USE `ramasql_test_ui_reg_a_4ihwbs`;
 -- (USE del catalogo d'origine omesso)
 
--- #2 00:07:24 · Test (fixture) · OK · 0 righe · 3 ms
+-- #2 15:21:00 · Test (fixture) · OK · 0 righe · 3 ms
 CREATE TABLE editori (
   id INT UNSIGNED NOT NULL AUTO_INCREMENT,
   nome VARCHAR(80) NOT NULL,
@@ -16,7 +16,7 @@ CREATE TABLE editori (
   UNIQUE KEY uq_editori_nome (nome)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- #3 00:07:24 · Test (fixture) · OK · 0 righe · 4 ms
+-- #3 15:21:00 · Test (fixture) · OK · 0 righe · 4 ms
 CREATE TABLE autori (
   id INT UNSIGNED NOT NULL AUTO_INCREMENT,
   cognome VARCHAR(60) NOT NULL,
@@ -26,7 +26,7 @@ CREATE TABLE autori (
   KEY ix_autori_cognome (cognome, nome)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- #4 00:07:24 · Test (fixture) · OK · 0 righe · 4 ms
+-- #4 15:21:00 · Test (fixture) · OK · 0 righe · 6 ms
 CREATE TABLE libri (
   id INT UNSIGNED NOT NULL AUTO_INCREMENT,
   titolo VARCHAR(150) NOT NULL,
@@ -40,7 +40,7 @@ CREATE TABLE libri (
   CONSTRAINT fk_libri_editori FOREIGN KEY (id_editore) REFERENCES editori (id) ON DELETE RESTRICT ON UPDATE RESTRICT
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Catalogo dei libri';
 
--- #5 00:07:24 · Test (fixture) · OK · 0 righe · 3 ms
+-- #5 15:21:00 · Test (fixture) · OK · 0 righe · 7 ms
 CREATE TABLE libri_autori (
   id_libro INT UNSIGNED NOT NULL,
   id_autore INT UNSIGNED NOT NULL,
@@ -50,7 +50,7 @@ CREATE TABLE libri_autori (
   CONSTRAINT fk_libri_autori_autori FOREIGN KEY (id_autore) REFERENCES autori (id) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- #6 00:07:24 · Test (fixture) · OK · 0 righe · 3 ms
+-- #6 15:21:00 · Test (fixture) · OK · 0 righe · 4 ms
 CREATE TABLE soci (
   id INT UNSIGNED NOT NULL AUTO_INCREMENT,
   tessera CHAR(8) NOT NULL COMMENT 'numero della tessera (T e 7 cifre)',
@@ -62,7 +62,7 @@ CREATE TABLE soci (
   UNIQUE KEY uq_soci_tessera (tessera)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- #7 00:07:24 · Test (fixture) · OK · 0 righe · 4 ms
+-- #7 15:21:00 · Test (fixture) · OK · 0 righe · 6 ms
 CREATE TABLE prestiti (
   id INT UNSIGNED NOT NULL AUTO_INCREMENT,
   id_libro INT UNSIGNED NOT NULL,
@@ -76,7 +76,7 @@ CREATE TABLE prestiti (
   CONSTRAINT fk_prestiti_soci FOREIGN KEY (id_socio) REFERENCES soci (id) ON DELETE RESTRICT ON UPDATE RESTRICT
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- #8 00:07:24 · Test (fixture) · OK · 0 righe · 3 ms
+-- #8 15:21:00 · Test (fixture) · OK · 0 righe · 6 ms
 CREATE VIEW v_prestiti_aperti AS
   SELECT p.id, s.cognome, s.nome, l.titolo, p.data_prestito
   FROM prestiti p
@@ -84,13 +84,13 @@ CREATE VIEW v_prestiti_aperti AS
   JOIN libri l ON l.id = p.id_libro
   WHERE p.data_reso IS NULL;
 
--- #9 00:07:24 · Test (fixture) · OK · 0 righe · 2 ms
+-- #9 15:21:00 · Test (fixture) · OK · 0 righe · 2 ms
 CREATE VIEW v_libri_editori AS
   SELECT l.id, l.titolo, l.anno, e.nome AS editore
   FROM libri l
   LEFT JOIN editori e ON e.id = l.id_editore;
 
--- #10 00:07:24 · Test (fixture) · OK · 20 righe · 0 ms
+-- #10 15:21:00 · Test (fixture) · OK · 20 righe · 0 ms
 INSERT INTO editori (id, nome, citta) VALUES
   (1, 'Einaudi', 'Bologna'),
   (2, 'Mondadori', 'Forlì'),
@@ -113,7 +113,7 @@ INSERT INTO editori (id, nome, citta) VALUES
   (19, 'Iperborea', 'Napoli'),
   (20, 'Città Nuova', 'Torino');
 
--- #11 00:07:24 · Test (fixture) · OK · 50 righe · 1 ms
+-- #11 15:21:00 · Test (fixture) · OK · 50 righe · 1 ms
 INSERT INTO autori (id, cognome, nome, nazionalita) VALUES
   (1, 'Manzoni', 'Alessandro', 'italiana'),
   (2, 'D''Annunzio', 'Gabriele', 'italiana'),
@@ -166,7 +166,7 @@ INSERT INTO autori (id, cognome, nome, nazionalita) VALUES
   (49, 'Szymborska', 'Wisława', 'polacca'),
   (50, 'Ferrante', 'Elena', 'italiana');
 
--- #12 00:07:24 · Test (fixture) · OK · 200 righe · 1 ms
+-- #12 15:21:00 · Test (fixture) · OK · 200 righe · 1 ms
 INSERT INTO libri (id, titolo, isbn, anno, prezzo, id_editore) VALUES
   (1, 'Il giardino dei ricordi', '9788800007919', 1887, 22.29, 4),
   (2, 'La casa dei ricordi', '9788800015838', 1924, 39.58, 7),
@@ -369,7 +369,7 @@ INSERT INTO libri (id, titolo, isbn, anno, prezzo, id_editore) VALUES
   (199, 'La strada all''alba', '9788801575881', 1863, 28.71, 18),
   (200, 'L''attesa all''alba', '9788801583800', 1900, 5.00, 1);
 
--- #13 00:07:24 · Test (fixture) · OK · 232 righe · 1 ms
+-- #13 15:21:00 · Test (fixture) · OK · 232 righe · 2 ms
 INSERT INTO libri_autori (id_libro, id_autore) VALUES
   (1, 8),
   (2, 15),
@@ -604,7 +604,7 @@ INSERT INTO libri_autori (id_libro, id_autore) VALUES
   (199, 44),
   (200, 1);
 
--- #14 00:07:24 · Test (fixture) · OK · 100 righe · 0 ms
+-- #14 15:21:00 · Test (fixture) · OK · 100 righe · 2 ms
 INSERT INTO soci (id, tessera, cognome, nome, email, nato_il) VALUES
   (1, 'T0001037', 'Ricci', 'Alessandro', 'alessandro.ricci1@esempio.it', '1950-07-31'),
   (2, 'T0001074', 'Mancini', 'Ginevra', 'ginevra.mancini2@esempio.it', '1951-02-27'),
@@ -707,7 +707,7 @@ INSERT INTO soci (id, tessera, cognome, nome, email, nato_il) VALUES
   (99, 'T0004663', 'Lombardi', 'Andrea', 'andrea.lombardi99@esempio.it', '1952-06-08'),
   (100, 'T0004700', 'Rossi', 'Giulia', 'giulia.rossi100@esempio.it', NULL);
 
--- #15 00:07:24 · Test (fixture) · OK · 500 righe · 3 ms
+-- #15 15:21:00 · Test (fixture) · OK · 500 righe · 4 ms
 INSERT INTO prestiti (id, id_libro, id_socio, data_prestito, data_reso) VALUES
   (1, 38, 54, '2025-01-04', '2025-01-06'),
   (2, 75, 7, '2025-01-07', '2025-01-10'),
@@ -1210,15 +1210,15 @@ INSERT INTO prestiti (id, id_libro, id_socio, data_prestito, data_reso) VALUES
   (499, 64, 48, '2025-10-25', '2025-11-14'),
   (500, 101, 1, '2025-10-28', '2025-11-18');
 
--- #16 00:07:25 · Navigatore · OK · 0 righe · 3 ms
+-- #16 15:21:01 · Navigatore · OK · 0 righe · 4 ms
 RENAME TABLE `autori` TO `scrittori`;
 
--- #17 00:07:26 · Navigatore · OK · 0 righe · 5 ms
+-- #17 15:21:01 · Navigatore · OK · 0 righe · 3 ms
 TRUNCATE TABLE `prestiti`;
 
--- #18 00:07:27 · Navigatore · OK · 0 righe · 7 ms
+-- #18 15:21:01 · Navigatore · OK · 0 righe · 6 ms
 DROP TABLE `libri_autori`;
 
--- #19 00:07:28 · Navigatore · ERRORE 1451 (23000): (conn=12336) Cannot delete or update a parent row: a foreign key constraint fails
+-- #19 15:21:01 · Navigatore · ERRORE 1451 (23000): (conn=15198) Cannot delete or update a parent row: a foreign key constraint fails
 -- DROP TABLE `editori`;
 -- (non riuscita: può essere stata applicata in parte: verifica sul server prima di rieseguire lo script)

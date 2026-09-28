@@ -4,5 +4,5 @@ SELECT VERSION() letto dal test = 8.0.40
 Session.serverInfo() = ServerInfo[kind=MYSQL, versionText=8.0.40, major=8, minor=0, patch=40]
 barra di stato = MySQL 8.0.40
 autocommit (principale, servizio) = true, true
-CONNECTION_ID principale = 12577, di servizio = 12578
+CONNECTION_ID principale = 15558, di servizio = 15559
 Session.toString() = Session[Test MySQL, ramasql_test@127.0.0.1:3307, MySQL 8.0.40]

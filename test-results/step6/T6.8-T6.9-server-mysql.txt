@@ -1,8 +1,8 @@
 T6.8 e T6.9 su MySQL
-Catalogo di test: ramasql_test_ui_unici_c0qcvo — soci con 2 email duplicate (una due volte, una due volte) e un NULL; tabella «vecchia» MyISAM
-T6.8 — query dei duplicati: SELECT `email`, COUNT(*) AS `occorrenze` FROM `ramasql_test_ui_unici_c0qcvo`.`soci` WHERE `email` IS NOT NULL GROUP BY `email` HAVING COUNT(*) > 1
+Catalogo di test: ramasql_test_ui_unici_uy7zqu — soci con 2 email duplicate (una due volte, una due volte) e un NULL; tabella «vecchia» MyISAM
+T6.8 — query dei duplicati: SELECT `email`, COUNT(*) AS `occorrenze` FROM `ramasql_test_ui_unici_uy7zqu`.`soci` WHERE `email` IS NOT NULL GROUP BY `email` HAVING COUNT(*) > 1
   esito della verifica: ⚠ Trovati 2 valori ripetuti: con questi dati il server rifiuterà l'indice (errore 1062). Correggi i doppioni prima.
-  eseguito comunque: ✘ Istruzioni applicate: 0 su 1; il server si è fermato alla n. 1. Le istruzioni DDL non si annullano: ciò che è stato applicato resta. ✘ Errore 1062: (conn=12526) Duplicate entry 'anna@scuola.it' for key 'soci.uq_soci_email' Valore duplicato: esiste già una riga con lo stesso valore nella chiave primaria o in un indice UNIQUE. Non riuscita: ALTER TABLE `ramasql_test_ui_unici_c0qcvo`.`soci` ADD UNIQUE INDEX `uq_soci_email` (`email`) ℹ L'editor mostra ora la tabella com'è davvero sul server (riletta dopo l'esecuzione).
+  eseguito comunque: ✘ Istruzioni applicate: 0 su 1; il server si è fermato alla n. 1. Le istruzioni DDL non si annullano: ciò che è stato applicato resta. ✘ Errore 1062: (conn=15507) Duplicate entry 'anna@scuola.it' for key 'soci.uq_soci_email' Valore duplicato: esiste già una riga con lo stesso valore nella chiave primaria o in un indice UNIQUE. Non riuscita: ALTER TABLE `ramasql_test_ui_unici_uy7zqu`.`soci` ADD UNIQUE INDEX `uq_soci_email` (`email`) ℹ L'editor mostra ora la tabella com'è davvero sul server (riletta dopo l'esecuzione).
   indice uq_soci_email sul server: assente
 T6.9 — «vecchia» MyISAM: scheda Chiavi esterne disabilitata, «ℹ La tabella «vecchia» usa l'engine MyISAM, che non supporta le chiavi esterne: il server accetterebbe l'istruzione ma non controllerebbe mai il vincolo. Per usare le chiavi esterne converti la tabella in InnoDB (lo trovi anche nella scheda Opzioni).»; accettata la conversione → engine sul server InnoDB e scheda riabilitata
 Esito: SUPERATO
