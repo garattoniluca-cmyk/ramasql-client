@@ -1,5 +1,27 @@
 # JOURNAL.md — Diario cronologico (più recente in alto)
 
+## 2026-09-28 — BUG-037: cambiare scheda richiedeva decine di secondi (bloccante, segnalato dall'utente) ✅
+
+**Sintomo** (utente, programma avviato con `avvia.cmd`, server «Ciro», catalogo `bibliotecasoft`, finestra massimizzata): con le schede «amministratori (struttura)», due query visive e «Query 1», il passaggio da una scheda all'altra richiedeva 15–40 secondi e il fuoco non si spostava.
+
+**Diagnosi.**
+- Un test con clic veri (`Robot`) che misurava solo il tempo di risposta non lo riproduceva: era una misura sbagliata, perché non controllava *quale* scheda risultasse scelta.
+- Riprodotto sul programma vero: avviato con `avvia.cmd` come fa l'utente, collegato come `root` (password presa dal file locale e passata con gli appunti senza mostrarla, poi appunti svuotati; serviva la stessa connessione dell'utente) e pilotato con il mouse. Stesse schede: i clic sui titoli non cambiavano scheda.
+- Un campionatore dello stack (`jcmd Thread.print` ogni ~0,3 s) ha mostrato il thread dell'interfaccia **libero**: il programma non era lento, i clic andavano persi.
+- Una sonda agganciata al processo in esecuzione (Attach API, solo lettura più un `setSelectedIndex` di prova, che funzionava) ha mostrato che sotto il centro della linguetta c'è la `JLabel` del titolo.
+- `WorkTabs.header` (dallo Step 4) le dava un suggerimento. `setToolTipText` registra il `ToolTipManager` come ascoltatore del mouse, e Swing consegna il clic al componente più interno che ascolta il mouse: l'etichetta, non la linguetta. La scheda cambiava solo cliccando fuori dalla scritta.
+
+**Correzione** (`WorkTabs`): l'etichetta non ha più un suggerimento; resta quello della linguetta (`setToolTipTextAt`), che Swing mostra anche sopra il titolo. La linguetta dell'editor SQL, che non ne aveva, ora ha il suo (`tabs.query.tooltip`).
+
+**Test** `Bug037ClicSulleSchedeTest` (`step12`, `ui`, `it`), sui due server, con struttura di una tabella, due query visive con tabelle ed editor SQL:
+1. nessun componente dell'intestazione, tranne la «×», riceve il mouse al posto della linguetta;
+2. clic veri al centro del titolo, tre giri avanti e indietro: ogni clic sceglie la sua scheda (la più lenta in 34 ms; limite 2 s);
+3. sopra il titolo si vede il suggerimento della linguetta.
+
+Sul codice vecchio falliscono sia la parte 1 sia, da sola, la parte 2 («la scheda non è stata scelta entro 2000 ms»). Evidenze in `test-results/step12/BUG-037-*.txt`. Provato anche a mano sul programma vero, avviato con `avvia.cmd`: la scheda cambia al primo clic e il suggerimento compare sopra il titolo.
+
+Verifica: test mirati (`Bug037ClicSulleSchedeTest` e `T126T1212T1213SchermiESuggerimentiTest`, entrambi sui due server, tutti superati) e prova a mano; la verifica completa si rimanda a fine step (correzione piccola, lavoro interattivo con l'utente).
+
 ## 2026-09-28 — RESOCONTO dell'esecuzione autonoma degli step 9–12 (`ADR-024`)
 
 **Step completati:** 9 (importazione CSV e JSON), 10 (dump e ripristino), 11 (modello ER e retroingegneria), 12 (rifiniture per l'aula e guida rapida), in ordine, ognuno con la sua voce qui sotto, la revisione di un sotto-agente indipendente con i difetti corretti, e il suo commit (`Step 9: …` … `Step 12: …`, più commit intermedi e delle evidenze; **nessun push**). **Non toccati**, come chiesto: step 13 (installer) e 14 (aula). Gli step 1–8 non sono regrediti: la verifica ripete tutti i loro test.

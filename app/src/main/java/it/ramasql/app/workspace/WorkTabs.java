@@ -142,7 +142,7 @@ public final class WorkTabs {
         SqlEditor editor = new SqlEditor(title, new PipelineSqlRunner(workspace.pipeline()),
                 completion == null ? CompletionSource.empty() : completion, editorPrompts, gridPrompts, rowLimit);
         editor.setName(tabName("query", null, String.valueOf(queryCounter)));
-        add(editor, title, null);
+        add(editor, title, Texts.get("tabs.query.tooltip"));
         return editor;
     }
 
@@ -492,7 +492,7 @@ public final class WorkTabs {
     private void add(JComponent tab, String title, String tooltip) {
         tabs.addTab(title, tab);
         int index = tabs.getTabCount() - 1;
-        tabs.setTabComponentAt(index, header(tab, title, tooltip));
+        tabs.setTabComponentAt(index, header(tab, title));
         tabs.setTitleAt(index, title);
         tabs.setToolTipTextAt(index, tooltip);
         tabs.setSelectedIndex(index);
@@ -510,11 +510,12 @@ public final class WorkTabs {
         }
     }
 
-    private JComponent header(Component tab, String title, String tooltip) {
+    private JComponent header(Component tab, String title) {
         JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT, Tokens.px(6), 0));
         panel.setOpaque(false);
+        // niente suggerimento sull'etichetta: la renderebbe destinataria dei clic, che non arriverebbero più alla
+        // linguetta (BUG-037); il suggerimento è quello della linguetta (setToolTipTextAt)
         JLabel label = new JLabel(title);
-        label.setToolTipText(tooltip);
         titles.put(tab, label);
         panel.add(label);
         JButton close = new JButton(Texts.get("tabs.close.symbol"));

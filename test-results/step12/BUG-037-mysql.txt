@@ -1,0 +1,15 @@
+BUG-037 — clic sul titolo delle linguette, su MySQL
+1. Intestazioni delle 4 linguette: nessun componente, tranne la «×», riceve il mouse al posto della linguetta
+   clic su «libri (struttura)»: scelta in 29 ms
+   clic su «Query visiva 1»: scelta in 20 ms
+   clic su «Query visiva 2»: scelta in 12 ms
+   clic su «Query 1»: scelta in 13 ms
+   clic su «Query visiva 2»: scelta in 12 ms
+   clic su «Query visiva 1»: scelta in 11 ms
+   clic su «libri (struttura)»: scelta in 12 ms
+   clic su «Query visiva 1»: scelta in 13 ms
+   clic su «Query visiva 2»: scelta in 12 ms
+   clic su «Query 1»: scelta in 14 ms
+2. Clic veri del mouse sul titolo, tre giri: ogni clic sceglie la sua scheda (la più lenta in 29 ms)
+3. Sopra il titolo di ogni linguetta si vede il suo suggerimento
+Esito: SUPERATO
