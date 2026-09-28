@@ -1,4 +1,4 @@
 T3.2 — MariaDB (11.5.2-MariaDB)
-catalogo ramasql_test_t32_grande_mula3xs17u6c con 500 tabelle (generate in 1848 ms)
-MetadataReader.tables(): 500 righe in 81 ms (1 lettura di information_schema.TABLES; limite 2000 ms)
+catalogo ramasql_test_t32_grande_muldfi35led3 con 500 tabelle (generate in 3001 ms)
+MetadataReader.tables(): 500 righe in 70 ms (1 lettura di information_schema.TABLES; limite 2000 ms)
 esito: SUPERATO

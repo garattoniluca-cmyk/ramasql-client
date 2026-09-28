@@ -1,4 +1,4 @@
-Colori fissi fuori da it/ramasql/app/theme/ (DESIGN-SYSTEM §1) — scansione di 98 sorgenti di app/src/main + messages.properties
+Colori fissi fuori da it/ramasql/app/theme/ (DESIGN-SYSTEM §1) — scansione di 105 sorgenti di app/src/main + messages.properties
 
 Pacchetti della shell e del tema (severi: devono essere zero): 0
 

@@ -1,10 +1,10 @@
 T3.8 — registro esportato e rieseguito, su MariaDB
-Origine: ramasql_test_ui_reg_a_4ihwbs · copia (vuota): ramasql_test_ui_reg_b_r6avqr
+Origine: ramasql_test_ui_reg_a_yi1fng · copia (vuota): ramasql_test_ui_reg_b_7swi6n
 
 1) fixture biblioteca.sql caricata con l'esecutore del client: 15 istruzioni nel registro
 2) dal navigatore: rinomina autori→scrittori, svuota prestiti, elimina libri_autori (OK), elimina editori (rifiutata: ERRORE 1451)
 3) Esporta… → T3.8-registro-interfaccia-mariadb.sql (1224 righe; USE e DROP TABLE editori commentati)
-4) rieseguito con l'esecutore su ramasql_test_ui_reg_b_r6avqr: 17 istruzioni, tutte OK
+4) rieseguito con l'esecutore su ramasql_test_ui_reg_b_7swi6n: 17 istruzioni, tutte OK
 
    editori: TableDef uguali (colonne 3, indici 2, FK 0, AUTO_INCREMENT 21)
    libri: TableDef uguali (colonne 6, indici 3, FK 1, AUTO_INCREMENT 201)

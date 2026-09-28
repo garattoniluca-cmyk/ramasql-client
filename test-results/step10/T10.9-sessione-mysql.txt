@@ -1,0 +1,8 @@
+T10.9 — ripristino interrotto dopo 513 istruzioni su 30011 (MySQL)
+Sessione rimasta cambiata dal file: sql_mode = NO_AUTO_VALUE_ON_ZERO, time_zone = +00:00, controlli delle chiavi spenti
+Istruzioni proposte per rimetterla:
+  SET SESSION sql_mode = 'IGNORE_SPACE,ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION'
+  SET SESSION time_zone = 'SYSTEM'
+  SET FOREIGN_KEY_CHECKS = 1
+Eseguite: sql_mode = «IGNORE_SPACE,ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION», time_zone = SYSTEM, foreign_key_checks = 1 come prima
+Esito: OK

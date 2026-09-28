@@ -1,0 +1,11 @@
+T10.5 — tipi difficili (MySQL)
+Dump con la sessione a +02:00, ripristino con una sessione a -03:00
+Avvisi del dump: [Nel catalogo «ramasql_test_t105_tipi_muldawpe3t1q» le chiavi esterne di a_uno, b_due formano un ciclo: nel file i controlli delle chiavi esterne restano spenti durante il ripristino., Nel catalogo «ramasql_test_t105_tipi_muldawpe3t1q» le tabelle dipendenti hanno una chiave esterna verso sé stesse: nel file i controlli delle chiavi esterne restano spenti durante il ripristino, perché una riga può riferire una riga che viene dopo.]
+Ripristino: 20 istruzioni, 0 errori, avvisi del server: [] (nessuno sui dati); sessione rimessa com'era dal file (time_zone -03:00)
+CHECKSUM TABLE uguale per [tipi, a_uno, b_due, dipendenti]
+Valori confrontati uno per uno (id, UNIX_TIMESTAMP dei TIMESTAMP, FLOAT come DOUBLE, geometrie, JSON, date zero, TIME negativi e oltre 24 h, colonne generate):
+  [1, 1792888200.123456, 0, 1234567, 0.10000000149011612, 0101000000000000000000F03F0000000000000040, {"a": [1, 2, "è"], "b": null}, 0000-00-00, 0000-00-00 00:00:00.000, -838:59:59, 100:00:00.25, 2, n1]
+  [2, null, null, null, null, null, null, null, null, null, null, 4, n2]
+  [3, 1774746000.000000, 2147483647, 3.4028234663852886e38, 1.1754943508222875e-38, 0101000000000000000000E0BFFCA9F1D24D62503F, [], 2024-02-29, 1999-12-31 23:59:59.999000, 00:00:00, -00:00:01.50, 6, n3]
+Vista a_sopra (usa z_base, scritta dopo di lei) funzionante; chiavi circolari a_uno ⇄ b_due e dipendenti.responsabile → dipendenti.id (Anna → Carla, id più alto) ripristinate
+Esito: OK

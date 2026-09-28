@@ -1,0 +1,10 @@
+T11.4 — retroingegneria di biblioteca (MySQL)
+Entità: [autori(4 colonne, InnoDB), editori(3 colonne, InnoDB), libri(6 colonne, InnoDB), libri_autori(2 colonne, InnoDB), prestiti(5 colonne, InnoDB), soci(6 colonne, InnoDB)]
+Relazioni fisiche:
+  libri.id_editore → editori.id · ONE_TO_MANY · facoltativa · fk_libri_editori
+  libri_autori.id_autore → autori.id · ONE_TO_MANY · obbligatoria · fk_libri_autori_autori
+  libri_autori.id_libro → libri.id · ONE_TO_MANY · obbligatoria · fk_libri_autori_libri
+  prestiti.id_libro → libri.id · ONE_TO_MANY · obbligatoria · fk_prestiti_libri
+  prestiti.id_socio → soci.id · ONE_TO_MANY · obbligatoria · fk_prestiti_soci
+Tabella ponte (N:M indicativa): libri_autori
+Esito: OK

@@ -1,1 +1,1 @@
-Su MariaDB: connessione di servizio occupata da SELECT SLEEP(6) (lettura di metadati lenta); SELECT SLEEP(30) dell'utente interrotta con KILL QUERY in 4 ms, dalla connessione dedicata al KILL, senza aspettare i metadati; esito INTERRUPTED
+Su MariaDB: connessione di servizio occupata da SELECT SLEEP(6) (lettura di metadati lenta); SELECT SLEEP(30) dell'utente interrotta con KILL QUERY in 1 ms, dalla connessione dedicata al KILL, senza aspettare i metadati; esito INTERRUPTED

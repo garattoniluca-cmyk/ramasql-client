@@ -1,1 +1,1 @@
-SELECT SLEEP(30) interrotta con KILL QUERY in 0 ms su MariaDB; esito: INTERRUPTED (ServerError[code=1317, sqlState=70100, message=(conn=15834) Query execution was interrupted]); poi SELECT 42 → 42 sulla stessa sessione
+SELECT SLEEP(30) interrotta con KILL QUERY in 0 ms su MariaDB; esito: INTERRUPTED (ServerError[code=1317, sqlState=70100, message=(conn=18074) Query execution was interrupted]); poi SELECT 42 → 42 sulla stessa sessione

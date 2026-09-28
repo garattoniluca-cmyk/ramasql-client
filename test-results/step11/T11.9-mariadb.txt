@@ -1,0 +1,6 @@
+T11.9 — disposizione, zoom e trascinamento (MariaDB)
+57 relazioni, 227 tratti ortogonali, 170 curve in tutto: nessun tratto passa sotto un'entità
+30 tabelle, 57 relazioni fisiche; nessuna sovrapposizione; t00 (riferita da 29) fra le più centrali (più vicine al centro: 0)
+zoom 100% → 120% → 100%; t05 trascinata di (90, 40) con il mouse: da (976.0, 776.0) a (1066.0, 816.0)
+100 entità generate: nessuna sovrapposizione, disegno completo in 10 ms, trascinamento (4 eventi) in 2 ms
+Esito: OK

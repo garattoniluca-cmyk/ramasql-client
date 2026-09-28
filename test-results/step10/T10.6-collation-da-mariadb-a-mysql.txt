@@ -1,0 +1,5 @@
+T10.6 — catalogo e tabella con la collation predefinita di MariaDB («utf8mb4_uca1400_ai_ci», non dichiarata), dump con DROP/CREATE DATABASE, ripristinato su MySQL
+Sostituzioni mostrate nel riepilogo e applicate: {utf8mb4_uca1400_ai_ci=utf8mb4_0900_ai_ci}
+Ripristino: 18 istruzioni, 0 errori
+Su MySQL: tabella «persone» con collation utf8mb4_0900_ai_ci (la predefinita del server è utf8mb4_0900_ai_ci), righe e accenti uguali, vista funzionante
+Esito: OK

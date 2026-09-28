@@ -1,0 +1,6 @@
+T10.5 — biblioteca_myisam, tabella «nota con spazi» (colonne con spazi, LONGBLOB da 5 MB, BIT(9), DATETIME(3), DECIMAL, emoji, apici, barre, a-capo) (MySQL)
+Dump: 10538377 byte, 34 istruzioni
+Ripristino: 34 istruzioni, 0 errori
+Struttura uguale, CHECKSUM TABLE uguale per ogni tabella, contenuto della tabella con il BLOB identico byte per byte
+Memoria dopo il dump: 0 MB in più
+Esito: OK

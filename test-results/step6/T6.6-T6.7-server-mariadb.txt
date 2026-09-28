@@ -1,16 +1,16 @@
 T6.6 e T6.7 — indici e chiavi esterne su MariaDB
-Catalogo di test: ramasql_test_ui_integrita_0j7snv — tabelle nude (solo PK, nessun indice secondario, nessuna FK)
+Catalogo di test: ramasql_test_ui_integrita_fa2t4d — tabelle nude (solo PK, nessun indice secondario, nessuna FK)
 T6.6 — piano applicato:
-  ALTER TABLE `ramasql_test_ui_integrita_0j7snv`.`libri`
+  ALTER TABLE `ramasql_test_ui_integrita_fa2t4d`.`libri`
   ADD UNIQUE INDEX `uq_libri_isbn` (`isbn`),
   ADD INDEX `ix_libri_editore` (`id_editore`),
   ADD CONSTRAINT `fk_libri_editori` FOREIGN KEY (`id_editore`) REFERENCES `editori` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
-  esito: ✔ Istruzione applicata. Applicata: ALTER TABLE `ramasql_test_ui_integrita_0j7snv`.`libri` ADD UNIQUE INDEX `uq_libri_isbn` (`isbn`), ADD INDEX `ix_libri_editore` (`id_editore`), ADD CONSTRAINT… ℹ L'editor mostra ora la tabella com'è davvero sul server (riletta dopo l'esecuzione). ✔ verificato sul server: indici e chiavi esterne di «libri» sono quelli chiesti
+  esito: ✔ Istruzione applicata. Applicata: ALTER TABLE `ramasql_test_ui_integrita_fa2t4d`.`libri` ADD UNIQUE INDEX `uq_libri_isbn` (`isbn`), ADD INDEX `ix_libri_editore` (`id_editore`), ADD CONSTRAINT… ℹ L'editor mostra ora la tabella com'è davvero sul server (riletta dopo l'esecuzione). ✔ verificato sul server: indici e chiavi esterne di «libri» sono quelli chiesti
   navigatore: indici [PRIMARY, ix_libri_editore, uq_libri_isbn], chiavi esterne [fk_libri_editori]
   information_schema: uq_libri_isbn (UNIQUE), ix_libri_editore (INDEX), fk_libri_editori → editori(id) ON DELETE RESTRICT ON UPDATE CASCADE
-T6.7 - query di verifica: SELECT figlia.* FROM `ramasql_test_ui_integrita_0j7snv`.`prestiti` AS figlia LEFT JOIN `ramasql_test_ui_integrita_0j7snv`.`soci` AS riferita ON riferita.`id` = figlia.`id_socio` WHERE figlia.`id_socio` IS NOT NULL AND riferita.`id` IS NULL
+T6.7 - query di verifica: SELECT figlia.* FROM `ramasql_test_ui_integrita_fa2t4d`.`prestiti` AS figlia LEFT JOIN `ramasql_test_ui_integrita_fa2t4d`.`soci` AS riferita ON riferita.`id` = figlia.`id_socio` WHERE figlia.`id_socio` IS NOT NULL AND riferita.`id` IS NULL
   esito della verifica: ⚠ Trovate 3 righe orfane (valori che non esistono nella tabella riferita): con queste righe il server rifiuterà la chiave esterna (errore 1452). Correggile o cancellale prima.
-  eseguita comunque su MariaDB: ✔ Istruzione applicata. Applicata: ALTER TABLE `ramasql_test_ui_integrita_0j7snv`.`prestiti` ADD CONSTRAINT `fk_prestiti_soci` FOREIGN KEY (`id_socio`) REFERENCES `soci` (`id`) ON DELETE RESTR… ℹ L'editor mostra ora la tabella com'è davvero sul server (riletta dopo l'esecuzione). ✔ verificato sul server: indici e chiavi esterne di «prestiti» sono quelli chiesti ℹ Il server ha creato da sé l'indice «fk_prestiti_soci» (id_socio) per la chiave esterna «fk_prestiti_soci»: una chiave esterna ha sempre bisogno di un indice sulle sue colonne.
+  eseguita comunque su MariaDB: ✔ Istruzione applicata. Applicata: ALTER TABLE `ramasql_test_ui_integrita_fa2t4d`.`prestiti` ADD CONSTRAINT `fk_prestiti_soci` FOREIGN KEY (`id_socio`) REFERENCES `soci` (`id`) ON DELETE RESTR… ℹ L'editor mostra ora la tabella com'è davvero sul server (riletta dopo l'esecuzione). ✔ verificato sul server: indici e chiavi esterne di «prestiti» sono quelli chiesti ℹ Il server ha creato da sé l'indice «fk_prestiti_soci» (id_socio) per la chiave esterna «fk_prestiti_soci»: una chiave esterna ha sempre bisogno di un indice sulle sue colonne.
   ATTENZIONE: MariaDB ha accettato la chiave esterna nonostante le 3 righe orfane, che restano sul server (BUG-018): qui l'errore 1452 non arriva, e l'unica difesa è il controllo Verifica dati.
-  corrette dal data-entry (3 righe eliminate con Conferma) → ✔ Istruzione applicata. Applicata: ALTER TABLE `ramasql_test_ui_integrita_0j7snv`.`prestiti` ADD CONSTRAINT `fk_prestiti_soci` FOREIGN KEY (`id_socio`) REFERENCES `soci` (`id`) ON DELETE RESTR… ℹ L'editor mostra ora la tabella com'è davvero sul server (riletta dopo l'esecuzione). ✔ verificato sul server: indici e chiavi esterne di «prestiti» sono quelli chiesti
+  corrette dal data-entry (3 righe eliminate con Conferma) → ✔ Istruzione applicata. Applicata: ALTER TABLE `ramasql_test_ui_integrita_fa2t4d`.`prestiti` ADD CONSTRAINT `fk_prestiti_soci` FOREIGN KEY (`id_socio`) REFERENCES `soci` (`id`) ON DELETE RESTR… ℹ L'editor mostra ora la tabella com'è davvero sul server (riletta dopo l'esecuzione). ✔ verificato sul server: indici e chiavi esterne di «prestiti» sono quelli chiesti
 Esito: SUPERATO

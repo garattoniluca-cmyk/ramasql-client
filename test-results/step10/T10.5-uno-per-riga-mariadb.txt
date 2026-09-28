@@ -1,0 +1,19 @@
+T10.5 — dump con «Righe per INSERT = 1» (20 000 righe) ripristinato (MariaDB)
+Istruzioni eseguite: 20011 in 34.506 s
+Righe aggiunte al registro: 13 (le strutturali e il riassunto):
+  USE `ramasql_test_t105_uno_dst_muldbsoby4fc`
+  SET NAMES utf8mb4
+  SET @OLD_FOREIGN_KEY_CHECKS = @@FOREIGN_KEY_CHECKS
+  SET FOREIGN_KEY_CHECKS = 0
+  SET @OLD_SQL_MODE = @@SQL_MODE
+  SET SQL_MODE = 'NO_AUTO_VALUE_ON_ZERO'
+  SET @OLD_TIME_ZONE = @@TIME_ZONE
+  SET TIME_ZONE = '+00:00'
+  CREATE TABLE `r` (
+  SET TIME_ZONE = @OLD_TIME_ZONE
+  SET SQL_MODE = @OLD_SQL_MODE
+  SET FOREIGN_KEY_CHECKS = @OLD_FOREIGN_KEY_CHECKS
+  -- file «uno-per-riga.sql»: 20011 istruzioni eseguite (righe 6–40027 del file), 20011 riuscite, 0 non riuscite, 0 avvisi del server
+Nota del riassunto: nel registro, una per una, solo le istruzioni che cambiano la struttura o la sessione, le distruttive e quelle non riuscite (11); le altre, come gli INSERT dei dati, sono contate qui e si leggono nel file
+CHECKSUM TABLE uguale; l'esportazione del registro rimanda al file con un commento
+Esito: OK

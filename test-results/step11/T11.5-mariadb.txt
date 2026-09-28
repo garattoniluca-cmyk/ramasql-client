@@ -1,0 +1,8 @@
+T11.5 — biblioteca_myisam (MariaDB): 6 entità MyISAM, 0 relazioni fisiche
+Proposte del suggeritore (5/5 attese, 0 errate):
+  libri.id_editore → editori.id · 90% · La colonna «id_editore» ricorda il nome della tabella «editori» (singolare o plurale): probabilmente contiene valori della sua chiave «id».
+  libri_autori.id_autore → autori.id · 90% · La colonna «id_autore» ricorda il nome della tabella «autori» (singolare o plurale): probabilmente contiene valori della sua chiave «id».
+  libri_autori.id_libro → libri.id · 90% · La colonna «id_libro» ricorda il nome della tabella «libri» (singolare o plurale): probabilmente contiene valori della sua chiave «id».
+  prestiti.id_libro → libri.id · 90% · La colonna «id_libro» ricorda il nome della tabella «libri» (singolare o plurale): probabilmente contiene valori della sua chiave «id».
+  prestiti.id_socio → soci.id · 90% · La colonna «id_socio» ricorda il nome della tabella «soci» (singolare o plurale): probabilmente contiene valori della sua chiave «id».
+Esito: OK

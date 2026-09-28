@@ -1,0 +1,12 @@
+T11.6–T11.8, T11.10, T11.11 — modello ER di biblioteca_myisam (MariaDB)
+T11.6 — accettati 5 suggerimenti, disegnata a mano recensioni.libro → libri.id
+  6 relazioni, 20 tratti ortogonali, 14 curve in tutto: nessun tratto passa sotto un'entità
+  salvato in biblioteca.rsqlmodel: 7 entità, 6 relazioni logiche, 0 fisiche; registro SQL: 0 istruzioni; REFERENTIAL_CONSTRAINTS sul server: 0
+T11.10 — doppio clic su «soci»: si apre l'editor della tabella soci
+T11.11 — leggibilità della resa
+  A4-150dpi: scala 1,76, carattere ≈ 21,1 px, linee 2,5 px, trattini 10,6 px, alternanze del tratteggio misurate: 42
+  1024x768: scala 1,09, carattere ≈ 13,1 px, linee 1,5 px, trattini 6,5 px, alternanze del tratteggio misurate: 42
+  contrasto su bianco: relazioni fisiche 7,7:1, logiche 5,2:1 (almeno 3:1); fisiche a tratto pieno grigio, logiche tratteggiate blu: distinguibili anche in bianco e nero per la forma
+T11.7 — riaperto dal menu File senza connessione: modello identico (7 entità, posizioni uguali, 6 relazioni logiche)
+T11.8 — dopo ALTER TABLE soci ADD telefono e DROP TABLE prestiti: ✔ Modello aggiornato dal database: posizioni e relazioni logiche conservate. ℹ Tabelle con colonne o indici cambiati: soci. ⚠ Tabelle che non ci sono più nel database (restano segnate in rosso): prestiti.; posizioni e 6 relazioni logiche conservate
+Esito: OK

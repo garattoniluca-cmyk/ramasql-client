@@ -1,0 +1,5 @@
+T10.5 — tabella da 1 000 000 di righe (MySQL)
+Dump: 31 MB, 10011 istruzioni; ripristino: 10011 istruzioni in 15 s, 0 errori
+CHECKSUM TABLE uguale
+Memoria dopo la raccolta: +0 MB dopo il dump, +0 MB dopo il ripristino (il file non si tiene in memoria)
+Esito: OK

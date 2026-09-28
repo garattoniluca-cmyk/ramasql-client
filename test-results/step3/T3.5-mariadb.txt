@@ -1,6 +1,6 @@
 T3.5 — Elimina tabella → Annulla, su MariaDB
-Catalogo di test: ramasql_test_ui_annulla_5ohdd5 (fixture biblioteca.sql)
-Anteprima mostrata (T3.5-mariadb.png): «DROP TABLE `ramasql_test_ui_annulla_5ohdd5`.`libri`;», conferma STRONG (riscrivere «libri»)
+Catalogo di test: ramasql_test_ui_annulla_slnlw8 (fixture biblioteca.sql)
+Anteprima mostrata (T3.5-mariadb.png): «DROP TABLE `ramasql_test_ui_annulla_slnlw8`.`libri`;», conferma STRONG (riscrivere «libri»)
 Scelta: CANCEL
 Server (connessione separata): tabella libri presente = true, righe 200 (prima 200)
 Registro: 0 istruzioni

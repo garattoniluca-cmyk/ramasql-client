@@ -1,0 +1,13 @@
+T10.3 — round-trip totale di biblioteca (MySQL)
+Dump: 6 tabelle, 2 viste, 1102 righe, 31 istruzioni (52486 byte)
+Ripristino: 31 istruzioni, 0 errori
+Struttura:
+  autori: 4 colonne, 2 indici, 0 chiavi esterne [], InnoDB, utf8mb4_unicode_ci — uguale
+  editori: 3 colonne, 2 indici, 0 chiavi esterne [], InnoDB, utf8mb4_unicode_ci — uguale
+  libri: 6 colonne, 3 indici, 1 chiavi esterne [fk_libri_editori ON DELETE RESTRICT ON UPDATE RESTRICT], InnoDB, utf8mb4_unicode_ci — uguale
+  libri_autori: 2 colonne, 2 indici, 2 chiavi esterne [fk_libri_autori_autori ON DELETE CASCADE ON UPDATE CASCADE, fk_libri_autori_libri ON DELETE CASCADE ON UPDATE CASCADE], InnoDB, utf8mb4_unicode_ci — uguale
+  prestiti: 5 colonne, 3 indici, 2 chiavi esterne [fk_prestiti_libri ON DELETE RESTRICT ON UPDATE RESTRICT, fk_prestiti_soci ON DELETE RESTRICT ON UPDATE RESTRICT], InnoDB, utf8mb4_unicode_ci — uguale
+  soci: 6 colonne, 2 indici, 0 chiavi esterne [], InnoDB, utf8mb4_unicode_ci — uguale
+CHECKSUM TABLE: {autori=3672474074, editori=710156757, libri=1572190157, libri_autori=1457383748, prestiti=1380580554, soci=1398722941} = {autori=3672474074, editori=710156757, libri=1572190157, libri_autori=1457383748, prestiti=1380580554, soci=1398722941}
+Viste: [v_libri_editori: 200 righe uguali, v_prestiti_aperti: 71 righe uguali]
+Esito: OK

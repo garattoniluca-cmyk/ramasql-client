@@ -1,5 +1,5 @@
 T7.4 — cinque tabelle nella query visiva su MySQL
-Catalogo di test: ramasql_test_ui_visual74_x36ynv
+Catalogo di test: ramasql_test_ui_visual74_5x7r9h
 Elenco a sinistra del diagramma: [autori, editori, libri, libri_autori, prestiti, soci, v_libri_editori, v_prestiti_aperti] (9 righe visibili; diagramma alto 265 px su 397)
 Tabelle aggiunte con il doppio clic sull'elenco
 Tabelle nel diagramma: [libri, editori, libri_autori, autori, prestiti] (nessun avviso)
