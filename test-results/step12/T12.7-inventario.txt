@@ -1,0 +1,411 @@
+T12.7 — inventario delle schermate per la revisione «alla Apple» (MariaDB)
+Barra degli strumenti: 10 pulsanti (al più 10)
+Impostazioni: 4 voci (devono essere 4)
+Schermate: 49; fotografie: 30
+  T12.7-01-schermata-iniziale.png — schermata iniziale
+  T12.7-02-area-di-lavoro.png — area di lavoro
+  T12.7-03-editor-sql.png — editor SQL
+  T12.7-04-griglia-dati.png — griglia dati
+  T12.7-05-griglia-dati-con-la-scheda-record.png — griglia dati con la scheda record
+  T12.7-06-editor-di-tabelle.png — editor di tabelle
+  T12.7-07-tabella-nuova.png — tabella nuova
+  T12.7-08-query-visiva.png — query visiva
+  T12.7-09-importa-1-file.png — importa › 1 file
+  T12.7-10-importa-1-file-scelto.png — importa › 1 file scelto
+  T12.7-11-importa-2-anteprima.png — importa › 2 anteprima
+  T12.7-12-importa-3-tabella-esistente.png — importa › 3 tabella esistente
+  T12.7-13-importa-3-tabella-nuova.png — importa › 3 tabella nuova
+  T12.7-14-importa-4-opzioni.png — importa › 4 opzioni
+  T12.7-15-importa-5-importa.png — importa › 5 importa
+  T12.7-16-dump-1-cosa.png — dump › 1 cosa
+  T12.7-17-dump-2-opzioni.png — dump › 2 opzioni
+  T12.7-18-dump-3-esporta.png — dump › 3 esporta
+  T12.7-19-esegui-script.png — esegui script
+  T12.7-20-modello-er.png — modello ER
+  T12.7-21-finestra-preview-dialog.png — finestra preview.dialog
+  T12.7-22-finestra-preview-dialog.png — finestra preview.dialog
+  T12.7-23-finestra-catalog-create-dialog.png — finestra catalog.create.dialog
+  T12.7-24-finestra-profile-dialog.png — finestra profile.dialog
+  T12.7-25-finestra-settings-dialog.png — finestra settings.dialog
+  T12.7-26-finestra-about-dialog.png — finestra about.dialog
+  T12.7-27-finestra-guide-dialog.png — finestra guide.dialog
+  T12.7-28-finestra-connection-error-dialog.png — finestra connection.error.dialog
+  T12.7-29-finestra-er-tables-dialog.png — finestra er.tables.dialog
+  T12.7-30-finestra-showcreate-dialog.png — finestra showCreate.dialog
+
+## schermata iniziale (13 controlli)
+- pulsante "Connetti" «toolbar.connect»
+- pulsante "Nuova query" «toolbar.newQuery»
+- pulsante "Nuova query visiva" «toolbar.newVisualQuery»
+- pulsante "Nuova tabella" «toolbar.newTable»
+- pulsante "Nuova vista" «toolbar.newView»
+- pulsante "Importa" «toolbar.import»
+- pulsante "Esporta/Dump" «toolbar.export»
+- pulsante "Modello ER" «toolbar.erModel»
+- pulsante "Esegui" «toolbar.run»
+- pulsante "Interrompi" «toolbar.stop»
+- pulsante "MariaDB locale, ramasql_test@127.0.0.1:3306, Mai usata" «tile.MariaDB locale»
+- pulsante "Altre azioni" «tile.more»
+- pulsante "Nuova connessione" «tile.new»
+
+## area di lavoro (16 controlli)
+- pulsante "Disconnetti" «toolbar.connect»
+- pulsante "Nuova query" «toolbar.newQuery»
+- pulsante "Nuova query visiva" «toolbar.newVisualQuery»
+- pulsante "Nuova tabella" «toolbar.newTable»
+- pulsante "Nuova vista" «toolbar.newView»
+- pulsante "Importa" «toolbar.import»
+- pulsante "Esporta/Dump" «toolbar.export»
+- pulsante "Modello ER" «toolbar.erModel»
+- pulsante "Esegui" «toolbar.run»
+- pulsante "Interrompi" «toolbar.stop»
+- campo di testo «navigator.filter»
+- albero «navigator.tree»
+- linguette «zone.sqlPanel» [Registro, Anteprima, Messaggi]
+- campo di testo «panel.log.filter»
+- pulsante "Esporta…" «panel.log.export»
+- tabella «panel.log.table» [#, Ora, Origine, SQL, Esito, Durata, Righe]
+
+## menu barra › Importa (2 controlli)
+- voce "Importa dati da un file CSV o JSON…" «import.menu.data»
+- voce "Esegui script SQL…" «import.menu.script»
+
+## menu barra › Modello ER (2 controlli)
+- voce "Nuovo modello dal catalogo (scegline uno nel navigatore)" «er.menu.new»
+- voce "Apri modello…" «er.menu.open»
+
+## menu navigatore › SERVER (2 controlli)
+- voce "Nuovo catalogo…" «nav.menu.newCatalog»
+- voce "Mostra cataloghi di sistema" «nav.menu.showSystem»
+
+## menu navigatore › CATALOG (4 controlli)
+- voce "Nuova tabella…" «nav.menu.newTable»
+- voce "Esporta…" «nav.menu.export»
+- voce "Elimina catalogo" «nav.menu.dropCatalog»
+- voce "Aggiorna" «nav.menu.refresh»
+
+## menu navigatore › TABLE (9 controlli)
+- voce "Apri tabella" «nav.menu.openTable»
+- voce "Progetta tabella…" «nav.menu.designTable»
+- voce "Importa dati…" «nav.menu.importData»
+- voce "Esporta…" «nav.menu.export»
+- voce "Rinomina…" «nav.menu.rename»
+- voce "Svuota" «nav.menu.truncate»
+- voce "Elimina" «nav.menu.dropTable»
+- voce "Mostra SQL di creazione" «nav.menu.showCreate»
+- voce "Copia nome" «nav.menu.copyName»
+
+## menu navigatore › VIEW (5 controlli)
+- voce "Apri vista" «nav.menu.openView»
+- voce "Modifica vista" «nav.menu.editView»
+- voce "Esporta…" «nav.menu.export»
+- voce "Elimina" «nav.menu.dropView»
+- voce "Mostra SQL di creazione" «nav.menu.showCreate»
+
+## editor SQL (8 controlli)
+- pulsante "Esegui" «sqlEditor.runCurrent»
+- pulsante "Esegui tutto" «sqlEditor.runAll»
+- pulsante "Interrompi" «sqlEditor.cancel»
+- pulsante "Apri…" «sqlEditor.open»
+- pulsante "Salva" «sqlEditor.save»
+- campo di testo «sqlEditor.text»
+- linguette «sqlEditor.results» [Esito]
+- tabella «sqlEditor.outcomes» [#, Istruzione, Esito, Durata, Avvisi]
+
+## editor SQL › Esito (1 controlli)
+- tabella «sqlEditor.outcomes» [#, Istruzione, Esito, Durata, Avvisi]
+
+## griglia dati (9 controlli)
+- pulsante "Griglia" «dataGrid.view.grid»
+- pulsante "Scheda" «dataGrid.view.form»
+- pulsante "Pagina precedente" «dataGrid.page.previous»
+- pulsante "Pagina successiva" «dataGrid.page.next»
+- pulsante "Esporta CSV…" «dataGrid.export»
+- pulsante "Scarta" «dataGrid.discard»
+- pulsante "Conferma" «dataGrid.confirm»
+- tabella «dataGrid.table» [id, titolo, isbn, anno, prezzo, id_editore]
+- elenco «dataGrid.rowHeader»
+
+## griglia dati con la scheda record (16 controlli)
+- pulsante "Griglia" «dataGrid.view.grid»
+- pulsante "Scheda" «dataGrid.view.form»
+- pulsante "Pagina precedente" «dataGrid.page.previous»
+- pulsante "Pagina successiva" «dataGrid.page.next»
+- pulsante "Esporta CSV…" «dataGrid.export»
+- pulsante "Scarta" «dataGrid.discard»
+- pulsante "Conferma" «dataGrid.confirm»
+- pulsante "Precedente" «recordForm.previous»
+- pulsante "Successivo" «recordForm.next»
+- pulsante "Nuovo" «recordForm.new»
+- pulsante "Elimina" «recordForm.delete»
+- campo di testo «recordForm.field.titolo»
+- campo di testo «recordForm.field.isbn»
+- campo di testo «recordForm.field.anno»
+- campo di testo «recordForm.field.prezzo»
+- campo di testo «recordForm.field.id_editore»
+
+## editor di tabelle (6 controlli)
+- linguette «tableeditor.tabs» [Colonne, Indici, Chiavi esterne, Opzioni, SQL]
+- tabella «columns.table» [, Nome, Tipo, Lunghezza/valori, PK, NN, UQ, AI, UN, Default, Commento]
+- pulsante "Aggiungi colonna" «columns.add»
+- pulsante "Togli colonna" «columns.remove»
+- pulsante "Annulla modifiche" «tableeditor.revert»
+- pulsante "Applica" «tableeditor.apply»
+
+## editor di tabelle › Colonne (3 controlli)
+- tabella «columns.table» [, Nome, Tipo, Lunghezza/valori, PK, NN, UQ, AI, UN, Default, Commento]
+- pulsante "Aggiungi colonna" «columns.add»
+- pulsante "Togli colonna" «columns.remove»
+
+## editor di tabelle › Indici (10 controlli)
+- tabella «indexes.table» [, Nome, Tipo, Colonne]
+- pulsante "Nuovo indice" «indexes.add»
+- pulsante "Elimina indice" «indexes.remove»
+- elenco «indexes.columns»
+- lista a discesa «indexes.columnChoice» (6 voci)
+- pulsante "Aggiungi colonna" «indexes.addColumn»
+- pulsante "Togli colonna" «indexes.removeColumn»
+- pulsante "Sposta su" «indexes.up»
+- pulsante "Sposta giù" «indexes.down»
+- pulsante "Verifica dati" «indexes.verifyData»
+
+## editor di tabelle › Chiavi esterne (7 controlli)
+- tabella «fks.table» [, Nome, Tabella riferita, Colonne, ON DELETE, ON UPDATE]
+- pulsante "Nuova chiave esterna" «fks.add»
+- pulsante "Elimina chiave esterna" «fks.remove»
+- tabella «fks.pairs» [Colonna, Colonna riferita]
+- pulsante "Aggiungi coppia" «fks.addPair»
+- pulsante "Togli coppia" «fks.removePair»
+- pulsante "Verifica dati" «fks.verifyData»
+
+## editor di tabelle › Opzioni (6 controlli)
+- campo di testo «options.name»
+- lista a discesa «options.engine» (2 voci)
+- lista a discesa «options.charset» (5 voci)
+- lista a discesa «options.collation» (10 voci)
+- campo di testo «options.autoIncrement»
+- campo di testo «options.comment»
+
+## editor di tabelle › SQL (0 controlli)
+
+## tabella nuova (6 controlli)
+- linguette «tableeditor.tabs» [Colonne, Indici, Chiavi esterne, Opzioni, SQL · 1]
+- tabella «columns.table» [, Nome, Tipo, Lunghezza/valori, PK, NN, UQ, AI, UN, Default, Commento]
+- pulsante "Aggiungi colonna" «columns.add»
+- pulsante "Togli colonna" «columns.remove»
+- pulsante "Annulla modifiche" «tableeditor.revert»
+- pulsante "Applica" «tableeditor.apply»
+
+## tabella nuova › Colonne (3 controlli)
+- tabella «columns.table» [, Nome, Tipo, Lunghezza/valori, PK, NN, UQ, AI, UN, Default, Commento]
+- pulsante "Aggiungi colonna" «columns.add»
+- pulsante "Togli colonna" «columns.remove»
+
+## tabella nuova › Indici (10 controlli)
+- tabella «indexes.table» [, Nome, Tipo, Colonne]
+- pulsante "Nuovo indice" «indexes.add»
+- pulsante "Elimina indice" «indexes.remove»
+- elenco «indexes.columns»
+- lista a discesa «indexes.columnChoice» (1 voci)
+- pulsante "Aggiungi colonna" «indexes.addColumn»
+- pulsante "Togli colonna" «indexes.removeColumn»
+- pulsante "Sposta su" «indexes.up»
+- pulsante "Sposta giù" «indexes.down»
+- pulsante "Verifica dati" «indexes.verifyData»
+
+## tabella nuova › Chiavi esterne (7 controlli)
+- tabella «fks.table» [, Nome, Tabella riferita, Colonne, ON DELETE, ON UPDATE]
+- pulsante "Nuova chiave esterna" «fks.add»
+- pulsante "Elimina chiave esterna" «fks.remove»
+- tabella «fks.pairs» [Colonna, Colonna riferita]
+- pulsante "Aggiungi coppia" «fks.addPair»
+- pulsante "Togli coppia" «fks.removePair»
+- pulsante "Verifica dati" «fks.verifyData»
+
+## tabella nuova › Opzioni (6 controlli)
+- campo di testo «options.name»
+- lista a discesa «options.engine» (2 voci)
+- lista a discesa «options.charset» (5 voci)
+- lista a discesa «options.collation» (10 voci)
+- campo di testo «options.autoIncrement»
+- campo di testo «options.comment»
+
+## tabella nuova › SQL · 1 (0 controlli)
+
+## query visiva (11 controlli)
+- pulsante "Grafica" «visualQuery.view.graphic»
+- pulsante "SQL" «visualQuery.view.sql»
+- pulsante "Salva come vista…" «visualQuery.saveAsView»
+- pulsante "Salva .sql…" «visualQuery.save»
+- pulsante "Interrompi" «visualQuery.stop»
+- pulsante "Esegui" «visualQuery.run»
+- linguette «visualQuery.diagram» [Grafico]
+- elenco «qb.objects»
+- albero
+- linguette «sqlEditor.results» [Esito]
+- tabella «sqlEditor.outcomes» [#, Istruzione, Esito, Durata, Avvisi]
+
+## query visiva › Grafico (2 controlli)
+- elenco «qb.objects»
+- albero
+
+## query visiva › Esito (1 controlli)
+- tabella «sqlEditor.outcomes» [#, Istruzione, Esito, Durata, Avvisi]
+
+## importa › 1 file (7 controlli)
+- pulsante "Scegli…" «import.file.choose»
+- lista a discesa «import.kind» (2 voci)
+- lista a discesa «import.charset» (4 voci)
+- lista a discesa «import.separator» (4 voci)
+- casella "La prima riga contiene i nomi delle colonne" «import.header»
+- pulsante "Indietro" «import.back»
+- pulsante "Avanti" «import.next»
+
+## importa › 1 file scelto (7 controlli)
+- pulsante "Scegli…" «import.file.choose»
+- lista a discesa «import.kind» (2 voci)
+- lista a discesa «import.charset» (4 voci)
+- lista a discesa «import.separator» (4 voci)
+- casella "La prima riga contiene i nomi delle colonne" «import.header»
+- pulsante "Indietro" «import.back»
+- pulsante "Avanti" «import.next»
+
+## importa › 2 anteprima (3 controlli)
+- tabella «import.preview.table» [tessera, cognome, nome, email, nato_il]
+- pulsante "Indietro" «import.back»
+- pulsante "Avanti" «import.next»
+
+## importa › 3 tabella esistente (7 controlli)
+- scelta "In una tabella esistente" «import.target.existing»
+- lista a discesa «import.target.table» (6 voci)
+- scelta "In una tabella nuova" «import.target.new»
+- campo di testo «import.target.newName»
+- tabella «import.mapping.table» [Colonna del file, Esempio, Colonna della tabella]
+- pulsante "Indietro" «import.back»
+- pulsante "Avanti" «import.next»
+
+## importa › 3 tabella nuova (8 controlli)
+- scelta "In una tabella esistente" «import.target.existing»
+- lista a discesa «import.target.table» (6 voci)
+- scelta "In una tabella nuova" «import.target.new»
+- campo di testo «import.target.newName»
+- tabella «import.newTable.table» [Colonna, Tipo, NULL, Perché questo tipo]
+- casella "Aggiungi la chiave primaria «id» (numero automatico)" «import.target.addKey»
+- pulsante "Indietro" «import.back»
+- pulsante "Avanti" «import.next»
+
+## importa › 4 opzioni (6 controlli)
+- casella "Svuota la tabella prima di importare (TRUNCATE TABLE)" «import.option.truncate»
+- lista a discesa «import.option.duplicates» (2 voci)
+- casella "Un valore vuoto vale NULL" «import.option.emptyNull»
+- lista a discesa «import.option.dates» (4 voci)
+- pulsante "Indietro" «import.back»
+- pulsante "Avanti" «import.next»
+
+## importa › 5 importa (4 controlli)
+- pulsante "Interrompi" «import.run.stop»
+- tabella «import.run.rejected» [Riga, Motivo]
+- pulsante "Indietro" «import.back»
+- pulsante "Importa" «import.next»
+
+## dump › 1 cosa (5 controlli)
+- pulsante "Tutti i cataloghi" «dump.what.allCatalogs»
+- tabella «dump.what.catalogs» [, Catalogo]
+- tabella «dump.what.objects» [, Oggetto, Tipo, Contenuto]
+- pulsante "Indietro" «dump.back»
+- pulsante "Avanti" «dump.next»
+
+## dump › 2 opzioni (7 controlli)
+- casella "Prima di ogni CREATE, elimina l'oggetto se c'è già (DROP … IF EXISTS)" «dump.option.drop»
+- casella "Ricrea i cataloghi con il loro nome (CREATE DATABASE e USE)" «dump.option.createDatabase»
+- casella "Spegni i controlli delle chiavi esterne durante il ripristino" «dump.option.foreignKeys»
+- numero «dump.option.rows»
+- pulsante "Scegli…" «dump.file.choose»
+- pulsante "Indietro" «dump.back»
+- pulsante "Avanti" «dump.next»
+
+## dump › 3 esporta (3 controlli)
+- pulsante "Interrompi" «dump.run.stop»
+- pulsante "Indietro" «dump.back»
+- pulsante "Esporta" «dump.next»
+
+## esegui script (7 controlli)
+- pulsante "Scegli…" «script.file.choose»
+- lista a discesa «script.target» (0 voci)
+- scelta "Fermati" «script.onError.stop»
+- scelta "Continua" «script.onError.continue»
+- pulsante "Interrompi" «script.stop»
+- pulsante "Esegui" «script.run»
+- tabella «script.failures» [Riga, Istruzione, Errore]
+
+## modello ER (10 controlli)
+- pulsante "Suggerisci relazioni" «er.suggest»
+- pulsante "Disponi" «er.layout»
+- pulsante "Aggiorna dal database" «er.refresh»
+- pulsante "Esporta PNG…" «er.export»
+- pulsante "−" «er.zoomOut»
+- pulsante "+" «er.zoomIn»
+- pulsante "Salva" «er.save»
+- tabella «er.suggestions.table» [, Relazione, Fiducia]
+- pulsante "Chiudi" «er.suggestions.close»
+- pulsante "Accetta le spuntate" «er.suggestions.accept»
+
+## menu modello ER › relazione (1 controlli)
+- voce "Chiave esterna «fk_libri_editori» del database (si cambia dall'editor di tabelle)" «er.relationship.physical»
+
+## finestra preview.dialog (3 controlli)
+- pulsante "Copia nell'editor" «preview.copy»
+- pulsante "Annulla" «preview.cancel»
+- pulsante "Esegui" «preview.execute»
+
+## finestra catalog.create.dialog (5 controlli)
+- campo di testo «catalog.create.name»
+- lista a discesa «catalog.create.charset» (1 voci)
+- lista a discesa «catalog.create.collation» (2 voci)
+- pulsante "Annulla" «dialog.cancel»
+- pulsante "Mostra SQL…" «dialog.confirm»
+
+## finestra profile.dialog (9 controlli)
+- campo di testo «profile.name»
+- campo di testo «profile.host»
+- numero «profile.port»
+- campo di testo «profile.user»
+- campo di testo «profile.catalog»
+- campo di testo «profile.note»
+- pulsante "Prova connessione" «profile.test»
+- pulsante "Annulla" «dialog.cancel»
+- pulsante "Salva" «dialog.confirm»
+
+## finestra settings.dialog (7 controlli)
+- lista a discesa «settings.language» (1 voci)
+- numero «settings.fontSize»
+- numero «settings.rowLimit»
+- campo di testo «settings.workDirectory»
+- pulsante "Sfoglia…" «settings.browse»
+- pulsante "Annulla" «dialog.cancel»
+- pulsante "Salva" «dialog.confirm»
+
+## finestra about.dialog (2 controlli)
+- tabella «about.libraries» [Libreria, A cosa serve, Licenza]
+- pulsante "Chiudi" «about.close»
+
+## finestra guide.dialog (1 controlli)
+- pulsante "Chiudi" «guide.close»
+
+## finestra connection.error.dialog (2 controlli)
+- pulsante "Messaggio originale del server" «connect.error.toggle»
+- pulsante "OK" «dialog.confirm»
+
+## finestra er.tables.dialog (5 controlli)
+- tabella «er.tables.table» [A, B]
+- pulsante "Tutte" «er.tables.all»
+- pulsante "Nessuna" «er.tables.none»
+- pulsante "Annulla" «dialog.cancel»
+- pulsante "Crea il modello" «er.tables.confirm»
+
+## finestra showCreate.dialog (2 controlli)
+- pulsante "Copia" «showCreate.copy»
+- pulsante "Chiudi" «showCreate.close»
+
+Schermate senza revisione in docs/REVISIONE-APPLE.md: [schermata iniziale, area di lavoro, menu barra › Importa, menu barra › Modello ER, menu navigatore › SERVER, menu navigatore › CATALOG, menu navigatore › TABLE, menu navigatore › VIEW, editor SQL, griglia dati, griglia dati con la scheda record, editor di tabelle, tabella nuova, query visiva, importa › 1 file, importa › 1 file scelto, importa › 2 anteprima, importa › 3 tabella esistente, importa › 3 tabella nuova, importa › 4 opzioni, importa › 5 importa, dump › 1 cosa, dump › 2 opzioni, dump › 3 esporta, esegui script, modello ER, menu modello ER › relazione, finestra preview.dialog, finestra catalog.create.dialog, finestra profile.dialog, finestra settings.dialog, finestra about.dialog, finestra guide.dialog, finestra connection.error.dialog, finestra er.tables.dialog, finestra showCreate.dialog]
+Esito: FALLITO

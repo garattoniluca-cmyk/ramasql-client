@@ -208,6 +208,7 @@ public final class MainFrame extends JFrame implements ShellView {
      * preme. I pulsanti della barra non sono fra le fermate di Tab (sarebbero dieci tasti in più a ogni giro).
      */
     private void installKeyboard() {
+        // (i divisori non usano F6 per sé: RamaSqlLaf toglie il tasto dalle loro scorciatoie)
         javax.swing.JRootPane root = getRootPane();
         root.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(KeyEvent.VK_F6, 0),
                 "ramasql.nextArea");
@@ -227,6 +228,12 @@ public final class MainFrame extends JFrame implements ShellView {
             @Override
             public void actionPerformed(java.awt.event.ActionEvent e) {
                 moveArea(-1);
+            }
+        });
+        java.awt.KeyboardFocusManager.getCurrentKeyboardFocusManager().addPropertyChangeListener("focusOwner", e -> {
+            if (e.getNewValue() instanceof java.awt.Component c && SwingUtilities.getWindowAncestor(c) == this
+                    && !inToolbar(c)) {
+                toolbarButtons.forEach(b -> b.setFocusable(false));
             }
         });
         setFocusTraversalPolicy(new javax.swing.LayoutFocusTraversalPolicy() {
@@ -279,21 +286,43 @@ public final class MainFrame extends JFrame implements ShellView {
                 current = i;
             }
         }
-        java.awt.Component next = areas.get(Math.floorMod(current + direction, areas.size()));
-        focusArea(next);
+        // la prima area dopo quella attuale che accetta il fuoco
+        for (int step = 1; step <= areas.size(); step++) {
+            if (focusArea(areas.get(Math.floorMod(current + step * direction, areas.size())))) {
+                return;
+            }
+        }
     }
 
-    private void focusArea(java.awt.Component area) {
-        if (area instanceof java.awt.Container k && !(area instanceof JButton)) {
-            java.awt.Component first = area == navigatorPanel ? navigatorPanel.tree()
-                    : getFocusTraversalPolicy().getFirstComponent(k);
-            if (first == null) {
-                first = k.getFocusTraversalPolicy() != null ? k.getFocusTraversalPolicy().getDefaultComponent(k) : null;
-            }
-            (first != null ? first : area).requestFocusInWindow();
-            return;
+    /** Il fuoco nel primo componente dell'area che lo accetta; {@code false} se nessuno. */
+    private boolean focusArea(java.awt.Component area) {
+        if (area instanceof JButton) {
+            // i pulsanti della barra prendono il fuoco solo quando ci si arriva con F6 (e lo perdono all'uscita)
+            toolbarButtons.forEach(b -> b.setFocusable(true));
+            return area.requestFocusInWindow();
         }
-        area.requestFocusInWindow();
+        java.awt.Component first = area == navigatorPanel ? navigatorPanel.tree() : firstFocusable(area);
+        return first != null && first.requestFocusInWindow();
+    }
+
+    private static java.awt.Component firstFocusable(java.awt.Component c) {
+        if (!c.isShowing() || !c.isEnabled()) {
+            return null;
+        }
+        if (c.isFocusable() && c instanceof JComponent j && !(c instanceof JPanel) && !(c instanceof JLabel)
+                && !(c instanceof javax.swing.JScrollBar) && !(c instanceof javax.swing.JScrollPane)
+                && !(c instanceof javax.swing.JViewport) && !(c instanceof JSplitPane) && j.isRequestFocusEnabled()) {
+            return c;
+        }
+        if (c instanceof java.awt.Container k) {
+            for (java.awt.Component child : k.getComponents()) {
+                java.awt.Component f = firstFocusable(child);
+                if (f != null) {
+                    return f;
+                }
+            }
+        }
+        return null;
     }
 
     // ------------------------------------------------------------------ costruzione
@@ -448,7 +477,10 @@ public final class MainFrame extends JFrame implements ShellView {
         }
     }
 
-    /** Prima senza le scritte dei pulsanti della barra, poi anche senza quelle di Esegui e Interrompi, finché basta. */
+    /**
+     * Se la barra non ci sta nemmeno con gli spazi fra i gruppi stretti al minimo: prima senza le scritte dei pulsanti
+     * della barra, poi anche senza quelle di Esegui e Interrompi, finché basta.
+     */
     private void compactToolbar(JToolBar bar) {
         for (int level = 0; level <= 2; level++) {
             for (JButton b : toolbarButtons) {
@@ -464,7 +496,7 @@ public final class MainFrame extends JFrame implements ShellView {
             if (bar.getLayout() instanceof java.awt.LayoutManager2 l) {
                 l.invalidateLayout(bar);
             }
-            if (bar.getLayout().preferredLayoutSize(bar).width <= bar.getWidth()) {
+            if (bar.getLayout().minimumLayoutSize(bar).width <= bar.getWidth()) {
                 break;
             }
         }
@@ -513,7 +545,9 @@ public final class MainFrame extends JFrame implements ShellView {
                 actions.add(button);
             } else {
                 if (GROUP_STARTS.contains(key)) {
-                    bar.add(Box.createHorizontalStrut(Tokens.px(Tokens.SPACE_12)));
+                    // lo spazio fra i gruppi si stringe fino a 4 px prima di togliere le scritte
+                    bar.add(new Box.Filler(new Dimension(Tokens.px(Tokens.SPACE_4), 0),
+                            new Dimension(Tokens.px(Tokens.SPACE_12), 0), new Dimension(Tokens.px(Tokens.SPACE_12), 0)));
                 }
                 Styles.text(button, "smallText");
                 bar.add(button);

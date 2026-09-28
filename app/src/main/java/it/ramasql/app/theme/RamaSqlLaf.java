@@ -27,7 +27,20 @@ public class RamaSqlLaf extends FlatLightLaf {
         installTips();
         Screens.install();
         KeyTips.install();
+        freeF6();
         return ok;
+    }
+
+    /**
+     * F6 e Maiusc+F6 passano da un'area all'altra della finestra (T12.4): i divisori ({@code JSplitPane}) non li usano
+     * più per sé (in Swing F6 salta fra i due lati di un divisore, e ogni divisore lo intercetterebbe).
+     */
+    static void freeF6() {
+        if (javax.swing.UIManager.get("SplitPane.ancestorInputMap") instanceof javax.swing.InputMap im) {
+            im.remove(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_F6, 0));
+            im.remove(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_F6,
+                    java.awt.event.InputEvent.SHIFT_DOWN_MASK));
+        }
     }
 
     /** Pausa prima di comparire (ms): {@code DESIGN-SYSTEM.md} §3.9. */

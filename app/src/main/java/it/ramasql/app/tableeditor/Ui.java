@@ -94,6 +94,59 @@ public final class Ui {
             header.setHorizontalAlignment(SwingConstants.LEADING);
         }
         table.getTableHeader().setPreferredSize(new Dimension(0, Tokens.px(Tokens.CONTROL_HEIGHT)));
+        comboCellKeys(table);
+    }
+
+    /**
+     * Le liste nelle celle da tastiera (T12.4): <b>Alt+Giù</b> (o <b>F4</b>) sulla cella apre la sua lista, con le voci
+     * e la spiegazione accanto; le frecce scelgono, Invio conferma, Esc lascia com'era. Senza, in Swing la lista della
+     * cella si chiude appena si comincia a modificarla.
+     */
+    static void comboCellKeys(JTable table) {
+        javax.swing.Action open = new javax.swing.AbstractAction() {
+            private static final long serialVersionUID = 1L;
+
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                int row = table.getSelectionModel().getLeadSelectionIndex();
+                int col = table.getColumnModel().getSelectionModel().getLeadSelectionIndex();
+                if (row < 0 || col < 0 || row >= table.getRowCount() || col >= table.getColumnCount()
+                        || !(table.getCellEditor(row, col) instanceof javax.swing.DefaultCellEditor ed)
+                        || !(ed.getComponent() instanceof javax.swing.JComboBox<?> combo)) {
+                    return;
+                }
+                if (!(table.isEditing() && table.getEditingRow() == row && table.getEditingColumn() == col)
+                        && !table.editCellAt(row, col)) {
+                    return;
+                }
+                // la lista si apre quando il fuoco è arrivato (in una lista modificabile, nel suo campo): se si
+                // aprisse prima, il passaggio del fuoco la richiuderebbe
+                java.awt.Component target = combo.isEditable() ? combo.getEditor().getEditorComponent() : combo;
+                Runnable show = () -> javax.swing.SwingUtilities.invokeLater(() -> {
+                    if (combo.isShowing()) {
+                        combo.showPopup();
+                    }
+                });
+                if (target.isFocusOwner()) {
+                    show.run();
+                    return;
+                }
+                target.addFocusListener(new java.awt.event.FocusAdapter() {
+                    @Override
+                    public void focusGained(java.awt.event.FocusEvent fe) {
+                        target.removeFocusListener(this);
+                        show.run();
+                    }
+                });
+                target.requestFocusInWindow();
+            }
+        };
+        table.getActionMap().put("ramasql.openCellList", open);
+        for (javax.swing.KeyStroke ks : java.util.List.of(
+                javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_DOWN, java.awt.event.InputEvent.ALT_DOWN_MASK),
+                javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_F4, 0))) {
+            table.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(ks, "ramasql.openCellList");
+        }
     }
 
     /** Pannello di dettaglio che scorre invece di schiacciarsi quando lo spazio è poco. */

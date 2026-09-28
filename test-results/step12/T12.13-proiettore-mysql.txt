@@ -1,5 +1,5 @@
 T12.13 — suggerimenti al proiettore (1024×768, carattere 28) e da tastiera, MySQL
-1) 349 testi impaginati: il più largo 672 px (dump.content.DATA.tooltip; limite leggibile 819 px), il più alto 353 px (schermo 728 px)
+1) 348 testi impaginati: il più largo 672 px (dump.content.DATA.tooltip; limite leggibile 819 px), il più alto 353 px (schermo 728 px)
 2) restano a schermo 60 s (richiesti almeno 20)
    dopo 20,5 s il suggerimento di JTextField «navigator.filter» è ancora a schermo
    Ctrl+F1 su  «navigator.tree» (voce scelta 51,295 345×28): «Il server MySQL locale a cui sei collegato. Qui sotto i suoi cataloghi (database); tasto destro per crearne uno nuovo.…» in 105,332 657×163

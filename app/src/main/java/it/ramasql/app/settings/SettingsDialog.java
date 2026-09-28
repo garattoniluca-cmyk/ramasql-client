@@ -66,6 +66,7 @@ public final class SettingsDialog extends JDialog {
 
     public SettingsDialog(Window owner, AppSettings current) {
         super(owner, Texts.get("settings.title"), ModalityType.APPLICATION_MODAL);
+        setName("settings.dialog");
         for (Language l : availableLanguages()) {
             language.addItem(l);
             if (l.code().equals(current.language())) {
@@ -118,6 +119,11 @@ public final class SettingsDialog extends JDialog {
     }
 
     /** Una voce: etichetta a destra nella prima colonna, controllo nella seconda (righe 0, 2, 4, 6). */
+    /** Quante voci ha la finestra (T12.7: le impostazioni sono 4). */
+    public int settingCount() {
+        return settingEditors.size();
+    }
+
     private void addSetting(String labelKey, JComponent editor, boolean fill) {
         int row = settingEditors.size() * 2;
         GridBagConstraints l = new GridBagConstraints();

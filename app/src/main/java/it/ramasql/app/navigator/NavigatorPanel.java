@@ -237,16 +237,18 @@ public final class NavigatorPanel extends JPanel {
         add(top, BorderLayout.NORTH);
         add(scroll, BorderLayout.CENTER);
 
+        // il menu si apre al rilascio del tasto: aperto alla pressione, il rilascio che segue lo richiuderebbe
         tree.getInputMap(JComponent.WHEN_FOCUSED).put(KeyStroke.getKeyStroke(KeyEvent.VK_F10,
-                java.awt.event.InputEvent.SHIFT_DOWN_MASK), "navigator.menu");
-        tree.getInputMap(JComponent.WHEN_FOCUSED).put(KeyStroke.getKeyStroke(KeyEvent.VK_CONTEXT_MENU, 0),
+                java.awt.event.InputEvent.SHIFT_DOWN_MASK, true), "navigator.menu");
+        tree.getInputMap(JComponent.WHEN_FOCUSED).put(KeyStroke.getKeyStroke(KeyEvent.VK_CONTEXT_MENU, 0, true),
                 "navigator.menu");
         tree.getActionMap().put("navigator.menu", new AbstractAction() {
             private static final long serialVersionUID = 1L;
 
             @Override
             public void actionPerformed(java.awt.event.ActionEvent e) {
-                popupFromKeyboard();
+                // finito di smistare il tasto: aperto durante lo smistamento, il menu si richiuderebbe subito
+                SwingUtilities.invokeLater(NavigatorPanel.this::popupFromKeyboard);
             }
         });
         getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT)

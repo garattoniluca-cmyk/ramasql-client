@@ -36,6 +36,7 @@ public final class ProfileDialog extends JDialog {
 
     public ProfileDialog(Window owner, ConnectionProfile initial, ConnectionController controller) {
         super(owner, Texts.get(initial == null ? "profile.title.new" : "profile.title.edit"), ModalityType.APPLICATION_MODAL);
+        setName("profile.dialog");
         form = new ProfileForm(initial, controller);
         DialogButtons buttons = new DialogButtons(this, Texts.get("profile.save"), error, this::save);
         buttons.confirmButton().setToolTipText(Texts.get("profile.save.tooltip"));

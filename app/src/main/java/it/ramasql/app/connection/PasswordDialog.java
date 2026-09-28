@@ -38,6 +38,7 @@ public final class PasswordDialog extends JDialog {
 
     public PasswordDialog(Window owner, ConnectionProfile profile) {
         super(owner, Texts.get("password.title"), ModalityType.APPLICATION_MODAL);
+        setName("password.dialog");
         JLabel heading = new JLabel(Texts.get("password.heading", profile.name().isEmpty() ? profile.host() : profile.name()));
         Styles.text(heading, "heading", Tokens.TEXT_PRIMARY);
         heading.setIcon(AppIcons.get(AppIcons.CONNECT, 24));

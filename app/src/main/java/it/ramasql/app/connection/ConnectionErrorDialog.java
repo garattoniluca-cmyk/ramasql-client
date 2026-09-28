@@ -50,6 +50,7 @@ public final class ConnectionErrorDialog extends JDialog {
 
     public ConnectionErrorDialog(Window owner, ConnectionProfile profile, ConnectionFailure failure) {
         super(owner, Texts.get("connect.error.title"), ModalityType.APPLICATION_MODAL);
+        setName("connection.error.dialog");
         int width = Tokens.px(440);
 
         JLabel heading = Styles.text(new JLabel(Texts.get("connect.error.heading", profile.name())), "heading",
