@@ -29,6 +29,8 @@ public final class DataGridModel extends AbstractTableModel {
 
     private transient PendingChanges pending;
     private final boolean editable;
+    /** Vero mentre la griglia legge una pagina nuova: niente modifiche, andrebbero perse con la pagina vecchia. */
+    private boolean locked;
 
     DataGridModel(PendingChanges pending, boolean editable) {
         this.pending = pending;
@@ -47,6 +49,16 @@ public final class DataGridModel extends AbstractTableModel {
 
     public boolean isEditable() {
         return editable;
+    }
+
+    /** Blocca (o sblocca) le modifiche mentre si legge una pagina ({@code BUG-017}). */
+    void setLocked(boolean locked) {
+        this.locked = locked;
+    }
+
+    /** Vero mentre si legge una pagina: niente modifiche. */
+    boolean isLocked() {
+        return locked;
     }
 
     /** Righe di dati (esclusa la riga d'inserimento). */
@@ -109,7 +121,7 @@ public final class DataGridModel extends AbstractTableModel {
 
     @Override
     public boolean isCellEditable(int row, int column) {
-        if (!editable || isReadOnlyColumn(column)) {
+        if (!editable || locked || isReadOnlyColumn(column)) {
             return false;
         }
         return isInsertRow(row) || pending.kind(row) != PendingChanges.RowKind.DELETED;

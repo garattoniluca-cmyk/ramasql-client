@@ -147,6 +147,15 @@
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-jar-plugin</artifactId>
           <version>3.5.1</version>
+          <!-- BUG-026: Implementation-Version (e Title) nel manifest di TUTTI i moduli, non solo dell'app:
+               core.ProductInfo legge la versione dal manifest del proprio jar (ramasql-core) -->
+          <configuration>
+            <archive>
+              <manifest>
+                <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+              </manifest>
+            </archive>
+          </configuration>
         </plugin>
         <plugin>
           <groupId>org.codehaus.mojo</groupId>

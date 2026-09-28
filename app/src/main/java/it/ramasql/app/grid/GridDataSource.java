@@ -19,7 +19,10 @@ import java.util.Objects;
  * ({@code SELECT … ORDER BY … LIMIT pageSize+1 OFFSET …}); per i test e per i risultati già in memoria c'è
  * {@link InMemoryGridDataSource}.
  *
- * <p>Si chiama sull'EDT: un'implementazione lenta blocca l'interfaccia (vedi i limiti in {@link DataGrid}).
+ * <p><b>Thread</b> ({@code BUG-017}): la griglia chiama {@link #load} <b>fuori dall'EDT</b>, in un thread suo, e
+ * intanto l'interfaccia resta viva e mostra un indicatore di lettura; fanno eccezione i fornitori
+ * {@linkplain #inMemory() in memoria}, che non leggono niente e si chiamano direttamente sull'EDT. Un'implementazione
+ * che legge dal server quindi non deve toccare componenti Swing dentro {@code load}.
  */
 public interface GridDataSource {
 
@@ -54,4 +57,12 @@ public interface GridDataSource {
      * @param orderBy   ordinamento, {@code null} = quello naturale del server
      */
     Page load(int pageIndex, int pageSize, SortOrder orderBy);
+
+    /**
+     * Vero se le righe sono già in memoria e {@link #load} risponde subito: la griglia allora la chiama sull'EDT,
+     * senza thread né indicatore. Falso (il caso normale) per chi legge dal server: la lettura va fuori dall'EDT.
+     */
+    default boolean inMemory() {
+        return false;
+    }
 }

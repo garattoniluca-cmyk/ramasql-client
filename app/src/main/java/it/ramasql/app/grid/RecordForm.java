@@ -245,7 +245,7 @@ public final class RecordForm extends JPanel {
 
     /** Marca da eliminare il record mostrato (un record nuovo sparisce). Nulla va sul server. */
     public boolean deleteRecord() {
-        if (!model.isEditable() || current >= model.dataRowCount()) {
+        if (!model.isEditable() || model.isLocked() || current >= model.dataRowCount()) {
             return false;
         }
         model.pending().deleteRow(current);
@@ -403,7 +403,7 @@ public final class RecordForm extends JPanel {
     }
 
     private void setNull(int column) {
-        if (model.isInsertRow(current) || !model.column(column).nullable()) {
+        if (model.isLocked() || model.isInsertRow(current) || !model.column(column).nullable()) {
             return;
         }
         model.pending().setValue(current, column, null);

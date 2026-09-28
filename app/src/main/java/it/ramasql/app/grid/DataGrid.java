@@ -11,10 +11,14 @@ package it.ramasql.app.grid;
 
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
+import java.awt.Cursor;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.FontMetrics;
+import java.awt.KeyboardFocusManager;
+import java.awt.SecondaryLoop;
 import java.awt.Toolkit;
+import java.awt.Window;
 import java.awt.datatransfer.Clipboard;
 import java.awt.event.ActionEvent;
 import java.awt.event.InputEvent;
@@ -28,6 +32,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
 import javax.swing.AbstractAction;
@@ -42,6 +47,7 @@ import javax.swing.JLabel;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
+import javax.swing.JProgressBar;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JToggleButton;
@@ -50,6 +56,7 @@ import javax.swing.ListSelectionModel;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
+import javax.swing.Timer;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 import javax.swing.table.TableColumn;
@@ -97,8 +104,15 @@ import it.ramasql.core.sqlgen.DmlGenerator;
  * modifiche «invisibili» su pagine che non si vedono. Si conferma o si scarta, poi si cambia pagina. L'ordinamento si
  * sceglie con il tasto destro sull'intestazione (il clic sinistro seleziona la colonna, come in DESIGN §3.3).
  *
- * <p>Limiti: il fornitore di dati è chiamato sull'EDT (l'integrazione con il server dovrà spostare la lettura fuori
- * dall'EDT se lenta); una selezione non rettangolare non è possibile (modalità a intervallo singolo).
+ * <h2>Lettura delle pagine fuori dall'EDT ({@code BUG-017})</h2>
+ * Una pagina che viene dal server (prima pagina, pagine successive, ordinamento, rilettura) si legge in un thread a
+ * parte; l'EDT intanto continua a servire gli eventi con un {@link SecondaryLoop}, come fa una finestra modale, così
+ * l'interfaccia si ridisegna e risponde e i metodi pubblici restano sincroni (quando {@link #nextPage()} torna, la
+ * pagina nuova è in griglia). Durante la lettura le modifiche e i comandi della griglia sono sospesi e, se la lettura
+ * dura più di {@value #LOADING_INDICATOR_DELAY_MS} ms, nella barra compare un indicatore discreto «Lettura dal
+ * server…». I fornitori {@linkplain GridDataSource#inMemory() in memoria} si leggono direttamente.
+ *
+ * <p>Limiti: una selezione non rettangolare non è possibile (modalità a intervallo singolo).
  */
 public final class DataGrid extends JPanel {
 
@@ -116,6 +130,9 @@ public final class DataGrid extends JPanel {
     public static final String ACTION_DELETE_ROWS = "ramasql.deleteRows";
     public static final String ACTION_RESTORE_ROWS = "ramasql.restoreRows";
     public static final String ACTION_SELECT_ALL = "selectAll";
+
+    /** Dopo quanto compare l'indicatore di lettura: le letture brevi non fanno lampeggiare nulla. */
+    static final int LOADING_INDICATOR_DELAY_MS = 150;
 
     private static final String CARD_GRID = "grid";
     private static final String CARD_FORM = "form";
@@ -152,6 +169,8 @@ public final class DataGrid extends JPanel {
     private final JButton confirmButton = new JButton(Texts.get("grid.confirm"));
     private final JLabel noticeLabel = new JLabel(" ");
     private final JLabel invalidLabel = new JLabel(" ");
+    private final JPanel loadingIndicator = new JPanel();
+    private final Timer loadingTimer = new Timer(LOADING_INDICATOR_DELAY_MS, e -> loadingIndicator.setVisible(true));
 
     private Clipboard clipboard;
     private Consumer<List<RowChange>> onConfirm;
@@ -162,6 +181,8 @@ public final class DataGrid extends JPanel {
     /** Vero da quando la Conferma parte a quando l'esito torna: un secondo clic non deve rimandare le stesse
      * istruzioni (l'esecuzione dura, e il pulsante resterebbe acceso perché le righe sono ancora pendenti). */
     private boolean confirming;
+    /** Vero mentre una pagina si legge fuori dall'EDT: pagine, ordinamento e modifiche sono sospesi. */
+    private boolean loading;
 
     // ---------------------------------------------------------------- creazione
 
@@ -204,7 +225,7 @@ public final class DataGrid extends JPanel {
         this.readOnlyExplanation = readOnlyExplanation;
         this.clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
 
-        GridDataSource.Page first = source.load(0, pageSize, null);
+        GridDataSource.Page first = fetch(0, null);
         hasMore = first.hasMore();
         model = new DataGridModel(new PendingChanges(this.columns, first.rows()), editable);
         grid = new JTable(model);
@@ -348,6 +369,8 @@ public final class DataGrid extends JPanel {
         Styles.toolbarButton(exportButton);
         exportButton.addActionListener(e -> exportCsv());
         bar.add(exportButton);
+        bar.add(Box.createHorizontalStrut(Tokens.px(Tokens.SPACE_16)));
+        bar.add(buildLoadingIndicator());
         bar.add(Box.createHorizontalGlue());
         counter.setName("dataGrid.counter");
         discardButton.setName("dataGrid.discard");
@@ -402,6 +425,33 @@ public final class DataGrid extends JPanel {
         return lines;
     }
 
+    /** «Lettura dal server…» con una barra indeterminata sottile; nascosto finché una lettura non si fa attendere. */
+    private JComponent buildLoadingIndicator() {
+        loadingIndicator.setName("dataGrid.loading");
+        loadingIndicator.setLayout(new BoxLayout(loadingIndicator, BoxLayout.X_AXIS));
+        loadingIndicator.setOpaque(false);
+        JProgressBar progress = new JProgressBar();
+        progress.setIndeterminate(true);
+        java.awt.Dimension size = new java.awt.Dimension(Tokens.px(48), Tokens.px(4));
+        progress.setPreferredSize(size);
+        progress.setMaximumSize(size);
+        progress.setMinimumSize(size);
+        JLabel text = new JLabel(Texts.get("grid.loading"));
+        text.setForeground(Tokens.TEXT_SECONDARY);
+        text.setFont(Tokens.font(Tokens.CAPTION, Font.PLAIN));
+        text.setMinimumSize(text.getPreferredSize());   // il testo non si tronca quando la barra è stretta
+        loadingIndicator.add(progress);
+        loadingIndicator.add(Box.createHorizontalStrut(Tokens.px(Tokens.SPACE_8)));
+        loadingIndicator.add(text);
+        String tooltip = Texts.get("grid.loading.tooltip");
+        loadingIndicator.setToolTipText(tooltip);
+        progress.setToolTipText(tooltip);
+        text.setToolTipText(tooltip);
+        loadingIndicator.setVisible(false);
+        loadingTimer.setRepeats(false);
+        return loadingIndicator;
+    }
+
     private static JComponent wrapLeft(JComponent c) {
         JPanel p = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
         p.setOpaque(false);
@@ -443,7 +493,9 @@ public final class DataGrid extends JPanel {
 
             @Override
             public void actionPerformed(ActionEvent e) {
-                body.run();
+                if (!loading) {   // durante la lettura di una pagina la griglia non cambia
+                    body.run();
+                }
             }
         });
     }
@@ -513,10 +565,10 @@ public final class DataGrid extends JPanel {
         menu.add(asc);
         menu.add(desc);
         menu.add(none);
-        if (model.pending().hasPending()) {
+        if (model.pending().hasPending() || loading) {
             for (JMenuItem i : List.of(asc, desc, none)) {
                 i.setEnabled(false);
-                i.setToolTipText(Texts.get("grid.blocked.pending"));
+                i.setToolTipText(Texts.get(loading ? "grid.loading.tooltip" : "grid.blocked.pending"));
             }
         }
         return menu;
@@ -709,9 +761,10 @@ public final class DataGrid extends JPanel {
         invalidLabel.setText(invalid > 0 ? invalidText() : " ");
         invalidLabel.setIcon(invalid > 0 ? AppIcons.small(AppIcons.STATUS_ERROR) : null);
         invalidLabel.setVisible(invalid > 0);   // nessuna riga vuota tra la barra e la griglia
-        previousPage.setEnabled(pageIndex > 0 && !anything);
-        nextPage.setEnabled(hasMore && !anything);
-        String blocked = anything ? Texts.get("grid.blocked.pending") : null;
+        previousPage.setEnabled(pageIndex > 0 && !anything && !loading);
+        nextPage.setEnabled(hasMore && !anything && !loading);
+        String blocked = loading ? Texts.get("grid.loading.tooltip")
+                : anything ? Texts.get("grid.blocked.pending") : null;
         previousPage.setToolTipText(blocked != null ? blocked : Texts.get("grid.page.previous.name"));
         nextPage.setToolTipText(blocked != null ? blocked : Texts.get("grid.page.next.name"));
         pageLabel.setText(Texts.get("grid.page", pageIndex + 1));
@@ -759,7 +812,20 @@ public final class DataGrid extends JPanel {
         return goTo(pageIndex, sortOrder);
     }
 
+    /** Una pagina si sta leggendo dal server (fuori dall'EDT). */
+    public boolean isLoading() {
+        return loading;
+    }
+
+    /** L'indicatore «Lettura dal server…» è visibile (compare solo se la lettura si fa attendere). */
+    public boolean isLoadingIndicatorShown() {
+        return loadingIndicator.isVisible();
+    }
+
     private boolean goTo(int page, GridDataSource.SortOrder order) {
+        if (loading) {
+            return false;   // una lettura alla volta: il comando arriva mentre la pagina precedente si sta leggendo
+        }
         stopEditing();
         if (hasPending()) {
             setNotice(Texts.get("grid.blocked.pending"));
@@ -767,7 +833,7 @@ public final class DataGrid extends JPanel {
         }
         GridDataSource.Page loaded;
         try {
-            loaded = source.load(page, pageSize, order);
+            loaded = fetchShowingProgress(page, order);
         } catch (RuntimeException e) {
             // il server non ha risposto (connessione caduta, tabella sparita, permessi): la pagina resta com'è
             setNotice(Texts.get("grid.read.failed", table == null ? "" : table.name(),
@@ -788,6 +854,76 @@ public final class DataGrid extends JPanel {
         setNotice("");
         refreshBar();
         return true;
+    }
+
+    /** Come {@link #fetch}, con la griglia sospesa e l'indicatore di lettura (se la lettura si fa attendere). */
+    private GridDataSource.Page fetchShowingProgress(int page, GridDataSource.SortOrder order) {
+        if (source.inMemory() || !SwingUtilities.isEventDispatchThread()) {
+            return fetch(page, order);
+        }
+        loading = true;
+        model.setLocked(true);
+        grid.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        loadingTimer.restart();
+        refreshBar();
+        try {
+            return fetch(page, order);
+        } finally {
+            loadingTimer.stop();
+            loadingIndicator.setVisible(false);
+            grid.setCursor(null);
+            model.setLocked(false);
+            loading = false;
+            refreshBar();
+        }
+    }
+
+    /**
+     * Legge una pagina dal fornitore. Se il fornitore legge dal server e siamo sull'EDT, la lettura va in un thread a
+     * parte e l'EDT continua a servire gli eventi (ridisegno, indicatore, altre schede) finché la pagina non arriva;
+     * poi il metodo torna con la pagina, o rilancia l'errore del fornitore, come se fosse stato sincrono.
+     */
+    private GridDataSource.Page fetch(int page, GridDataSource.SortOrder order) {
+        if (source.inMemory() || !SwingUtilities.isEventDispatchThread()) {
+            return source.load(page, pageSize, order);
+        }
+        // la prima pagina si legge prima che la griglia sia sullo schermo: l'attesa si vede dal cursore della finestra
+        Window window = isShowing() ? null : KeyboardFocusManager.getCurrentKeyboardFocusManager().getActiveWindow();
+        Cursor before = window == null ? null : window.getCursor();
+        if (window != null) {
+            window.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        }
+        SecondaryLoop loop = Toolkit.getDefaultToolkit().getSystemEventQueue().createSecondaryLoop();
+        AtomicReference<GridDataSource.Page> loaded = new AtomicReference<>();
+        AtomicReference<Throwable> failure = new AtomicReference<>();
+        Thread.ofPlatform().daemon().name("ramasql-griglia-pagina").start(() -> {
+            try {
+                loaded.set(source.load(page, pageSize, order));
+            } catch (Throwable t) {
+                failure.set(t);
+            } finally {
+                // l'uscita passa dalla coda degli eventi: arriva di sicuro dopo enter(), anche se la lettura è istantanea
+                SwingUtilities.invokeLater(loop::exit);
+            }
+        });
+        try {
+            loop.enter();
+        } finally {
+            if (window != null) {
+                window.setCursor(before);
+            }
+        }
+        Throwable t = failure.get();
+        if (t instanceof RuntimeException re) {
+            throw re;
+        }
+        if (t instanceof Error err) {
+            throw err;
+        }
+        if (t != null) {
+            throw new IllegalStateException(t);
+        }
+        return loaded.get();
     }
 
     // ---------------------------------------------------------------- vista Griglia ⇄ Scheda

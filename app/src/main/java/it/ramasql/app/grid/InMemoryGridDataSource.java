@@ -52,6 +52,12 @@ public final class InMemoryGridDataSource implements GridDataSource {
         return new Page(sorted.subList(from, to), to < sorted.size());
     }
 
+    /** Le righe sono già qui: la griglia legge la pagina direttamente sull'EDT. */
+    @Override
+    public boolean inMemory() {
+        return true;
+    }
+
     /** Quante volte la griglia ha chiesto una pagina (per i test). */
     public int loadCount() {
         return loadCount;

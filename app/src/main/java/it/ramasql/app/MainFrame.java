@@ -143,6 +143,7 @@ public final class MainFrame extends JFrame implements ShellView {
         navigatorPanel.setOnNewTable(catalog -> openTableEditor(catalog, null));
         navigatorPanel.setOnOpenView(this::openView);
         navigatorPanel.setOnEditView(this::editView);
+        navigatorPanel.setOnViewDropped(this::forgetViewSource);
         navigatorPanel.setOnImportData(this::openImport);
         navigatorPanel.setOnExport(this::openDump);
         navigatorPanel.setOnSelection(this::updateToolbar);
@@ -660,6 +661,23 @@ public final class MainFrame extends JFrame implements ShellView {
 
     public it.ramasql.core.connection.ViewSourceStore viewSources() {
         return viewSources;
+    }
+
+    /**
+     * Una vista è stata eliminata dal navigatore (il {@code DROP VIEW} è riuscito): il suo sorgente grafico non serve
+     * più e si toglie da {@code viste.json} ({@code BUG-025}). Se il file non si riscrive lo si dice, senza altro danno:
+     * una voce rimasta non si riusa mai per una vista diversa.
+     */
+    private void forgetViewSource(NavigatorPanel.DroppedView dropped) {
+        if (viewSources == null) {
+            return;
+        }
+        try {
+            viewSources.remove(dropped.server(), dropped.catalog(), dropped.view());
+        } catch (java.io.IOException | RuntimeException e) {
+            sqlPanel.message(PipelineView.MessageKind.WARNING,
+                    Texts.get("view.archive.removeFailed", dropped.view(), String.valueOf(e.getMessage())));
+        }
     }
 
     /**
