@@ -32,7 +32,10 @@ import it.ramasql.core.exec.StatementResult;
  */
 public final class PipelineDataCheck implements DataCheck {
 
-    /** Righe di controllo mostrate al massimo: all'utente servono gli esempi, non l'elenco completo. */
+    /**
+     * Righe di controllo mostrate al massimo: all'utente servono gli esempi, non l'elenco completo. Se ce ne sono di
+     * più il risultato lo dice ({@link DataCheckResult#truncated()}, {@code BUG-021}).
+     */
     static final int MAX_ROWS = 200;
 
     private final SqlPipeline pipeline;
@@ -70,14 +73,24 @@ public final class PipelineDataCheck implements DataCheck {
         if (table == null) {
             return new DataCheckResult(List.of(), List.of(), null);
         }
+        return fromTable(table);
+    }
+
+    /**
+     * Le righe lette, al massimo {@link #MAX_ROWS}. Troncato se se ne tolgono qui oppure se già l'esecutore si è
+     * fermato al suo limite di righe ({@link ResultTable#truncated()}): in entrambi i casi sul server ce ne sono altre.
+     */
+    static DataCheckResult fromTable(ResultTable table) {
         List<String> columns = new ArrayList<>(table.columnCount());
         for (ResultTable.Column c : table.columns()) {
             columns.add(c.label());
         }
         List<List<String>> rows = ResultCells.rows(table);
+        boolean truncated = table.truncated();
         if (rows.size() > MAX_ROWS) {
             rows = List.copyOf(rows.subList(0, MAX_ROWS));
+            truncated = true;
         }
-        return new DataCheckResult(columns, rows, null);
+        return new DataCheckResult(columns, rows, null, truncated);
     }
 }

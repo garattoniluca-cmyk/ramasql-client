@@ -25,15 +25,21 @@ public interface DataCheck {
     void run(String sql, Consumer<DataCheckResult> done);
 
     /**
-     * @param columns intestazioni delle colonne
-     * @param rows    righe trovate, valori già resi come testo ({@code null} = NULL)
-     * @param error   messaggio d'errore del server; {@code null} = eseguita
+     * @param columns   intestazioni delle colonne
+     * @param rows      righe trovate, valori già resi come testo ({@code null} = NULL)
+     * @param error     messaggio d'errore del server; {@code null} = eseguita
+     * @param truncated le righe mostrate sono solo le prime: sul server ce ne sono altre ({@code BUG-021})
      */
-    record DataCheckResult(List<String> columns, List<List<String>> rows, String error) {
+    record DataCheckResult(List<String> columns, List<List<String>> rows, String error, boolean truncated) {
 
         public DataCheckResult {
             columns = List.copyOf(columns);
             rows = rows.stream().map(r -> Collections.unmodifiableList(new ArrayList<>(r))).toList();
+        }
+
+        /** Risultato completo (non troncato). */
+        public DataCheckResult(List<String> columns, List<List<String>> rows, String error) {
+            this(columns, rows, error, false);
         }
 
         public static DataCheckResult failed(String error) {

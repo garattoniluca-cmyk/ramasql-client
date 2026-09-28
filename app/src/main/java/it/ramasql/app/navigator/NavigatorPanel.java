@@ -695,6 +695,24 @@ public final class NavigatorPanel extends JPanel {
         this.onEditView = handler == null ? (c, v) -> { } : handler;
     }
 
+    /**
+     * Una vista eliminata dal navigatore: il {@code DROP VIEW} è stato eseguito <b>con successo</b> (dall'esito della
+     * pipeline, non dalla richiesta).
+     *
+     * @param server  indirizzo del server della sessione in cui è stata eliminata (la chiave dell'archivio delle viste)
+     * @param catalog catalogo della vista
+     * @param view    nome della vista
+     */
+    public record DroppedView(String server, String catalog, String view) {
+    }
+
+    /** Chi viene avvisato quando una vista è stata eliminata ({@code BUG-025}: il suo sorgente si toglie dall'archivio). */
+    private Consumer<DroppedView> onViewDropped = v -> { };
+
+    public void setOnViewDropped(Consumer<DroppedView> handler) {
+        this.onViewDropped = handler == null ? v -> { } : handler;
+    }
+
     /** «Apri vista»: le colonne si leggono in background, poi la scheda si apre in sola lettura. */
     public void openView(String catalog, String view) {
         if (workspace == null) {
@@ -790,7 +808,7 @@ public final class NavigatorPanel extends JPanel {
                 menu.add(item("nav.menu.editView", () -> onEditView.accept(n.catalog(), n.name())));
                 menu.add(item("nav.menu.export", () -> onExport.accept(n.catalog(), n.name())));
                 menu.addSeparator();
-                menu.add(item("nav.menu.dropView", () -> propose(TreeScripts.dropView(n.catalog(), n.name()))));
+                menu.add(item("nav.menu.dropView", () -> dropView(n.catalog(), n.name())));
                 menu.addSeparator();
                 menu.add(item("nav.menu.showCreate", () -> showCreateView(n.catalog(), n.name())));
             }
@@ -815,6 +833,22 @@ public final class NavigatorPanel extends JPanel {
         if (workspace != null) {
             workspace.pipeline().propose(script);
         }
+    }
+
+    /**
+     * «Elimina vista»: {@code DROP VIEW} dalla pipeline (anteprima con conferma rafforzata). Solo se l'esito dice che
+     * l'istruzione è riuscita si avvisa {@link #setOnViewDropped}; annullata, copiata o rifiutata dal server, niente.
+     */
+    private void dropView(String catalog, String view) {
+        if (workspace == null) {
+            return;
+        }
+        String server = workspace.session().profile().address();
+        workspace.pipeline().propose(TreeScripts.dropView(catalog, view)).whenComplete((result, error) -> {
+            if (error == null && result != null && result.completed()) {
+                SwingUtilities.invokeLater(() -> onViewDropped.accept(new DroppedView(server, catalog, view)));
+            }
+        });
     }
 
     /** «Nuovo catalogo…»: collation lette in background, poi la finestra, poi l'anteprima. */

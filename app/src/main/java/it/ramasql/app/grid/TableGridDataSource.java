@@ -35,9 +35,8 @@ import it.ramasql.core.sqlgen.SqlIdentifiers;
  * <p>Le colonne lette sono quelle della tabella, nominate una per una e nell'ordine della griglia: mai
  * {@code SELECT *}, così una colonna aggiunta sul server da qualcun altro non sfasa le celle.
  *
- * <p><b>Thread:</b> {@link #load} è sincrona come chiede {@link GridDataSource}, quindi sull'EDT la lettura di una
- * pagina blocca l'interfaccia per il tempo della query (misurato in T4.7; vedi {@code BUG-016} per la lettura
- * asincrona, rinviata).
+ * <p><b>Thread:</b> {@link #load} è sincrona (aspetta l'esecutore) e la {@link DataGrid} la chiama <b>fuori
+ * dall'EDT</b>, con l'indicatore di lettura visibile ({@code BUG-017}): una pagina lenta non blocca l'interfaccia.
  */
 public final class TableGridDataSource implements GridDataSource {
 

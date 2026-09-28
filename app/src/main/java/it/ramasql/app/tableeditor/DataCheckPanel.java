@@ -99,8 +99,11 @@ final class DataCheckPanel extends JPanel {
             rowsScroll.setVisible(false);
         } else {
             List<List<String>> data = result.rows();
-            status.set(data.isEmpty() ? Banner.Tone.SUCCESS : Banner.Tone.WARNING,
-                    data.isEmpty() ? Texts.get(noneKey) : Texts.get(foundKey, data.size()));
+            String text = data.isEmpty() ? Texts.get(noneKey) : result.truncated()
+                    ? Texts.get(foundKey + ".atLeast", data.size()) + " "
+                            + Texts.get("tableeditor.datacheck.truncated", data.size())
+                    : Texts.get(foundKey, data.size());
+            status.set(data.isEmpty() ? Banner.Tone.SUCCESS : Banner.Tone.WARNING, text);
             Object[][] cells = new Object[data.size()][];
             for (int r = 0; r < data.size(); r++) {
                 cells[r] = data.get(r).stream().map(v -> v == null ? "NULL" : v).toArray();

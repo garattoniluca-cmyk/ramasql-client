@@ -53,6 +53,11 @@ public final class WorkTabs {
     private final WorkspacePrompts prompts;
     /** Il titolo di ogni scheda, per aggiornarlo quando la tabella cambia nome o viene creata. */
     private final java.util.Map<Component, JLabel> titles = new java.util.HashMap<>();
+    /**
+     * Le schede di griglia la cui prima pagina si sta leggendo: la lettura è fuori dall'EDT e l'interfaccia intanto
+     * risponde ({@code BUG-017}), quindi un secondo doppio clic sulla stessa tabella non deve aprirne un'altra.
+     */
+    private final java.util.Set<String> opening = new java.util.HashSet<>();
     private int queryCounter;
     private int visualCounter;
     private int newTableCounter;
@@ -65,8 +70,9 @@ public final class WorkTabs {
     // ---------------------------------------------------------------- apertura
 
     /**
-     * Apre (o riporta in primo piano) la scheda di data-entry di una tabella. La prima pagina si legge subito: chi
-     * chiama deve essere fuori dall'EDT oppure accettare l'attesa (vedi {@code BUG-017}).
+     * Apre (o riporta in primo piano) la scheda di data-entry di una tabella. La prima pagina si legge subito, fuori
+     * dall'EDT (la griglia tiene viva l'interfaccia mentre aspetta, {@code BUG-017}); se la stessa scheda si sta già
+     * aprendo si restituisce {@code null}.
      *
      * @param table    tabella già letta dai metadati
      * @param pageSize righe per pagina (il «limite righe» delle impostazioni)
@@ -78,8 +84,16 @@ public final class WorkTabs {
             tabs.setSelectedComponent(existing);
             return existing;
         }
+        if (!opening.add(name)) {
+            return null;   // la prima pagina di questa tabella si sta già leggendo
+        }
         TableGridDataSource source = new TableGridDataSource(workspace.executor(), table);
-        DataGrid grid = DataGrid.forTable(table, source, pageSize, gridPrompts);
+        DataGrid grid;
+        try {
+            grid = DataGrid.forTable(table, source, pageSize, gridPrompts);
+        } finally {
+            opening.remove(name);
+        }
         grid.setName(name);
         new GridApplier(workspace.pipeline(), workspace.view()).bind(grid, table);
         add(grid, Texts.get("tabs.dataEntry.title", table.name()), table.catalog() + "." + table.name());
@@ -98,10 +112,18 @@ public final class WorkTabs {
             tabs.setSelectedComponent(existing);
             return existing;
         }
+        if (!opening.add(name)) {
+            return null;   // la prima pagina di questa vista si sta già leggendo
+        }
         TableGridDataSource source = new TableGridDataSource(workspace.executor(), catalog, view,
                 columns.stream().map(it.ramasql.core.metadata.ColumnDef::name).toList(),
                 it.ramasql.core.exec.SqlOrigin.GRID.label());
-        DataGrid grid = DataGrid.readOnly(columns, source, pageSize, DataGrid.viewExplanation(), gridPrompts);
+        DataGrid grid;
+        try {
+            grid = DataGrid.readOnly(columns, source, pageSize, DataGrid.viewExplanation(), gridPrompts);
+        } finally {
+            opening.remove(name);
+        }
         grid.setName(name);
         add(grid, Texts.get("tabs.dataEntry.title", view), catalog + "." + view);
         return grid;

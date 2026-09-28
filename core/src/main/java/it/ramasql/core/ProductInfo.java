@@ -17,7 +17,12 @@ public final class ProductInfo {
     private ProductInfo() {
     }
 
-    /** Versione letta dal manifest del jar; in sviluppo (classi non impacchettate) vale "dev". */
+    /**
+     * Versione letta dal manifest del jar che contiene questa classe ({@code ramasql-core}): la voce
+     * {@code Implementation-Version} la mette il pom padre in tutti i moduli ({@code BUG-026}: prima l'aveva solo
+     * {@code ramasql-app}, e il programma impacchettato diceva «dev»). In sviluppo (classi non impacchettate) vale
+     * "dev".
+     */
     public static String version() {
         String v = ProductInfo.class.getPackage().getImplementationVersion();
         return v != null ? v : "dev";
